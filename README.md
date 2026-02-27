@@ -54,3 +54,44 @@ pip install -r requirements.txt
 cd /Users/numantangones/Documents/GuitarAmpRecorder
 source .venv/bin/activate
 python app.py
+## İndir
+
+En güncel sürümü buradan indir:
+
+- [Latest Release](https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest)
+
+### Hızlı İndirme
+
+- **Windows (.exe):** Releases sayfasındaki `GuitarAmpRecorder-Windows.exe`
+- **macOS (.dmg / .zip):** Releases sayfasındaki `GuitarAmpRecorder-macOS.dmg` veya `.zip`
+
+### Kurulum
+
+1. Yukarıdaki `Latest Release` linkine gir.
+2. `Assets` bölümünden işletim sistemine uygun dosyayı indir.
+3. Uygulamayı aç.
+
+> Not: İlk açılışta güvenlik uyarısı çıkarsa, işletim sistemi ayarlarından uygulamaya izin ver.
+pip install pyinstaller
+pyinstaller --onefile --windowed --name GuitarAmpRecorder app.py
+pip install pyinstaller
+pip install pyinstaller
+pyinstaller --windowed --name GuitarAmpRecorder app.py
+cd dist
+zip -r GuitarAmpRecorder-macOS.zip GuitarAmpRecorder.app
+## Guitar Amp Recorder v1.0.0
+
+### Yenilikler
+- Backing track + mikrofon kayıt desteği
+- Gain / Boost / Bass / Treble / Distortion ayarları
+- Cihaz giriş/çıkış seçimi
+- Otomatik çıktı alma (mix + vocal + test)
+
+### İndir
+- Windows: `GuitarAmpRecorder-Windows.exe`
+- macOS: `GuitarAmpRecorder-macOS.zip`
+
+### Notlar
+- İlk açılışta işletim sistemi güvenlik uyarısı gösterebilir.
+- Sorun yaşarsanız Issue açabilirsiniz.
+- [Latest Release](https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest)
