@@ -5,7 +5,7 @@ Bu uygulama şunları yapar:
 - 2. kanal: Mikrofon kaydı
 - Mikrofon kanalına amfi benzeri efektler (gain, boost, bass, treble, distortion)
 - Mikrofon ve ses kartı cihaz ID seçimi (input/output, bos birakilabilir)
-- Tek tık 5 saat cihaz/kayıt testi
+- Tek tık 5 sn cihaz/kayıt testi
 - Sonucu otomatik MP3 olarak Masaüstüne çıkarır
 
 ## Kurulum (macOS önerilen)
