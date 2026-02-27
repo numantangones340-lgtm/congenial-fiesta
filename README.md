@@ -95,3 +95,99 @@ zip -r GuitarAmpRecorder-macOS.zip GuitarAmpRecorder.app
 - İlk açılışta işletim sistemi güvenlik uyarısı gösterebilir.
 - Sorun yaşarsanız Issue açabilirsiniz.
 - [Latest Release](https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest)
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_NAME="GuitarAmpRecorder"
+ENTRY="app.py"
+
+echo "==> Venv kontrol"
+if [ ! -d ".venv" ]; then
+  python3 -m venv .venv
+fi
+source .venv/bin/activate
+
+echo "==> Bağımlılıklar"
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install pyinstaller
+
+echo "==> Eski build temizliği"
+rm -rf build dist "${APP_NAME}.spec"
+
+echo "==> Build alınıyor"
+pyinstaller --windowed --name "${APP_NAME}" "${ENTRY}"
+
+echo "==> macOS zip hazırlanıyor"
+cd dist
+zip -r "${APP_NAME}-macOS.zip" "${APP_NAME}.app" >/dev/null
+cd ..
+
+echo "==> Tamam"
+echo "Uygulama: dist/${APP_NAME}.app"
+echo "Arsiv   : dist/${APP_NAME}-macOS.zip"
+chmod +x build.sh
+./build.sh
+@echo off
+setlocal enabledelayedexpansion
+
+set APP_NAME=GuitarAmpRecorder
+set ENTRY=app.py
+
+echo ==> Python kontrol
+where py >nul 2>&1
+if errorlevel 1 (
+  echo Python bulunamadi. Lutfen Python 3.10+ kurun.
+  exit /b 1
+)
+
+echo ==> Venv kontrol
+if not exist .venv (
+  py -3 -m venv .venv
+)
+
+call .venv\Scripts\activate.bat
+if errorlevel 1 (
+  echo Venv aktive edilemedi.
+  exit /b 1
+)
+
+echo ==> Bagimliliklar
+python -m pip install --upgrade pip
+if errorlevel 1 exit /b 1
+
+pip install -r requirements.txt
+if errorlevel 1 exit /b 1
+
+pip install pyinstaller
+if errorlevel 1 exit /b 1
+
+echo ==> Eski build temizligi
+if exist build rmdir /s /q build
+if exist dist rmdir /s /q dist
+if exist %APP_NAME%.spec del /f /q %APP_NAME%.spec
+
+echo ==> EXE build
+pyinstaller --onefile --windowed --name %APP_NAME% %ENTRY%
+if errorlevel 1 exit /b 1
+
+echo ==> Dosya adi duzenleme
+if exist dist\%APP_NAME%.exe (
+  copy /y dist\%APP_NAME%.exe dist\%APP_NAME%-Windows.exe >nul
+)
+
+echo.
+echo ==> Tamam
+echo Cikti: dist\%APP_NAME%.exe
+echo Release icin: dist\%APP_NAME%-Windows.exe
+exit /b 0
+## Build (macOS / Windows)
+
+Uygulamayı tek komutla paketlemek için hazır scriptler kullanabilirsiniz.
+
+### macOS
+
+```bash
+chmod +x build.sh
+./build.sh
+build.bat
