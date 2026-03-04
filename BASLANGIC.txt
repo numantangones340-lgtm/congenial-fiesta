@@ -3,7 +3,11 @@ HIZLI BASLANGIC
 1) Finder acin.
 2) /Users/numantangones/Documents/congenial-fiesta klasorune gidin.
 3) CALISTIR.command dosyasina cift tiklayin.
-4) GUI acilir (varsayilan). Terminal surumu icin su komutu kullanin:
+4) Baslatici otomatik modda acilir:
+   - GUI uygunsa pencere surumu acilir
+   - GUI uyumsuzsa otomatik CLI surumune gecer
+5) Manuel modlar:
+   ./CALISTIR.command gui
    ./CALISTIR.command cli
 
 Notlar

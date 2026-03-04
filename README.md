@@ -16,7 +16,7 @@ Gitar/vokal girisini amfi benzeri efektlerle isleyip kaydetmek icin masaustu (Tk
 
 ## Gereksinimler
 
-- Python 3.10+
+- Python 3.9+ (onerilen 3.10+)
 - `ffmpeg` (MP3 icin, opsiyonel)
 
 ## Hizli Calistirma (macOS)
@@ -26,10 +26,16 @@ cd /Users/numantangones/Documents/congenial-fiesta
 ./CALISTIR.command
 ```
 
-CLI surumu:
+`CALISTIR.command` otomatik modda calisir:
+
+- GUI uygunsa `app.py` acilir
+- GUI uyumsuzsa otomatik `cli_app.py` acilir
+
+Manuel mod secimi:
 
 ```bash
 cd /Users/numantangones/Documents/congenial-fiesta
+./CALISTIR.command gui
 ./CALISTIR.command cli
 ```
 
