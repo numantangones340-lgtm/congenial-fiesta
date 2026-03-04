@@ -2,6 +2,15 @@
 
 Gitar/vokal girisini amfi benzeri efektlerle isleyip kaydetmek icin masaustu (Tkinter) ve terminal (CLI) uygulamasi.
 
+## Indirme
+
+- Download sayfasi (GitHub Pages):
+  - https://numantangones340-lgtm.github.io/congenial-fiesta/
+- En guncel paketler (GitHub Releases):
+  - https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
+
+MacOS kullanicilari release icinden `GuitarAmpRecorder-macOS.zip` dosyasini indirebilir.
+
 ## Ozellikler
 
 - Backing track ile kayit (`playrec`) veya backing olmadan `mic-only` kayit
@@ -39,15 +48,24 @@ cd /Users/numantangones/Documents/congenial-fiesta
 ./CALISTIR.command cli
 ```
 
-## Manuel Kurulum
+## Build ve Release
+
+Lokal macOS paketleme:
 
 ```bash
-cd /Users/numantangones/Documents/congenial-fiesta
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python app.py
+./build.sh
 ```
+
+Bu komut `dist/GuitarAmpRecorder-macOS.zip` olusturur.
+
+Otomatik release (tag ile):
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+`.github/workflows/release-macos.yml` tag gelince zip paketi release asset olarak yukler.
 
 ## Cikti Konumu
 
