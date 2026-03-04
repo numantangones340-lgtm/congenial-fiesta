@@ -1,14 +1,13 @@
 #!/bin/bash
 set -e
 
-cd /Users/numantangones/Documents/GuitarAmpRecorder
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
 
 echo "Guitar Amp Recorder baslatiliyor..."
 
-auto_python="python3"
-if ! command -v "$auto_python" >/dev/null 2>&1; then
-  echo "HATA: python3 bulunamadi. Lutfen Python 3 kurun."
-  echo "https://www.python.org/downloads/"
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "HATA: python3 bulunamadi. Lutfen Python 3.10+ kurun."
   read -n 1 -s -r -p "Cikmak icin bir tusa basin..."
   echo
   exit 1
@@ -16,29 +15,24 @@ fi
 
 if [ ! -d ".venv" ]; then
   echo "Sanal ortam olusturuluyor..."
-  "$auto_python" -m venv .venv
+  python3 -m venv .venv
 fi
 
 source .venv/bin/activate
 
 echo "Gerekli kutuphaneler yukleniyor..."
+python -m pip install --upgrade pip >/dev/null
 pip install -r requirements.txt
 
-if command -v brew >/dev/null 2>&1; then
-  if ! command -v ffmpeg >/dev/null 2>&1; then
-    echo "ffmpeg kuruluyor (Homebrew)..."
-    brew install ffmpeg
-  fi
-else
-  if ! command -v ffmpeg >/dev/null 2>&1; then
-    echo "UYARI: Homebrew yok ve ffmpeg bulunamadi."
-    echo "MP3 cevirme icin ffmpeg gerekir."
-    echo "Homebrew kurulumu:"
-    echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-    echo
-  fi
+if ! command -v ffmpeg >/dev/null 2>&1; then
+  echo "UYARI: ffmpeg bulunamadi. MP3 olusturma atlanir, WAV dosyalari yine kaydedilir."
 fi
 
-echo "Terminal surumu aciliyor..."
-python cli_app.py
-
+MODE="${1:-gui}"
+if [ "$MODE" = "cli" ]; then
+  echo "Terminal surumu aciliyor..."
+  python cli_app.py
+else
+  echo "Pencere surumu aciliyor..."
+  python app.py
+fi

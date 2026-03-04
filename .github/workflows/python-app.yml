@@ -1,8 +1,21 @@
-name: Django CI
+name: Python CI
+
 on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
+
 jobs:
-  noop:
+  validate:
     runs-on: [self-hosted, macOS, KOL64]
     steps:
-      - run: echo "disabled"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python version
+        run: python3 --version
+
+      - name: Syntax check
+        run: python3 -m py_compile app.py cli_app.py

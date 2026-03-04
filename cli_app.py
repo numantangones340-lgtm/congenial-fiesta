@@ -1,9 +1,8 @@
 import shutil
 import subprocess
-import tempfile
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
 import sounddevice as sd
@@ -94,35 +93,78 @@ def ask_int_optional(label: str) -> Optional[int]:
         return None
 
 
-def run_test(sr: int, input_idx: Optional[int], output_idx: Optional[int], gain: float, boost: float, bass: float, treble: float, dist: float, name: str) -> None:
+def list_devices() -> None:
+    print("\n--- Ses Cihazlari ---")
+    devices = sd.query_devices()
+    for i, dev in enumerate(devices):
+        print(f"{i}: {dev['name']} | in={dev['max_input_channels']} out={dev['max_output_channels']}")
+    print("---------------------\n")
+
+
+def run_test(
+    sr: int,
+    input_idx: Optional[int],
+    output_idx: Optional[int],
+    gain: float,
+    boost: float,
+    bass: float,
+    treble: float,
+    dist: float,
+    name: str,
+) -> None:
     print("5 sn test kaydi basliyor...")
     rec = sd.rec(frames=sr * 5, samplerate=sr, channels=1, dtype="float32", device=input_idx)
     sd.wait()
     voice = rec[:, 0]
     proc = apply_amp_chain(voice, sr, gain, boost, bass, treble, dist)
     preview = np.stack([proc, proc], axis=1)
-    print("Test oynatiliyor...")
-    sd.play(preview, samplerate=sr, device=output_idx)
-    sd.wait()
+    if output_idx is not None:
+        print("Test oynatiliyor...")
+        sd.play(preview, samplerate=sr, device=output_idx)
+        sd.wait()
 
     out = Path.home() / "Desktop" / f"{name}_device_test.wav"
     sf.write(out, proc, sr)
     print(f"Test kaydi yazildi: {out}")
 
 
-def main() -> None:
-    print("\n=== Guitar Amp Recorder (Terminal Surumu) ===")
-    print("Not: Device ID bilmiyorsaniz bos birakin.\n")
-
-    backing_path = input("Backing dosya yolu (.wav/.aiff/.flac): ").strip()
+def ask_backing_file() -> Optional[Path]:
+    backing_path = input("Backing dosya yolu (.wav/.aiff/.flac) [bos=mic-only]: ").strip()
     if not backing_path:
-        print("Backing dosyasi zorunlu.")
-        return
+        return None
 
     backing_file = Path(backing_path).expanduser()
     if not backing_file.exists():
         print(f"Dosya bulunamadi: {backing_file}")
-        return
+        return None
+    return backing_file
+
+
+def prepare_backing(backing_file: Optional[Path], sr: int, record_seconds: float) -> Tuple[np.ndarray, bool]:
+    if backing_file is None:
+        frames = max(1, int(sr * record_seconds))
+        return np.zeros((frames, 2), dtype=np.float32), False
+
+    print("Backing yukleniyor...")
+    backing, backing_sr = sf.read(backing_file, dtype="float32")
+    backing = ensure_stereo(backing)
+    if backing_sr != sr:
+        print(f"Sample rate {backing_sr} -> {sr} donusturuluyor...")
+        backing = resample_linear(backing, backing_sr, sr)
+    return backing, True
+
+
+def main() -> None:
+    print("\n=== Guitar Amp Recorder (Terminal Surumu) ===")
+    print("Not: Device ID bilmiyorsaniz bos birakin. Enter ile varsayilan secilir.\n")
+
+    if input("Cihaz listesi gosterilsin mi? [E/h]: ").strip().lower() in ("", "e", "evet", "y", "yes"):
+        try:
+            list_devices()
+        except Exception as exc:
+            print(f"Cihaz listeleme hatasi: {exc}")
+
+    backing_file = ask_backing_file()
 
     output_name = input("Cikis dosya adi [guitar_mix_YYYYMMDD_HHMMSS]: ").strip()
     if not output_name:
@@ -133,6 +175,13 @@ def main() -> None:
     bass = ask_float("Bass dB", 3)
     treble = ask_float("Treble dB", 2)
     dist = ask_float("Distortion %", 25)
+
+    backing_level = ask_float("Backing seviye %", 100)
+    vocal_level = ask_float("Vokal seviye %", 85)
+
+    record_seconds = ask_float("Kayit suresi sn (sadece mic-only icin)", 60)
+    if record_seconds <= 0:
+        record_seconds = 60
 
     input_idx = ask_int_optional("Mikrofon Device ID")
     output_idx = ask_int_optional("Cikis Device ID")
@@ -148,26 +197,28 @@ def main() -> None:
             if go_on not in ("", "e", "evet", "y", "yes"):
                 return
 
-    print("Backing yukleniyor...")
-    backing, backing_sr = sf.read(backing_file, dtype="float32")
-    backing = ensure_stereo(backing)
-
-    if backing_sr != sr:
-        print(f"Sample rate {backing_sr} -> {sr} donusturuluyor...")
-        backing = resample_linear(backing, backing_sr, sr)
+    try:
+        backing, has_backing = prepare_backing(backing_file, sr, record_seconds)
+    except Exception as exc:
+        print(f"Backing yukleme hatasi: {exc}")
+        return
 
     duration_sec = len(backing) / sr
-    print(f"Kayit basliyor ({duration_sec:.1f} sn). Kulaklik onerilir...")
-    recorded = sd.playrec(backing, samplerate=sr, channels=1, dtype="float32", device=(input_idx, output_idx))
+    if has_backing:
+        print(f"Kayit basliyor ({duration_sec:.1f} sn). Kulaklik onerilir...")
+        recorded = sd.playrec(backing, samplerate=sr, channels=1, dtype="float32", device=(input_idx, output_idx))
+    else:
+        print(f"Mic-only kayit basliyor ({duration_sec:.1f} sn).")
+        recorded = sd.rec(frames=len(backing), samplerate=sr, channels=1, dtype="float32", device=input_idx)
     sd.wait()
 
     voice = recorded[:, 0]
     print("Amfi efektleri uygulaniyor...")
     processed = apply_amp_chain(voice, sr, gain, boost, bass, treble, dist)
 
-    mix = backing.copy()
-    mix[:, 0] += processed * 0.85
-    mix[:, 1] += processed * 0.85
+    mix = backing.copy() * (backing_level / 100.0)
+    mix[:, 0] += processed * (vocal_level / 100.0)
+    mix[:, 1] += processed * (vocal_level / 100.0)
     peak = np.max(np.abs(mix))
     if peak > 0.98:
         mix = mix / peak * 0.98
@@ -178,25 +229,23 @@ def main() -> None:
     mix_wav_path = desktop / f"{output_name}_mix.wav"
     vocal_wav_path = desktop / f"{output_name}_vocal.wav"
 
+    sf.write(mix_wav_path, mix, sr)
+    sf.write(vocal_wav_path, processed, sr)
+
     ffmpeg_bin = shutil.which("ffmpeg")
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        tmp_wav = Path(tmp.name)
-
-    try:
-        sf.write(tmp_wav, mix, sr)
-        sf.write(vocal_wav_path, processed, sr)
-        if ffmpeg_bin:
-            cmd = [ffmpeg_bin, "-y", "-i", str(tmp_wav), "-codec:a", "libmp3lame", "-qscale:a", "2", str(mp3_path)]
+    if ffmpeg_bin:
+        cmd = [ffmpeg_bin, "-y", "-i", str(mix_wav_path), "-codec:a", "libmp3lame", "-qscale:a", "2", str(mp3_path)]
+        try:
             subprocess.run(cmd, check=True, capture_output=True)
-            print(f"Tamamlandi. MP3: {mp3_path}")
-        else:
-            sf.write(mix_wav_path, mix, sr)
-            print(f"ffmpeg yok. WAV mix kaydedildi: {mix_wav_path}")
-    finally:
-        if tmp_wav.exists():
-            tmp_wav.unlink()
+            print(f"MP3 yazildi: {mp3_path}")
+        except Exception as exc:
+            print(f"MP3 cevirme hatasi: {exc}")
+    else:
+        print("ffmpeg bulunamadi, MP3 atlandi.")
 
+    print(f"Mix WAV: {mix_wav_path}")
     print(f"Vocal WAV: {vocal_wav_path}")
+    print("Tamamlandi.")
 
 
 if __name__ == "__main__":
