@@ -48,6 +48,15 @@ cd /Users/numantangones/Documents/congenial-fiesta
 ./CALISTIR.command cli
 ```
 
+Masaustune tek tik kisayol kurmak icin:
+
+```bash
+cd /Users/numantangones/Documents/congenial-fiesta
+./install_desktop_shortcut.sh
+```
+
+Bu adim `~/Desktop/GuitarAmpRecorder.command` dosyasini olusturur.
+
 ## Build ve Release
 
 Lokal macOS paketleme:
@@ -66,6 +75,11 @@ git push origin v1.0.0
 ```
 
 `.github/workflows/release-macos.yml` tag gelince zip paketi release asset olarak yukler.
+
+Download sayfasi yayinlama:
+
+- `push` oldugunda `.github/workflows/static.yml` otomatik olarak `docs/` klasorunu GitHub Pages'e deploy eder.
+- Gerekirse Actions ekranindan `Deploy Download Page` workflow'unu manuel tetikleyebilirsiniz.
 
 ## Cikti Konumu
 
