@@ -1,4 +1,4 @@
-name: Deploy Download Page
+name: Review deployments / Approve 
 
 on:
   push:
