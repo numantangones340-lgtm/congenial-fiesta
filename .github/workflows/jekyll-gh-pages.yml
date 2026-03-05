@@ -5,6 +5,6 @@ on:
 
 jobs:
   noop:
-    runs-on: [self-hosted, macOS, KOL64]
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - run: echo "Disabled for this repository"

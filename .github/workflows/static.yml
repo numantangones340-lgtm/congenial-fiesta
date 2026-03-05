@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, macOS, KOL64]
+    runs-on: [self-hosted, macOS, ARM64]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

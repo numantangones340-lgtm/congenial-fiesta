@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-macos:
-    runs-on: [self-hosted, macOS, KOL64]
+    runs-on: [self-hosted, macOS, ARM64]
 
     steps:
       - name: Checkout
