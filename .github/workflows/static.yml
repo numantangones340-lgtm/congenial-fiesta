@@ -1,4 +1,4 @@
-name: Review deployments / Approve 
+name: Review deployments / Approve
 
 on:
   push:
