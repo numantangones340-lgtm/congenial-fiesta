@@ -1,92 +1,177 @@
-# Guitar Amp Recorder
+# Guitar Amp Recorder (macOS / Windows)
 
-Gitar/vokal girisini amfi benzeri efektlerle isleyip kaydetmek icin masaustu (Tkinter) ve terminal (CLI) uygulamasi.
+Bu uygulama şunları yapar:
+- 1. kanal: Hazır müzik (arka plan)
+- 2. kanal: Mikrofon kaydı
+- Mikrofon kanalına amfi benzeri efektler (kazanç, güçlendirme, bas, tiz, distorsiyon)
+- Gürültü azaltma (%), hızlandırma/yavaşlatma (%), çıkış kazancı (dB)
+- Mikrofon ve ses kartı aygıt kimliği seçimi (giriş/çıkış, boş bırakılabilir)
+- Kayıt sınırı seçimi (1 saat / 2 saat)
+- Tek tık 5 sn cihaz/kayıt testi
+- Sonucu otomatik MP3 olarak Masaüstüne çıkarır
 
-## Indirme
+## Dil Desteği
 
-- Download sayfasi (GitHub Pages):
-  - https://numantangones340-lgtm.github.io/congenial-fiesta/
-- En guncel paketler (GitHub Releases):
-  - https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
+- Arayüz dili: Türkçe
+- Terminal (CLI) metinleri: Türkçe
+- GUI metinleri: Türkçe
 
-MacOS kullanicilari release icinden `GuitarAmpRecorder-macOS.zip` dosyasini indirebilir.
+## Kurulum (macOS önerilen)
 
-## Ozellikler
+1. Python 3.9+ kurulu olsun (onerilen: 3.10+).
+2. `ffmpeg` kurun:
+   - macOS (Homebrew):
+     ```bash
+     brew install ffmpeg
+     ```
+3. Proje klasöründe sanal ortam kurup paketleri yükleyin:
+   ```bash
+   cd /Users/numantangones/Documents/GuitarAmpRecorder
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-- Backing track ile kayit (`playrec`) veya backing olmadan `mic-only` kayit
-- Gain / Boost / Bass / Treble / Distortion ayarlari
-- Backing ve vokal seviye ayri kontrolu
-- Cihaz listeleme ve input/output cihaz ID secimi
-- 5 saniyelik cihaz testi
-- Cikti dosyalari:
-  - `*_mix.wav`
-  - `*_vocal.wav`
-  - `*.mp3` (ffmpeg varsa)
+## Kurulum (Windows)
 
-## Gereksinimler
+1. Python 3.9+ kurulu olsun (önerilen: 3.10+).
+2. `ffmpeg` kurun ve PATH'e ekleyin (MP3 için).
+3. Proje klasöründe çalıştırın:
+   ```bat
+   cd C:\Users\%USERNAME%\Documents\GuitarAmpRecorder
+   CALISTIR.bat
+   ```
 
-- Python 3.9+ (onerilen 3.10+)
-- `ffmpeg` (MP3 icin, opsiyonel)
+## macOS `.app` paketleme (önerilen)
 
-## Hizli Calistirma (macOS)
+`Tk/Tcl` kaynakları eksik paketlenirse uygulama açılırken `EXC_CRASH (SIGABRT)` verebilir.
+Bu repo içindeki build akışı bu kaynakları `.app` içine ekler.
 
 ```bash
-cd /Users/numantangones/Documents/congenial-fiesta
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+source .venv/bin/activate
+pip install pyinstaller
+./build_macos_app.sh
+```
+
+Üretilen uygulama:
+
+- `dist/GuitarAmpRecorder.app`
+
+## Codesign + Notarization
+
+Yerel test için ad-hoc imza:
+
+```bash
+./sign_macos_app.sh
+```
+
+Developer ID ile imzalama:
+
+```bash
+./sign_macos_app.sh ./dist/GuitarAmpRecorder.app "Developer ID Application: YOUR NAME (TEAMID)"
+```
+
+Notarization (Xcode notarytool ile):
+
+1. Bir kez keychain profile oluşturun:
+   ```bash
+   xcrun notarytool store-credentials "AC_PROFILE" \
+     --apple-id "you@example.com" \
+     --team-id "TEAMID1234" \
+     --password "app-specific-password"
+   ```
+2. Sonra notarize edin:
+   ```bash
+   ./notarize_macos_app.sh ./dist/GuitarAmpRecorder.app AC_PROFILE TEAMID1234
+   ```
+
+## Çalıştırma
+
+```bash
+cd /Users/numantangones/Documents/GuitarAmpRecorder
 ./CALISTIR.command
 ```
 
-`CALISTIR.command` otomatik modda calisir:
+`CALISTIR.command` otomatik olarak GUI sürümünü açar; GUI açılamazsa CLI sürüme geçer.
 
-- GUI uygunsa `app.py` acilir
-- GUI uyumsuzsa otomatik `cli_app.py` acilir
-
-Manuel mod secimi:
+Manuel mod seçimi:
 
 ```bash
-cd /Users/numantangones/Documents/congenial-fiesta
 ./CALISTIR.command gui
 ./CALISTIR.command cli
 ```
 
-Masaustune tek tik kisayol kurmak icin:
+Windows için:
+
+```bat
+cd C:\Users\%USERNAME%\Documents\GuitarAmpRecorder
+CALISTIR.bat
+CALISTIR.bat gui
+CALISTIR.bat cli
+```
+
+## Masaustu Tek Tik Baslatici
 
 ```bash
-cd /Users/numantangones/Documents/congenial-fiesta
+cd /Users/numantangones/Documents/GuitarAmpRecorder
 ./install_desktop_shortcut.sh
 ```
 
-Bu adim `~/Desktop/GuitarAmpRecorder.command` dosyasini olusturur.
+Bu komut `~/Desktop/GuitarAmpRecorder.command` dosyasi olusturur.
 
-## Build ve Release
-
-Lokal macOS paketleme:
+## Masaustune macOS Kurulum Paketi Alma
 
 ```bash
-./build.sh
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+./package_macos_release.sh
 ```
 
-Bu komut `dist/GuitarAmpRecorder-macOS.zip` olusturur.
+Bu komut:
+- `dist/GuitarAmpRecorder-macOS.zip` olusturur
+- ayni zip dosyasini `~/Desktop/GuitarAmpRecorder-macOS.zip` olarak kopyalar
 
-Otomatik release (tag ile):
+## Guvenilir Indirme Sayfalari
+
+- GitHub Releases (resmi surum dosyalari):
+  - https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
+- GitHub Pages (indirme yonlendirme sayfasi):
+  - https://numantangones340-lgtm.github.io/congenial-fiesta/
+
+## Yayinlama (Diger Kullanicilar Icin)
+
+Bu repoda otomatik yayin akisi eklidir:
+- `.github/workflows/release-macos.yml`
+  - `v*` etiketi push edilince macOS zip build eder ve Release'e koyar.
+- `.github/workflows/release-windows.yml`
+  - `v*` etiketi push edilince Windows zip build eder ve Release'e koyar.
+- `.github/workflows/static.yml`
+  - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
+
+Ornek release:
 
 ```bash
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-`.github/workflows/release-macos.yml` tag gelince zip paketi release asset olarak yukler.
+## Kullanım
 
-Download sayfasi yayinlama:
+1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
+2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.
+3. `Müzik Dosyası Seç` ile backing track seçin (`.wav/.aiff/.flac`).
+4. `Kazanç / Güçlendirme / Bas / Tiz / Distorsiyon` ayarlarını yapın.
+5. `Arka Plan Seviye / Vokal Seviye / Gürültü Azaltma / Hız / Çıkış Kazancı` ayarlarını yapın.
+6. `Kayıt Sınırı (1 veya 2 saat)` seçin.
+7. `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
+8. Kayıt bitince dosyalar Masaüstüne yazılır:
+   - `dosyaadi.mp3` (mix)
+   - `dosyaadi_vocal.wav` (işlenmiş vokal/gitar kanalınız)
+   - `dosyaadi_device_test.wav` (test kaydı)
 
-- `push` oldugunda `.github/workflows/static.yml` otomatik olarak `docs/` klasorunu GitHub Pages'e deploy eder.
-- Gerekirse Actions ekranindan `Deploy Download Page` workflow'unu manuel tetikleyebilirsiniz.
+## Notlar
 
-## Cikti Konumu
-
-Tum kayitlar `~/Desktop` altina yazilir.
-
-## Sorun Giderme
-
-- `Invalid sample rate` veya cihaz hatasi: Cihaz ID alanlarini bos birakin veya cihaz listesinden dogru ID secin.
-- `ffmpeg bulunamadi`: MP3 olusmaz, WAV dosyalari normal olusur.
-- Geri besleme/eko: Kulaklik kullanin.
+- Kayıt sırasında kulaklık kullanmanız geri besleme (feedback) riskini azaltır.
+- `ffmpeg bulunamadı` hatası alırsanız `brew install ffmpeg` komutunu tekrar çalıştırın.
+- Windows'ta da çalışır; `ffmpeg` ve Python kurulumu gerekir.
+- Önemli: Program soru sorarken terminale `git ...` gibi komutlar yapıştırmayın. Önce `Ctrl + C` ile programdan çıkın, sonra komutları çalıştırın.
