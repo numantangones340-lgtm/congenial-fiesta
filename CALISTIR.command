@@ -1,44 +1,84 @@
 #!/bin/bash
 set -e
 
-cd /Users/numantangones/Documents/GuitarAmpRecorder
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
 
 echo "Guitar Amp Recorder baslatiliyor..."
 
-auto_python="python3"
-if ! command -v "$auto_python" >/dev/null 2>&1; then
-  echo "HATA: python3 bulunamadi. Lutfen Python 3 kurun."
-  echo "https://www.python.org/downloads/"
-  read -n 1 -s -r -p "Cikmak icin bir tusa basin..."
-  echo
-  exit 1
-fi
+pick_python() {
+  for candidate in python3.13 python3.12 python3.11 python3.10 python3.9 python3; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -V >/dev/null 2>&1; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
 
-if [ ! -d ".venv" ]; then
+if [ -d ".venv" ]; then
+  source .venv/bin/activate
+else
+  PYTHON_BIN="$(pick_python || true)"
+  if [ -z "${PYTHON_BIN}" ]; then
+    echo "HATA: Python bulunamadi. Lutfen Python 3.9+ kurun."
+    read -n 1 -s -r -p "Cikmak icin bir tusa basin..."
+    echo
+    exit 1
+  fi
+
+  if ! "$PYTHON_BIN" - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 9) else 1)
+PY
+  then
+    echo "HATA: Python 3.9+ gerekir."
+    read -n 1 -s -r -p "Cikmak icin bir tusa basin..."
+    echo
+    exit 1
+  fi
+
+  if ! "$PYTHON_BIN" - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 10) else 1)
+PY
+  then
+    echo "BILGI: Python 3.10+ onerilir (mevcut surum yine calisabilir)."
+  fi
+
   echo "Sanal ortam olusturuluyor..."
-  "$auto_python" -m venv .venv
+  "$PYTHON_BIN" -m venv .venv
+  source .venv/bin/activate
 fi
-
-source .venv/bin/activate
 
 echo "Gerekli kutuphaneler yukleniyor..."
+export PIP_NO_CACHE_DIR=1
+export PIP_DISABLE_PIP_VERSION_CHECK=1
 pip install -r requirements.txt
 
-if command -v brew >/dev/null 2>&1; then
-  if ! command -v ffmpeg >/dev/null 2>&1; then
-    echo "ffmpeg kuruluyor (Homebrew)..."
-    brew install ffmpeg
-  fi
-else
-  if ! command -v ffmpeg >/dev/null 2>&1; then
-    echo "UYARI: Homebrew yok ve ffmpeg bulunamadi."
-    echo "MP3 cevirme icin ffmpeg gerekir."
-    echo "Homebrew kurulumu:"
-    echo '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-    echo
-  fi
+if ! command -v ffmpeg >/dev/null 2>&1; then
+  echo "UYARI: ffmpeg bulunamadi. MP3 olusturma atlanir, WAV dosyalari yine kaydedilir."
 fi
 
-echo "Terminal surumu aciliyor..."
-python cli_app.py
-
+MODE="${1:-auto}"
+if [ "$MODE" = "cli" ]; then
+  echo "Terminal surumu aciliyor..."
+  python cli_app.py
+elif [ "$MODE" = "gui" ]; then
+  echo "Pencere surumu aciliyor..."
+  python app.py
+else
+  if python - <<'PY' >/dev/null 2>&1
+import tkinter as tk
+root = tk.Tk()
+root.withdraw()
+root.destroy()
+PY
+  then
+    echo "Pencere surumu aciliyor..."
+    python app.py
+  else
+    echo "GUI acilamadi (tkinter uyumluluk sorunu). CLI surumune geciliyor..."
+    python cli_app.py
+  fi
+fi

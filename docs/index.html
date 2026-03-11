@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guitar Amp Recorder - Guvenli Indirme</title>
+  <style>
+    :root {
+      --bg1: #081126;
+      --bg2: #1a2337;
+      --card: rgba(10, 18, 35, 0.92);
+      --text: #e8edf7;
+      --muted: #b0bdd3;
+      --green: #2bb673;
+      --blue: #2f6df6;
+      --line: #2b3550;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, #24395f 0%, transparent 55%), linear-gradient(135deg, var(--bg1), var(--bg2));
+      padding: 20px;
+    }
+    .card {
+      width: min(820px, 95vw);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 3.3vw, 42px); }
+    p { margin: 8px 0; color: var(--muted); line-height: 1.5; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+    .btn {
+      text-decoration: none;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .btn-green { background: var(--green); }
+    .btn-blue { background: var(--blue); }
+    ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); }
+    code {
+      background: #0a1326;
+      border: 1px solid #253352;
+      color: #d9e6ff;
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Guitar Amp Recorder</h1>
+    <p>Bu sayfa uygulamayi guvenli sekilde indirmeniz icin resmi kaynaklara yonlendirir.</p>
+
+    <div class="buttons">
+      <a class="btn btn-green" href="https://github.com/numantangones340-lgtm/gitar-amp-kaydedici/releases/latest">En Guncel Surumu Indir (GitHub Releases)</a>
+      <a class="btn btn-blue" href="https://github.com/numantangones340-lgtm/gitar-amp-kaydedici">Kaynak Kod (GitHub Repo)</a>
+    </div>
+
+    <p>macOS icin <code>GuitarAmpRecorder-macOS.zip</code> dosyasini indirip acabilirsiniz.</p>
+    <ul>
+      <li>Yayin kanali: GitHub Releases (imzali surum yuklenebilir)</li>
+      <li>Tanitim/yonlendirme sayfasi: GitHub Pages</li>
+      <li>Kurulum notlari: README icinde adim adim anlatim</li>
+    </ul>
+  </main>
+</body>
+</html>

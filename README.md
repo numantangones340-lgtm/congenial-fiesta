@@ -10,7 +10,7 @@ Bu uygulama şunları yapar:
 
 ## Kurulum (macOS önerilen)
 
-1. Python 3.10+ kurulu olsun.
+1. Python 3.9+ kurulu olsun (onerilen: 3.10+).
 2. `ffmpeg` kurun:
    - macOS (Homebrew):
      ```bash
@@ -24,12 +24,106 @@ Bu uygulama şunları yapar:
    pip install -r requirements.txt
    ```
 
-## Çalıştırma
+## macOS `.app` paketleme (önerilen)
+
+`Tk/Tcl` kaynakları eksik paketlenirse uygulama açılırken `EXC_CRASH (SIGABRT)` verebilir.
+Bu repo içindeki build akışı bu kaynakları `.app` içine ekler.
 
 ```bash
 cd /Users/numantangones/Documents/GuitarAmpRecorder
 source .venv/bin/activate
-python app.py
+pip install pyinstaller
+./build_macos_app.sh
+```
+
+Üretilen uygulama:
+
+- `dist/GuitarAmpRecorder.app`
+
+## Codesign + Notarization
+
+Yerel test için ad-hoc imza:
+
+```bash
+./sign_macos_app.sh
+```
+
+Developer ID ile imzalama:
+
+```bash
+./sign_macos_app.sh ./dist/GuitarAmpRecorder.app "Developer ID Application: YOUR NAME (TEAMID)"
+```
+
+Notarization (Xcode notarytool ile):
+
+1. Bir kez keychain profile oluşturun:
+   ```bash
+   xcrun notarytool store-credentials "AC_PROFILE" \
+     --apple-id "you@example.com" \
+     --team-id "TEAMID1234" \
+     --password "app-specific-password"
+   ```
+2. Sonra notarize edin:
+   ```bash
+   ./notarize_macos_app.sh ./dist/GuitarAmpRecorder.app AC_PROFILE TEAMID1234
+   ```
+
+## Çalıştırma
+
+```bash
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+./CALISTIR.command
+```
+
+`CALISTIR.command` otomatik olarak GUI sürümünü açar; GUI açılamazsa CLI sürüme geçer.
+
+Manuel mod seçimi:
+
+```bash
+./CALISTIR.command gui
+./CALISTIR.command cli
+```
+
+## Masaustu Tek Tik Baslatici
+
+```bash
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+./install_desktop_shortcut.sh
+```
+
+Bu komut `~/Desktop/GuitarAmpRecorder.command` dosyasi olusturur.
+
+## Masaustune macOS Kurulum Paketi Alma
+
+```bash
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+./package_macos_release.sh
+```
+
+Bu komut:
+- `dist/GuitarAmpRecorder-macOS.zip` olusturur
+- ayni zip dosyasini `~/Desktop/GuitarAmpRecorder-macOS.zip` olarak kopyalar
+
+## Guvenilir Indirme Sayfalari
+
+- GitHub Releases (resmi surum dosyalari):
+  - https://github.com/numantangones340-lgtm/gitar-amp-kaydedici/releases/latest
+- GitHub Pages (indirme yonlendirme sayfasi):
+  - https://numantangones340-lgtm.github.io/gitar-amp-kaydedici/
+
+## Yayinlama (Diger Kullanicilar Icin)
+
+Bu repoda otomatik yayin akisi eklidir:
+- `.github/workflows/release-macos.yml`
+  - `v*` etiketi push edilince macOS zip build eder ve Release'e koyar.
+- `.github/workflows/static.yml`
+  - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
+
+Ornek release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 ## Kullanım

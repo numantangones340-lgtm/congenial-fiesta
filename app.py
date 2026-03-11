@@ -1,10 +1,12 @@
+import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
 from pathlib import Path
-from tkinter import Tk, Label, Button, Scale, HORIZONTAL, filedialog, StringVar, Entry
+from tkinter import Tk, Label, Button, Scale, HORIZONTAL, filedialog, StringVar, Entry, TclError
 from typing import Optional, Tuple
 
 import numpy as np
@@ -80,6 +82,41 @@ def resample_linear(audio: np.ndarray, src_sr: int, dst_sr: int) -> np.ndarray:
     return np.stack(channels, axis=1).astype(np.float32)
 
 
+def configure_tcl_tk_environment() -> None:
+    if os.environ.get("TCL_LIBRARY") and os.environ.get("TK_LIBRARY"):
+        return
+
+    roots = []
+    if getattr(sys, "frozen", False):
+        executable = Path(sys.executable).resolve()
+        roots.extend(
+            [
+                executable.parent,
+                executable.parent.parent,
+                executable.parent.parent / "Resources",
+                executable.parent.parent / "Resources" / "lib",
+            ]
+        )
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            base = Path(meipass)
+            roots.extend([base, base / "tcl", base / "lib"])
+
+    for root in roots:
+        if not root.exists():
+            continue
+        candidates = [root, root / "tcl", root / "lib", root / "Resources", root / "Resources" / "lib"]
+        for parent in candidates:
+            if not parent.exists():
+                continue
+            tcl_dirs = sorted(parent.glob("tcl8.*"))
+            tk_dirs = sorted(parent.glob("tk8.*"))
+            if tcl_dirs and tk_dirs:
+                os.environ.setdefault("TCL_LIBRARY", str(tcl_dirs[0]))
+                os.environ.setdefault("TK_LIBRARY", str(tk_dirs[0]))
+                return
+
+
 class GuitarAmpRecorderApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
@@ -137,8 +174,21 @@ class GuitarAmpRecorderApp:
         return slider
 
     def set_status(self, text: str) -> None:
-        self.status_text.set(text)
-        self.root.update_idletasks()
+        def update() -> None:
+            self.status_text.set(text)
+            self.root.update_idletasks()
+
+        if threading.current_thread() is threading.main_thread():
+            try:
+                update()
+            except TclError:
+                pass
+            return
+
+        try:
+            self.root.after(0, update)
+        except TclError:
+            pass
 
     def select_backing(self) -> None:
         file_path = filedialog.askopenfilename(
@@ -163,15 +213,41 @@ class GuitarAmpRecorderApp:
         return input_idx, output_idx
 
     def start_test_thread(self) -> None:
-        worker = threading.Thread(target=self.run_device_test, daemon=True)
+        try:
+            input_idx, output_idx = self.selected_device_pair()
+        except ValueError:
+            self.set_status("Device ID alanlarına sadece sayı girin (veya boş bırakın).")
+            return
+        settings = self.current_amp_settings()
+        base_name = self.output_name.get().strip() or "guitar_mix"
+        worker = threading.Thread(
+            target=self.run_device_test,
+            args=(input_idx, output_idx, settings, base_name),
+            daemon=True,
+        )
         worker.start()
 
-    def run_device_test(self) -> None:
+    def current_amp_settings(self) -> Tuple[float, float, float, float, float]:
+        return (
+            float(self.gain.get()),
+            float(self.boost.get()),
+            float(self.bass.get()),
+            float(self.treble.get()),
+            float(self.distortion.get()),
+        )
+
+    def run_device_test(
+        self,
+        input_idx: Optional[int],
+        output_idx: Optional[int],
+        settings: Tuple[float, float, float, float, float],
+        base_name: str,
+    ) -> None:
         try:
             sr = 44100
             seconds = 5
             frames = sr * seconds
-            input_idx, output_idx = self.selected_device_pair()
+            gain_db, boost_db, bass_db, treble_db, distortion = settings
 
             self.set_status("Test kaydı başlıyor (5 sn). Mikrofona konuşun/çalın...")
             recorded = sd.rec(
@@ -187,11 +263,11 @@ class GuitarAmpRecorderApp:
             processed = apply_amp_chain(
                 voice=voice,
                 sample_rate=sr,
-                gain_db=float(self.gain.get()),
-                boost_db=float(self.boost.get()),
-                bass_db=float(self.bass.get()),
-                treble_db=float(self.treble.get()),
-                distortion=float(self.distortion.get()),
+                gain_db=gain_db,
+                boost_db=boost_db,
+                bass_db=bass_db,
+                treble_db=treble_db,
+                distortion=distortion,
             )
 
             preview = np.stack([processed, processed], axis=1)
@@ -200,7 +276,7 @@ class GuitarAmpRecorderApp:
             sd.wait()
 
             desktop = Path.home() / "Desktop"
-            test_path = desktop / f"{self.output_name.get().strip() or 'guitar_mix'}_device_test.wav"
+            test_path = desktop / f"{base_name}_device_test.wav"
             sf.write(test_path, processed, sr)
 
             peak = float(np.max(np.abs(voice))) if len(voice) else 0.0
@@ -212,13 +288,31 @@ class GuitarAmpRecorderApp:
         if self.backing_file is None:
             self.set_status("Önce bir backing track seçin.")
             return
-        worker = threading.Thread(target=self.record_and_export, daemon=True)
+        try:
+            input_idx, output_idx = self.selected_device_pair()
+        except ValueError:
+            self.set_status("Device ID alanlarına sadece sayı girin (veya boş bırakın).")
+            return
+        settings = self.current_amp_settings()
+        base_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
+        worker = threading.Thread(
+            target=self.record_and_export,
+            args=(self.backing_file, input_idx, output_idx, settings, base_name),
+            daemon=True,
+        )
         worker.start()
 
-    def record_and_export(self) -> None:
+    def record_and_export(
+        self,
+        backing_file: Path,
+        input_idx: Optional[int],
+        output_idx: Optional[int],
+        settings: Tuple[float, float, float, float, float],
+        base_name: str,
+    ) -> None:
         try:
             self.set_status("Backing yükleniyor...")
-            backing, sr = sf.read(self.backing_file, dtype="float32")
+            backing, sr = sf.read(backing_file, dtype="float32")
             backing = ensure_stereo(backing)
 
             target_sr = 44100
@@ -228,7 +322,6 @@ class GuitarAmpRecorderApp:
                 sr = target_sr
 
             duration_sec = len(backing) / sr
-            input_idx, output_idx = self.selected_device_pair()
             self.set_status(
                 f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir. Backing çalarken mikrofona söyleyin/çalın..."
             )
@@ -238,14 +331,15 @@ class GuitarAmpRecorderApp:
 
             voice = recorded[:, 0]
             self.set_status("Amfi efektleri uygulanıyor...")
+            gain_db, boost_db, bass_db, treble_db, distortion = settings
             processed_voice = apply_amp_chain(
                 voice=voice,
                 sample_rate=sr,
-                gain_db=float(self.gain.get()),
-                boost_db=float(self.boost.get()),
-                bass_db=float(self.bass.get()),
-                treble_db=float(self.treble.get()),
-                distortion=float(self.distortion.get()),
+                gain_db=gain_db,
+                boost_db=boost_db,
+                bass_db=bass_db,
+                treble_db=treble_db,
+                distortion=distortion,
             )
 
             mix = backing.copy()
@@ -258,7 +352,6 @@ class GuitarAmpRecorderApp:
             mix = np.clip(mix, -1.0, 1.0)
 
             desktop = Path.home() / "Desktop"
-            base_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
             mp3_path = desktop / f"{base_name}.mp3"
             mix_wav_path = desktop / f"{base_name}_mix.wav"
             vocal_wav_path = desktop / f"{base_name}_vocal.wav"
@@ -302,6 +395,7 @@ class GuitarAmpRecorderApp:
 
 
 def main() -> None:
+    configure_tcl_tk_environment()
     root = Tk()
     GuitarAmpRecorderApp(root)
     root.mainloop()

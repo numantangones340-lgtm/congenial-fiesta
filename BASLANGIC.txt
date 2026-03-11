@@ -1,9 +1,12 @@
 1) Finder acin.
 2) /Users/numantangones/Documents/GuitarAmpRecorder klasorune girin.
 3) CALISTIR.command dosyasina cift tiklayin (veya Terminal'de ./GuitarAmpRecorder/CALISTIR.command).
-4) Bu surum pencere acmaz; Terminal uzerinden size sorular sorar.
-5) Backing dosya yolunu verin, ayarlari girin, kayit otomatik yapilsin.
+4) Script otomatik olarak GUI (pencere) surumunu dener.
+5) GUI acilamazsa otomatik olarak Terminal (CLI) surume gecer.
 
 Not:
-- MP3 icin ffmpeg gerekir.
-- ffmpeg yoksa sonuc WAV olarak Masaustu'ne kaydedilir.
+- MP3 icin ffmpeg gerekir (yoksa WAV ciktilar yine olusur).
+- Dogrudan CLI acmak icin: ./CALISTIR.command cli
+- Dogrudan GUI acmak icin: ./CALISTIR.command gui
+- Masaustune tek tik kisayol icin: ./install_desktop_shortcut.sh
+- Paylasim icin macOS zip paketi olusturup masaustune kopyalamak icin: ./package_macos_release.sh
