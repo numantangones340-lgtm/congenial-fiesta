@@ -1,12 +1,20 @@
 # Guitar Amp Recorder (macOS / Windows)
 
 Bu uygulama şunları yapar:
-- 1. kanal: Hazır müzik (backing track)
+- 1. kanal: Hazır müzik (arka plan)
 - 2. kanal: Mikrofon kaydı
-- Mikrofon kanalına amfi benzeri efektler (gain, boost, bass, treble, distortion)
-- Mikrofon ve ses kartı cihaz ID seçimi (input/output, bos birakilabilir)
+- Mikrofon kanalına amfi benzeri efektler (kazanç, güçlendirme, bas, tiz, distorsiyon)
+- Gürültü azaltma (%), hızlandırma/yavaşlatma (%), çıkış kazancı (dB)
+- Mikrofon ve ses kartı aygıt kimliği seçimi (giriş/çıkış, boş bırakılabilir)
+- Kayıt sınırı seçimi (1 saat / 2 saat)
 - Tek tık 5 sn cihaz/kayıt testi
 - Sonucu otomatik MP3 olarak Masaüstüne çıkarır
+
+## Dil Desteği
+
+- Arayüz dili: Türkçe
+- Terminal (CLI) metinleri: Türkçe
+- GUI metinleri: Türkçe
 
 ## Kurulum (macOS önerilen)
 
@@ -22,6 +30,16 @@ Bu uygulama şunları yapar:
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
+   ```
+
+## Kurulum (Windows)
+
+1. Python 3.9+ kurulu olsun (önerilen: 3.10+).
+2. `ffmpeg` kurun ve PATH'e ekleyin (MP3 için).
+3. Proje klasöründe çalıştırın:
+   ```bat
+   cd C:\Users\%USERNAME%\Documents\GuitarAmpRecorder
+   CALISTIR.bat
    ```
 
 ## macOS `.app` paketleme (önerilen)
@@ -84,6 +102,15 @@ Manuel mod seçimi:
 ./CALISTIR.command cli
 ```
 
+Windows için:
+
+```bat
+cd C:\Users\%USERNAME%\Documents\GuitarAmpRecorder
+CALISTIR.bat
+CALISTIR.bat gui
+CALISTIR.bat cli
+```
+
 ## Masaustu Tek Tik Baslatici
 
 ```bash
@@ -107,15 +134,17 @@ Bu komut:
 ## Guvenilir Indirme Sayfalari
 
 - GitHub Releases (resmi surum dosyalari):
-  - https://github.com/numantangones340-lgtm/gitar-amp-kaydedici/releases/latest
+  - https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
 - GitHub Pages (indirme yonlendirme sayfasi):
-  - https://numantangones340-lgtm.github.io/gitar-amp-kaydedici/
+  - https://numantangones340-lgtm.github.io/congenial-fiesta/
 
 ## Yayinlama (Diger Kullanicilar Icin)
 
 Bu repoda otomatik yayin akisi eklidir:
 - `.github/workflows/release-macos.yml`
   - `v*` etiketi push edilince macOS zip build eder ve Release'e koyar.
+- `.github/workflows/release-windows.yml`
+  - `v*` etiketi push edilince Windows zip build eder ve Release'e koyar.
 - `.github/workflows/static.yml`
   - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
 
@@ -128,12 +157,14 @@ git push origin v1.0.0
 
 ## Kullanım
 
-1. Mikrofon/Cikis Device ID kutularini bos birakabilirsiniz (varsayilan cihaz).
+1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
 2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.
 3. `Müzik Dosyası Seç` ile backing track seçin (`.wav/.aiff/.flac`).
-4. Gain/Boost/Bass/Treble/Distortion ayarlarını yapın.
-5. `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
-6. Kayıt bitince dosyalar Masaüstüne yazılır:
+4. `Kazanç / Güçlendirme / Bas / Tiz / Distorsiyon` ayarlarını yapın.
+5. `Arka Plan Seviye / Vokal Seviye / Gürültü Azaltma / Hız / Çıkış Kazancı` ayarlarını yapın.
+6. `Kayıt Sınırı (1 veya 2 saat)` seçin.
+7. `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
+8. Kayıt bitince dosyalar Masaüstüne yazılır:
    - `dosyaadi.mp3` (mix)
    - `dosyaadi_vocal.wav` (işlenmiş vokal/gitar kanalınız)
    - `dosyaadi_device_test.wav` (test kaydı)
@@ -143,3 +174,4 @@ git push origin v1.0.0
 - Kayıt sırasında kulaklık kullanmanız geri besleme (feedback) riskini azaltır.
 - `ffmpeg bulunamadı` hatası alırsanız `brew install ffmpeg` komutunu tekrar çalıştırın.
 - Windows'ta da çalışır; `ffmpeg` ve Python kurulumu gerekir.
+- Önemli: Program soru sorarken terminale `git ...` gibi komutlar yapıştırmayın. Önce `Ctrl + C` ile programdan çıkın, sonra komutları çalıştırın.

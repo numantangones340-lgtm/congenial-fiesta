@@ -6,7 +6,7 @@ import tempfile
 import threading
 import time
 from pathlib import Path
-from tkinter import Tk, Label, Button, Scale, HORIZONTAL, filedialog, StringVar, Entry, TclError
+from tkinter import Tk, Label, Button, Scale, HORIZONTAL, filedialog, StringVar, Entry, OptionMenu, TclError
 from typing import Optional, Tuple
 
 import numpy as np
@@ -82,6 +82,48 @@ def resample_linear(audio: np.ndarray, src_sr: int, dst_sr: int) -> np.ndarray:
     return np.stack(channels, axis=1).astype(np.float32)
 
 
+def change_speed(audio: np.ndarray, speed_ratio: float) -> np.ndarray:
+    if speed_ratio <= 0 or abs(speed_ratio - 1.0) < 1e-6:
+        return audio
+
+    src_len = len(audio)
+    if src_len <= 1:
+        return audio
+
+    dst_len = max(1, int(src_len / speed_ratio))
+    src_x = np.linspace(0.0, 1.0, src_len)
+    dst_x = np.linspace(0.0, 1.0, dst_len)
+
+    if audio.ndim == 1:
+        return np.interp(dst_x, src_x, audio).astype(np.float32)
+
+    channels = [np.interp(dst_x, src_x, audio[:, ch]) for ch in range(audio.shape[1])]
+    return np.stack(channels, axis=1).astype(np.float32)
+
+
+def apply_output_gain(audio: np.ndarray, gain_db: float) -> np.ndarray:
+    if abs(gain_db) < 1e-6:
+        return audio
+    return np.clip(audio * db_to_linear(gain_db), -1.0, 1.0).astype(np.float32)
+
+
+def reduce_background_noise(signal: np.ndarray, sample_rate: int, strength: float) -> np.ndarray:
+    if strength <= 0 or len(signal) == 0:
+        return signal
+
+    # İlk 0.5 saniyeyi referans alıp basit bir gürültü kapısı uygular.
+    ref_frames = max(1, int(sample_rate * 0.5))
+    noise_ref = signal[:ref_frames]
+    noise_floor = float(np.median(np.abs(noise_ref)))
+    threshold = noise_floor * (1.0 + strength * 4.0)
+    attenuation = max(0.05, 1.0 - strength * 0.9)
+
+    out = signal.copy()
+    mask = np.abs(out) < threshold
+    out[mask] *= attenuation
+    return out.astype(np.float32)
+
+
 def configure_tcl_tk_environment() -> None:
     if os.environ.get("TCL_LIBRARY") and os.environ.get("TK_LIBRARY"):
         return
@@ -120,8 +162,8 @@ def configure_tcl_tk_environment() -> None:
 class GuitarAmpRecorderApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
-        self.root.title("Guitar Amp Recorder")
-        self.root.geometry("560x660")
+        self.root.title("Gitar Amfi Kaydedici")
+        self.root.geometry("560x720")
 
         self.backing_file: Optional[Path] = None
 
@@ -129,20 +171,21 @@ class GuitarAmpRecorderApp:
         self.output_name = StringVar(value=f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}")
         self.input_device_id = StringVar(value="")
         self.output_device_id = StringVar(value="")
+        self.record_limit_hours = StringVar(value="1")
 
-        Label(root, text="Mikrofon Device ID (bos = varsayilan):").pack(anchor="w", padx=12, pady=(12, 2))
+        Label(root, text="Mikrofon Aygıt Kimliği (boş = varsayılan):").pack(anchor="w", padx=12, pady=(12, 2))
         Entry(root, textvariable=self.input_device_id, width=20).pack(anchor="w", padx=12)
 
-        Label(root, text="Cikis Device ID (bos = varsayilan):").pack(anchor="w", padx=12, pady=(8, 2))
+        Label(root, text="Çıkış Aygıt Kimliği (boş = varsayılan):").pack(anchor="w", padx=12, pady=(8, 2))
         Entry(root, textvariable=self.output_device_id, width=20).pack(anchor="w", padx=12)
 
         Label(
             root,
-            text="Not: Cihaz ID bilmiyorsaniz iki alanı da bos birakin (en guvenli yol).",
+            text="Not: Aygıt kimliği bilmiyorsanız iki alanı da boş bırakın (en güvenli yol).",
             fg="#2c3e50",
         ).pack(anchor="w", padx=12, pady=(4, 8))
 
-        Label(root, text="Backing Track:").pack(anchor="w", padx=12, pady=(10, 2))
+        Label(root, text="Arka Plan Müzik:").pack(anchor="w", padx=12, pady=(10, 2))
         self.backing_label = Label(root, text="Dosya seçilmedi", fg="gray")
         self.backing_label.pack(anchor="w", padx=12)
 
@@ -151,11 +194,19 @@ class GuitarAmpRecorderApp:
         Label(root, text="Çıkış Dosya Adı (MP3):").pack(anchor="w", padx=12, pady=(8, 2))
         Entry(root, textvariable=self.output_name, width=48).pack(anchor="w", padx=12)
 
-        self.gain = self.make_slider("Gain (dB)", -12, 24, 6)
-        self.boost = self.make_slider("Boost (dB)", 0, 18, 6)
-        self.bass = self.make_slider("Bass (dB)", -12, 12, 3)
-        self.treble = self.make_slider("Treble (dB)", -12, 12, 2)
-        self.distortion = self.make_slider("Distortion (%)", 0, 100, 25)
+        self.gain = self.make_slider("Kazanç (dB)", -12, 24, 6)
+        self.boost = self.make_slider("Güçlendirme (dB)", 0, 18, 6)
+        self.bass = self.make_slider("Bas (dB)", -12, 12, 3)
+        self.treble = self.make_slider("Tiz (dB)", -12, 12, 2)
+        self.distortion = self.make_slider("Distorsiyon (%)", 0, 100, 25)
+        self.backing_level = self.make_slider("Arka Plan Seviye (%)", 0, 200, 100)
+        self.vocal_level = self.make_slider("Vokal Seviye (%)", 0, 200, 85)
+        self.noise_reduction = self.make_slider("Gürültü Azaltma (%)", 0, 100, 25)
+        self.speed_ratio = self.make_slider("Hız (%)", 50, 150, 100)
+        self.output_gain = self.make_slider("Çıkış Kazancı (dB)", -12, 12, 0)
+
+        Label(root, text="Kayıt Sınırı (saat):").pack(anchor="w", padx=12, pady=(2, 0))
+        OptionMenu(root, self.record_limit_hours, "1", "2").pack(anchor="w", padx=12, pady=(0, 8))
 
         Button(root, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white").pack(
             fill="x", padx=12, pady=(10, 6)
@@ -192,7 +243,7 @@ class GuitarAmpRecorderApp:
 
     def select_backing(self) -> None:
         file_path = filedialog.askopenfilename(
-            title="Backing track seç",
+            title="Arka plan müzik seç",
             filetypes=[
                 ("Audio Files", "*.wav *.aiff *.aif *.flac"),
                 ("WAV", "*.wav"),
@@ -216,7 +267,7 @@ class GuitarAmpRecorderApp:
         try:
             input_idx, output_idx = self.selected_device_pair()
         except ValueError:
-            self.set_status("Device ID alanlarına sadece sayı girin (veya boş bırakın).")
+            self.set_status("Aygıt kimliği alanlarına sadece sayı girin (veya boş bırakın).")
             return
         settings = self.current_amp_settings()
         base_name = self.output_name.get().strip() or "guitar_mix"
@@ -269,6 +320,10 @@ class GuitarAmpRecorderApp:
                 treble_db=treble_db,
                 distortion=distortion,
             )
+            noise_strength = float(self.noise_reduction.get()) / 100.0
+            output_gain_db = float(self.output_gain.get())
+            processed = reduce_background_noise(processed, sr, noise_strength)
+            processed = apply_output_gain(processed, output_gain_db)
 
             preview = np.stack([processed, processed], axis=1)
             self.set_status("Test çalınıyor...")
@@ -286,12 +341,12 @@ class GuitarAmpRecorderApp:
 
     def start_recording_thread(self) -> None:
         if self.backing_file is None:
-            self.set_status("Önce bir backing track seçin.")
+            self.set_status("Önce bir arka plan müzik dosyası seçin.")
             return
         try:
             input_idx, output_idx = self.selected_device_pair()
         except ValueError:
-            self.set_status("Device ID alanlarına sadece sayı girin (veya boş bırakın).")
+            self.set_status("Aygıt kimliği alanlarına sadece sayı girin (veya boş bırakın).")
             return
         settings = self.current_amp_settings()
         base_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
@@ -311,7 +366,7 @@ class GuitarAmpRecorderApp:
         base_name: str,
     ) -> None:
         try:
-            self.set_status("Backing yükleniyor...")
+            self.set_status("Arka plan müzik yükleniyor...")
             backing, sr = sf.read(backing_file, dtype="float32")
             backing = ensure_stereo(backing)
 
@@ -321,9 +376,15 @@ class GuitarAmpRecorderApp:
                 backing = resample_linear(backing, sr, target_sr)
                 sr = target_sr
 
+            limit_seconds = 7200 if self.record_limit_hours.get() == "2" else 3600
+            max_frames = sr * limit_seconds
+            if len(backing) > max_frames:
+                self.set_status(f"Kayıt sınırı {limit_seconds // 3600} saat olarak uygulandı, dosya kırpıldı.")
+                backing = backing[:max_frames]
+
             duration_sec = len(backing) / sr
             self.set_status(
-                f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir. Backing çalarken mikrofona söyleyin/çalın..."
+                f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir. Arka plan müzik çalarken mikrofona söyleyin/çalın..."
             )
 
             recorded = sd.playrec(backing, samplerate=sr, channels=1, dtype="float32", device=(input_idx, output_idx))
@@ -341,10 +402,28 @@ class GuitarAmpRecorderApp:
                 treble_db=treble_db,
                 distortion=distortion,
             )
+            noise_strength = float(self.noise_reduction.get()) / 100.0
+            speed_ratio = float(self.speed_ratio.get()) / 100.0
+            output_gain_db = float(self.output_gain.get())
+            backing_level = float(self.backing_level.get()) / 100.0
+            vocal_level = float(self.vocal_level.get()) / 100.0
 
-            mix = backing.copy()
-            mix[:, 0] += processed_voice * 0.85
-            mix[:, 1] += processed_voice * 0.85
+            processed_voice = reduce_background_noise(processed_voice, sr, noise_strength)
+
+            if abs(speed_ratio - 1.0) > 1e-6:
+                self.set_status(f"Hız ayarı uygulanıyor (%{self.speed_ratio.get()})...")
+                backing = change_speed(backing, speed_ratio)
+                processed_voice = change_speed(processed_voice, speed_ratio)
+
+            min_len = min(len(backing), len(processed_voice))
+            backing = backing[:min_len]
+            processed_voice = processed_voice[:min_len]
+
+            mix = backing.copy() * backing_level
+            mix[:, 0] += processed_voice * vocal_level
+            mix[:, 1] += processed_voice * vocal_level
+            mix = apply_output_gain(mix, output_gain_db)
+            processed_voice = apply_output_gain(processed_voice, output_gain_db)
 
             peak = np.max(np.abs(mix))
             if peak > 0.98:
@@ -388,7 +467,7 @@ class GuitarAmpRecorderApp:
                     tmp_wav_path.unlink()
 
             self.set_status(
-                f"Tamamlandı. {final_note} | Vocal WAV: {vocal_wav_path}"
+                f"Tamamlandı. {final_note} | İşlenmiş WAV: {vocal_wav_path}"
             )
         except Exception as exc:
             self.set_status(f"Hata: {exc}")
