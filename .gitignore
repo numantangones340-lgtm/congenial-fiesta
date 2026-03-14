@@ -1,8 +1,11 @@
 .pycache/
 __pycache__/
 .pyinstaller/
+.pyinstaller-cache/
 .venv/
 build/
 dist/
+*.spec
+cleanup_*/
 *.swp
 .DS_Store

@@ -1,12 +1,12 @@
 import os
+import re
 import shutil
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 from pathlib import Path
-from tkinter import Tk, Label, Button, Scale, HORIZONTAL, filedialog, StringVar, Entry, OptionMenu, TclError
+from tkinter import Tk, Label, Button, Scale, HORIZONTAL, filedialog, StringVar, Entry, OptionMenu, TclError, Canvas, Frame, Scrollbar, messagebox
 from typing import Optional, Tuple
 
 import numpy as np
@@ -159,40 +159,156 @@ def configure_tcl_tk_environment() -> None:
                 return
 
 
+def detect_ffmpeg() -> Optional[str]:
+    candidates = [
+        shutil.which("ffmpeg"),
+        "/opt/homebrew/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+    ]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        path = Path(candidate)
+        if path.exists() and os.access(path, os.X_OK):
+            return str(path)
+    return None
+
+
+PRESETS = {
+    "Clean (Temiz)": {
+        "gain": 3,
+        "boost": 2,
+        "bass": 2,
+        "treble": 3,
+        "distortion": 6,
+        "backing_level": 100,
+        "vocal_level": 90,
+        "noise_reduction": 22,
+        "speed_ratio": 100,
+        "output_gain": -1,
+        "record_limit_hours": "1",
+    },
+    "Crunch (Ritmik)": {
+        "gain": 7,
+        "boost": 5,
+        "bass": 4,
+        "treble": 4,
+        "distortion": 30,
+        "backing_level": 92,
+        "vocal_level": 98,
+        "noise_reduction": 26,
+        "speed_ratio": 100,
+        "output_gain": -2,
+        "record_limit_hours": "1",
+    },
+    "Lead (Solo)": {
+        "gain": 9,
+        "boost": 7,
+        "bass": 5,
+        "treble": 6,
+        "distortion": 48,
+        "backing_level": 82,
+        "vocal_level": 108,
+        "noise_reduction": 30,
+        "speed_ratio": 100,
+        "output_gain": -2,
+        "record_limit_hours": "1",
+    },
+}
+
+
+def profile_slug(profile_label: str) -> str:
+    label = profile_label.split("(", 1)[0].strip().lower()
+    tr_map = str.maketrans("çğıöşü", "cgiosu")
+    label = label.translate(tr_map)
+    label = re.sub(r"[^a-z0-9]+", "_", label).strip("_")
+    return label or "preset"
+
+
 class GuitarAmpRecorderApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
         self.root.title("Gitar Amfi Kaydedici")
-        self.root.geometry("560x720")
+        self.root.geometry("640x760")
+        self.root.minsize(560, 620)
+
+        outer = Frame(root)
+        outer.pack(fill="both", expand=True)
+
+        self.canvas = Canvas(outer, highlightthickness=0)
+        self.scrollbar = Scrollbar(outer, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.scrollbar.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.content = Frame(self.canvas)
+        self.canvas_window = self.canvas.create_window((0, 0), window=self.content, anchor="nw")
+        self.content.bind("<Configure>", self._on_content_configure)
+        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel)
 
         self.backing_file: Optional[Path] = None
 
         self.status_text = StringVar(value="Hazır")
-        self.output_name = StringVar(value=f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}")
+        self.output_name = StringVar(value="")
         self.input_device_id = StringVar(value="")
         self.output_device_id = StringVar(value="")
         self.record_limit_hours = StringVar(value="1")
 
-        Label(root, text="Mikrofon Aygıt Kimliği (boş = varsayılan):").pack(anchor="w", padx=12, pady=(12, 2))
-        Entry(root, textvariable=self.input_device_id, width=20).pack(anchor="w", padx=12)
+        Label(self.content, text="Mikrofon Aygıt Kimliği (boş = varsayılan):").pack(anchor="w", padx=12, pady=(12, 2))
+        Entry(self.content, textvariable=self.input_device_id, width=20).pack(anchor="w", padx=12)
 
-        Label(root, text="Çıkış Aygıt Kimliği (boş = varsayılan):").pack(anchor="w", padx=12, pady=(8, 2))
-        Entry(root, textvariable=self.output_device_id, width=20).pack(anchor="w", padx=12)
+        Label(self.content, text="Çıkış Aygıt Kimliği (boş = varsayılan):").pack(anchor="w", padx=12, pady=(8, 2))
+        Entry(self.content, textvariable=self.output_device_id, width=20).pack(anchor="w", padx=12)
 
         Label(
-            root,
+            self.content,
             text="Not: Aygıt kimliği bilmiyorsanız iki alanı da boş bırakın (en güvenli yol).",
             fg="#2c3e50",
         ).pack(anchor="w", padx=12, pady=(4, 8))
 
-        Label(root, text="Arka Plan Müzik:").pack(anchor="w", padx=12, pady=(10, 2))
-        self.backing_label = Label(root, text="Dosya seçilmedi", fg="gray")
+        Label(self.content, text="Arka Plan Müzik:").pack(anchor="w", padx=12, pady=(10, 2))
+        self.backing_label = Label(self.content, text="Dosya seçilmedi", fg="gray")
         self.backing_label.pack(anchor="w", padx=12)
 
-        Button(root, text="Müzik Dosyası Seç", command=self.select_backing).pack(anchor="w", padx=12, pady=8)
+        Button(self.content, text="Müzik Dosyası Seç", command=self.select_backing).pack(anchor="w", padx=12, pady=8)
 
-        Label(root, text="Çıkış Dosya Adı (MP3):").pack(anchor="w", padx=12, pady=(8, 2))
-        Entry(root, textvariable=self.output_name, width=48).pack(anchor="w", padx=12)
+        Label(self.content, text="Çıkış Dosya Adı (MP3):").pack(anchor="w", padx=12, pady=(8, 2))
+        Entry(self.content, textvariable=self.output_name, width=48).pack(anchor="w", padx=12)
+
+        self.preset_name = StringVar(value="Clean (Temiz)")
+        Label(self.content, text="Hazır Profil:").pack(anchor="w", padx=12, pady=(8, 2))
+        OptionMenu(self.content, self.preset_name, *PRESETS.keys()).pack(anchor="w", padx=12, pady=(0, 4))
+        Button(
+            self.content,
+            text="Profili Uygula",
+            command=self.apply_selected_preset,
+            bg="#fff3e8",
+            fg="#111111",
+            activeforeground="#111111",
+            highlightthickness=1,
+        ).pack(fill="x", padx=12, pady=(0, 8))
+        Button(
+            self.content,
+            text="Dosya Adını Otomatik Oluştur",
+            command=self.refresh_output_name,
+            bg="#f4f4f4",
+            fg="#111111",
+            activeforeground="#111111",
+            highlightthickness=1,
+        ).pack(fill="x", padx=12, pady=(0, 8))
+        Button(
+            self.content,
+            text="Yardım (Hızlı Kullanım)",
+            command=self.show_help,
+            bg="#f3f8ff",
+            fg="#111111",
+            activeforeground="#111111",
+            highlightthickness=1,
+        ).pack(fill="x", padx=12, pady=(0, 8))
 
         self.gain = self.make_slider("Kazanç (dB)", -12, 24, 6)
         self.boost = self.make_slider("Güçlendirme (dB)", 0, 18, 6)
@@ -205,24 +321,118 @@ class GuitarAmpRecorderApp:
         self.speed_ratio = self.make_slider("Hız (%)", 50, 150, 100)
         self.output_gain = self.make_slider("Çıkış Kazancı (dB)", -12, 12, 0)
 
-        Label(root, text="Kayıt Sınırı (saat):").pack(anchor="w", padx=12, pady=(2, 0))
-        OptionMenu(root, self.record_limit_hours, "1", "2").pack(anchor="w", padx=12, pady=(0, 8))
+        Label(self.content, text="Kayıt Sınırı (saat):").pack(anchor="w", padx=12, pady=(2, 0))
+        OptionMenu(self.content, self.record_limit_hours, "1", "2").pack(anchor="w", padx=12, pady=(0, 8))
 
-        Button(root, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white").pack(
+        Button(
+            self.content,
+            text="Hızlı Kayıt (Test + Kayıt)",
+            command=self.start_quick_record_thread,
+            bg="#fff1dc",
+            fg="#111111",
+            activeforeground="#111111",
+            highlightthickness=1,
+        ).pack(
+            fill="x", padx=12, pady=(8, 4)
+        )
+        Button(
+            self.content,
+            text="Mikrofon/Ses Kartı Testi (5 sn)",
+            command=self.start_test_thread,
+            bg="#eaf2ff",
+            fg="#111111",
+            activeforeground="#111111",
+            highlightthickness=1,
+        ).pack(
             fill="x", padx=12, pady=(10, 6)
         )
-        Button(root, text="Kaydı Başlat ve MP3 Çıkar", command=self.start_recording_thread, bg="#27ae60", fg="white").pack(
+        Button(
+            self.content,
+            text="Kaydı Başlat ve MP3 Çıkar",
+            command=self.start_recording_thread,
+            bg="#e9f9ef",
+            fg="#111111",
+            activeforeground="#111111",
+            highlightthickness=1,
+        ).pack(
             fill="x", padx=12, pady=12
         )
 
-        Label(root, textvariable=self.status_text, fg="#2c3e50", wraplength=490, justify="left").pack(anchor="w", padx=12, pady=(0, 10))
+        Label(self.content, textvariable=self.status_text, fg="#2c3e50", wraplength=560, justify="left").pack(
+            anchor="w", padx=12, pady=(0, 16)
+        )
+        self.apply_selected_preset()
 
     def make_slider(self, label: str, min_v: int, max_v: int, default: int) -> Scale:
-        Label(self.root, text=label).pack(anchor="w", padx=12)
-        slider = Scale(self.root, from_=min_v, to=max_v, orient=HORIZONTAL, length=490, resolution=1)
+        Label(self.content, text=label).pack(anchor="w", padx=12)
+        slider = Scale(self.content, from_=min_v, to=max_v, orient=HORIZONTAL, length=540, resolution=1)
         slider.set(default)
         slider.pack(anchor="w", padx=12)
         return slider
+
+    def _on_content_configure(self, _event) -> None:
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _on_canvas_configure(self, event) -> None:
+        self.canvas.itemconfigure(self.canvas_window, width=event.width)
+
+    def _on_mousewheel(self, event) -> None:
+        if event.num == 5:
+            self.canvas.yview_scroll(1, "units")
+            return
+        if event.num == 4:
+            self.canvas.yview_scroll(-1, "units")
+            return
+        if event.delta > 0:
+            self.canvas.yview_scroll(-1, "units")
+        elif event.delta < 0:
+            self.canvas.yview_scroll(1, "units")
+
+    def apply_selected_preset(self) -> None:
+        preset_label = self.preset_name.get()
+        preset = PRESETS.get(preset_label)
+        if not preset:
+            self.set_status(f"Profil bulunamadı: {preset_label}")
+            return
+
+        self.gain.set(preset["gain"])
+        self.boost.set(preset["boost"])
+        self.bass.set(preset["bass"])
+        self.treble.set(preset["treble"])
+        self.distortion.set(preset["distortion"])
+        self.backing_level.set(preset["backing_level"])
+        self.vocal_level.set(preset["vocal_level"])
+        self.noise_reduction.set(preset["noise_reduction"])
+        self.speed_ratio.set(preset["speed_ratio"])
+        self.output_gain.set(preset["output_gain"])
+        self.record_limit_hours.set(preset["record_limit_hours"])
+        self.refresh_output_name()
+        self.set_status(f"Profil uygulandı: {preset_label}")
+
+    def refresh_output_name(self) -> None:
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        slug = profile_slug(self.preset_name.get())
+        self.output_name.set(f"guitar_mix_{ts}_{slug}")
+
+    def show_help(self) -> None:
+        help_text = (
+            "Hızlı Kullanım Kartı\n\n"
+            "1) Müzik Dosyası Seç\n"
+            "2) Hazır Profil seç + Profili Uygula\n"
+            "3) Dosya Adını Otomatik Oluştur\n"
+            "4) Hızlı Kayıt (Test + Kayıt)\n\n"
+            "Hazır Profiller:\n"
+            "- Clean (Temiz)\n"
+            "- Crunch (Ritmik)\n"
+            "- Lead (Solo)\n\n"
+            "Çıktılar (Masaüstü):\n"
+            "- guitar_mix_... .mp3\n"
+            "- guitar_mix_..._mix.wav\n"
+            "- guitar_mix_..._vocal.wav\n"
+            "- guitar_mix_..._device_test.wav\n\n"
+            "Not: MP3 oluşmazsa kayıt yine tamamlanır ve WAV dosyaları garanti yazılır."
+        )
+        messagebox.showinfo("Yardım - Gitar Amfi Kaydedici", help_text)
 
     def set_status(self, text: str) -> None:
         def update() -> None:
@@ -278,6 +488,24 @@ class GuitarAmpRecorderApp:
         )
         worker.start()
 
+    def start_quick_record_thread(self) -> None:
+        if self.backing_file is None:
+            self.set_status("Hızlı kayıt için önce bir arka plan müzik dosyası seçin.")
+            return
+        try:
+            input_idx, output_idx = self.selected_device_pair()
+        except ValueError:
+            self.set_status("Aygıt kimliği alanlarına sadece sayı girin (veya boş bırakın).")
+            return
+        settings = self.current_amp_settings()
+        base_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
+        worker = threading.Thread(
+            target=self.run_quick_record,
+            args=(self.backing_file, input_idx, output_idx, settings, base_name),
+            daemon=True,
+        )
+        worker.start()
+
     def current_amp_settings(self) -> Tuple[float, float, float, float, float]:
         return (
             float(self.gain.get()),
@@ -293,7 +521,7 @@ class GuitarAmpRecorderApp:
         output_idx: Optional[int],
         settings: Tuple[float, float, float, float, float],
         base_name: str,
-    ) -> None:
+    ) -> bool:
         try:
             sr = 44100
             seconds = 5
@@ -336,8 +564,26 @@ class GuitarAmpRecorderApp:
 
             peak = float(np.max(np.abs(voice))) if len(voice) else 0.0
             self.set_status(f"Test tamam. Peak={peak:.3f} | Dosya: {test_path}")
+            return True
         except Exception as exc:
             self.set_status(f"Test hatası: {exc}")
+            return False
+
+    def run_quick_record(
+        self,
+        backing_file: Path,
+        input_idx: Optional[int],
+        output_idx: Optional[int],
+        settings: Tuple[float, float, float, float, float],
+        base_name: str,
+    ) -> None:
+        self.set_status("Hızlı kayıt: 5 sn test başlıyor...")
+        test_ok = self.run_device_test(input_idx, output_idx, settings, base_name)
+        if not test_ok:
+            self.set_status("Hızlı kayıt durdu: test adımı başarısız.")
+            return
+        self.set_status("Hızlı kayıt: test tamam, ana kayıt başlıyor...")
+        self.record_and_export(backing_file, input_idx, output_idx, settings, base_name)
 
     def start_recording_thread(self) -> None:
         if self.backing_file is None:
@@ -436,35 +682,34 @@ class GuitarAmpRecorderApp:
             vocal_wav_path = desktop / f"{base_name}_vocal.wav"
 
             self.set_status("Dosyalar hazırlanıyor...")
-            ffmpeg_bin = shutil.which("ffmpeg")
+            ffmpeg_bin = detect_ffmpeg()
 
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_wav:
-                tmp_wav_path = Path(tmp_wav.name)
+            # WAV dosyalarini her zaman yaz. MP3 basarisiz olursa kullanici ciktiyi kaybetmesin.
+            sf.write(mix_wav_path, mix, sr)
+            sf.write(vocal_wav_path, processed_voice, sr)
 
-            try:
-                sf.write(tmp_wav_path, mix, sr)
-                sf.write(vocal_wav_path, processed_voice, sr)
-
-                if ffmpeg_bin:
-                    cmd = [
-                        ffmpeg_bin,
-                        "-y",
-                        "-i",
-                        str(tmp_wav_path),
-                        "-codec:a",
-                        "libmp3lame",
-                        "-qscale:a",
-                        "2",
-                        str(mp3_path),
-                    ]
+            if ffmpeg_bin:
+                cmd = [
+                    ffmpeg_bin,
+                    "-y",
+                    "-i",
+                    str(mix_wav_path),
+                    "-codec:a",
+                    "libmp3lame",
+                    "-qscale:a",
+                    "2",
+                    str(mp3_path),
+                ]
+                try:
                     subprocess.run(cmd, check=True, capture_output=True)
-                    final_note = f"MP3: {mp3_path}"
-                else:
-                    sf.write(mix_wav_path, mix, sr)
-                    final_note = f"ffmpeg yok, WAV mix kaydedildi: {mix_wav_path}"
-            finally:
-                if tmp_wav_path.exists():
-                    tmp_wav_path.unlink()
+                    if mp3_path.exists() and mp3_path.stat().st_size > 0:
+                        final_note = f"MP3: {mp3_path}"
+                    else:
+                        final_note = f"MP3 oluşmadı, WAV mix kaydedildi: {mix_wav_path}"
+                except Exception as exc:
+                    final_note = f"MP3 dönüştürme hatası ({exc}), WAV mix kaydedildi: {mix_wav_path}"
+            else:
+                final_note = f"ffmpeg yok, WAV mix kaydedildi: {mix_wav_path}"
 
             self.set_status(
                 f"Tamamlandı. {final_note} | İşlenmiş WAV: {vocal_wav_path}"
