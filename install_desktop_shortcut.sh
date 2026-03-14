@@ -2,15 +2,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SOURCE_FILE="${SCRIPT_DIR}/CALISTIR.command"
 TARGET_FILE="${HOME}/Desktop/GuitarAmpRecorder.command"
-
-if [ ! -f "${SOURCE_FILE}" ]; then
-  echo "HATA: CALISTIR.command bulunamadi: ${SOURCE_FILE}"
-  exit 1
+cat > "${TARGET_FILE}" <<EOF
+#!/bin/bash
+cd "${SCRIPT_DIR}"
+APP_BIN="\${HOME}/Applications/GuitarAmpRecorder.app/Contents/MacOS/GuitarAmpRecorder"
+if [ -x "\${APP_BIN}" ]; then
+  exec "\${APP_BIN}"
 fi
-
-cp "${SOURCE_FILE}" "${TARGET_FILE}"
+exec "./CALISTIR.command" auto
+EOF
 chmod +x "${TARGET_FILE}"
 
 # macOS bazen indirilen dosyalari karantinaya alabilir; varsa temizle.

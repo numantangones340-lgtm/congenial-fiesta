@@ -1,7 +1,7 @@
 HIZLI BASLANGIC
 
 1) Finder acin.
-2) /Users/numantangones/Documents/congenial-fiesta klasorune gidin.
+2) /Users/numantangones/Documents/GuitarAmpRecorder klasorune gidin.
 3) CALISTIR.command dosyasina cift tiklayin.
 4) Baslatici otomatik modda acilir:
    - GUI uygunsa pencere surumu acilir
@@ -12,5 +12,5 @@ HIZLI BASLANGIC
 
 Notlar
 - Backing secmeden de mic-only kayit yapabilirsiniz.
-- Cihaz ID bilmiyorsaniz bos birakin veya uygulamadaki "Cihazlari Listele" butonunu kullanin.
+- Cihaz ID bilmiyorsaniz bos birakin.
 - ffmpeg yoksa MP3 atlanir; Mix WAV ve Vocal WAV yine Masaustu'ne kaydedilir.

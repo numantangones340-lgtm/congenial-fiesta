@@ -10,6 +10,26 @@ Bu uygulama şunları yapar:
 - Tek tık 5 sn cihaz/kayıt testi
 - Sonucu otomatik MP3 olarak Masaüstüne çıkarır
 
+## Hızlı Başlangıç (1 Dakika)
+
+### Seçenek A: İndir ve Kullan (önerilen)
+
+1. En güncel sürümü indir:
+   - https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
+2. İşletim sistemine göre zip dosyasını aç:
+   - macOS: `GuitarAmpRecorder-macOS.zip`
+   - Windows: `GuitarAmpRecorder-Windows.zip`
+3. Uygulamayı çalıştır:
+   - macOS: `GuitarAmpRecorder.app`
+   - Windows: `GuitarAmpRecorder.exe` (veya paket içindeki çalıştırıcı)
+
+### Seçenek B: Kaynak Koddan Çalıştır
+
+```bash
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+./CALISTIR.command
+```
+
 ## Dil Desteği
 
 - Arayüz dili: Türkçe
@@ -138,6 +158,14 @@ Bu komut:
 - GitHub Pages (indirme yonlendirme sayfasi):
   - https://numantangones340-lgtm.github.io/congenial-fiesta/
 
+## Hızlı Sorun Giderme
+
+- Uygulama açılmazsa:
+  - macOS: Sistem Ayarları > Gizlilik ve Güvenlik > yine de aç.
+  - Windows: SmartScreen uyarısında “More info > Run anyway”.
+- MP3 oluşmuyorsa `ffmpeg` kurulu değildir; WAV dosyaları yine üretilir.
+- Terminalde soru sorarken `git ...` komutlarını yapıştırmayın; önce `Ctrl + C` ile uygulamadan çıkın.
+
 ## Yayinlama (Diger Kullanicilar Icin)
 
 Bu repoda otomatik yayin akisi eklidir:
@@ -158,16 +186,33 @@ git push origin v1.0.0
 ## Kullanım
 
 1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
-2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.
-3. `Müzik Dosyası Seç` ile backing track seçin (`.wav/.aiff/.flac`).
+2. `Müzik Dosyası Seç` ile backing track seçin (`.wav/.aiff/.aif/.flac`).
+3. İsterseniz `Çıkış Dosya Adı (MP3)` alanını düzenleyin.
 4. `Kazanç / Güçlendirme / Bas / Tiz / Distorsiyon` ayarlarını yapın.
 5. `Arka Plan Seviye / Vokal Seviye / Gürültü Azaltma / Hız / Çıkış Kazancı` ayarlarını yapın.
 6. `Kayıt Sınırı (1 veya 2 saat)` seçin.
-7. `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
-8. Kayıt bitince dosyalar Masaüstüne yazılır:
-   - `dosyaadi.mp3` (mix)
+7. İsterseniz `Mikrofon/Ses Kartı Testi (5 sn)` ile önce test yapın.
+8. İsterseniz tek adım akışı için `Hızlı Kayıt (Test + Kayıt)` butonuna basın.
+9. Manuel akış için `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
+10. `Hazır Profil` menüsünden `Clean / Crunch / Lead` seçip `Profili Uygula` ile tek tık ayar yapabilirsiniz.
+11. `Dosya Adını Otomatik Oluştur` butonu dosya adını profil + zaman damgasıyla üretir.
+12. Kayıt bitince dosyalar Masaüstüne yazılır:
+   - `dosyaadi.mp3` (mix, mümkünse otomatik)
+   - `dosyaadi_mix.wav` (garanti mix WAV)
    - `dosyaadi_vocal.wav` (işlenmiş vokal/gitar kanalınız)
    - `dosyaadi_device_test.wav` (test kaydı)
+
+## Hızlı Kullanım Kartı
+
+1. `Müzik Dosyası Seç`
+2. `Hazır Profil` seç (`Clean`, `Crunch`, `Lead`) + `Profili Uygula`
+3. `Dosya Adını Otomatik Oluştur`
+4. `Hızlı Kayıt (Test + Kayıt)`
+5. Çıktıları Masaüstünde kontrol et:
+   - `guitar_mix_YYYYMMDD_HHMMSS_profil.mp3`
+   - `guitar_mix_YYYYMMDD_HHMMSS_profil_mix.wav`
+   - `guitar_mix_YYYYMMDD_HHMMSS_profil_vocal.wav`
+   - `guitar_mix_YYYYMMDD_HHMMSS_profil_device_test.wav`
 
 ## Notlar
 

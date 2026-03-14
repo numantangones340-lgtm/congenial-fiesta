@@ -17,16 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Build zip package
         run: |
-          python3 -m venv .venv
-          source .venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller
-          pyinstaller --windowed --name GuitarAmpRecorder app.py
-          cd dist
-          zip -r GuitarAmpRecorder-macOS.zip GuitarAmpRecorder.app
+          ./build_macos_app.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
