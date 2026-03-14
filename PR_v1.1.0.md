@@ -1,56 +1,54 @@
-# PR: v1.1.0 - Pro Recorder UX ve Release Hazırlığı
+# PR: v1.1.0 - Pro Recorder UX, Stabilite ve Release Paketleme
 
-## Özet
-Bu PR, `v1.0.3` sonrası uygulamayı günlük kullanımda daha stabil ve hızlı hale getirir:
-- Arayüz erişilebilirliği düzeltildi (scroll + görünür butonlar)
-- Hazır ses profilleri eklendi (`Clean`, `Crunch`, `Lead`)
-- Tek adım akış eklendi: `Hızlı Kayıt (Test + Kayıt)`
-- Otomatik dosya adı üretimi eklendi (profil + zaman damgası)
-- Yardım penceresi eklendi (`Yardım (Hızlı Kullanım)`)
-- MP3 üretimi güçlendirildi (`ffmpeg` yol tespiti + WAV garanti)
-- macOS kurulum/paketleme akışı sadeleştirildi
+## Kapsam Özeti
+Bu PR, `v1.0.3` sonrası kullanım akışını sadeleştirir ve kayıt güvenilirliğini artırır.
 
-## Değişiklikler
-### Uygulama (`app.py`)
-- Dikey kaydırmalı arayüz eklendi; alt butonlar her ekran çözünürlüğünde erişilebilir.
-- Buton görünürlüğü düzeltildi.
-- Preset sistemi eklendi:
-  - `Clean (Temiz)`
-  - `Crunch (Ritmik)`
-  - `Lead (Solo)`
-- `Profili Uygula` ile tek tık slider yükleme.
-- `Dosya Adını Otomatik Oluştur` ile ad şablonu:
-  - `guitar_mix_YYYYMMDD_HHMMSS_profil`
-- `Yardım (Hızlı Kullanım)` popup penceresi.
-- `Hızlı Kayıt (Test + Kayıt)` akışı:
-  1. 5 sn test
-  2. Test başarılıysa otomatik ana kayıt
-- `ffmpeg` tespiti güçlendirildi:
-  - `PATH`, `/opt/homebrew/bin/ffmpeg`, `/usr/local/bin/ffmpeg`
-- MP3 başarısız olsa bile `*_mix.wav` ve `*_vocal.wav` garanti yazılır.
+- Alt kontrollerin görünür olmama sorunu çözüldü (kaydırılabilir arayüz).
+- 3 hazır profil eklendi: `Clean (Temiz)`, `Crunch (Ritmik)`, `Lead (Solo)`.
+- Tek adım çalışma akışı eklendi: `Hızlı Kayıt (Test + Kayıt)`.
+- Otomatik dosya adı üretimi eklendi (profil + zaman damgası).
+- MP3 üretimi güçlendirildi; başarısız durumda WAV çıktıları garanti edildi.
+- macOS build/kurulum/paketleme akışı release için netleştirildi.
 
-### Dokümantasyon (`README.md`)
-- Kullanım adımları güncellendi.
-- Hızlı kullanım kartı eklendi.
-- Yeni akış ve çıktı isimleri netleştirildi.
+## Teknik Değişiklikler
+### Uygulama katmanı (`app.py`)
+- Dikey scroll container eklendi; alt butonlar her çözünürlükte erişilebilir.
+- Karanlık tema görünürlük düzeltmeleri yapıldı (buton ve alt durum metni).
+- Preset seçimi + `Profili Uygula` ile tek tık parametre yükleme akışı eklendi.
+- `Dosya Adını Otomatik Oluştur` eklendi.
+  - Şablon: `guitar_mix_YYYYMMDD_HHMMSS_profil`
+- `Yardım (Hızlı Kullanım)` penceresi eklendi.
+- `Hızlı Kayıt (Test + Kayıt)` eklendi:
+  1. 5 sn cihaz testi
+  2. Başarılıysa ana kayıt akışı
+- `ffmpeg` bulunabilirliği güçlendirildi:
+  - `PATH`
+  - `/opt/homebrew/bin/ffmpeg`
+  - `/usr/local/bin/ffmpeg`
+- MP3 oluşturma başarısız olsa bile `*_mix.wav` + `*_vocal.wav` çıktıları korunur.
 
-### Kurulum/Paketleme
-- `build_macos_app.sh` eklendi/güncellendi.
-- `install_macos_professional.sh` eklendi (build + install + cleanup + launcher).
+### Dokümantasyon
+- README kullanım adımları güncellendi.
+- Hızlı kullanım akışı ve çıktı adlandırması netleştirildi.
+
+### Build / Packaging
+- `build_macos_app.sh` güncellendi.
+- `install_macos_professional.sh` eklendi/güncellendi.
 - `package_macos_release.sh` güncellendi.
 - `install_desktop_shortcut.sh` iyileştirildi.
-- `release-macos.yml` akışı release için hazırlandı.
-- `.gitignore` geçici/artifact dosyaları için genişletildi.
+- `release-macos.yml` release akışına göre netleştirildi.
+- `.gitignore` geçici build/artifact dosyalarını kapsayacak şekilde genişletildi.
 
-## Neden
-- Kullanıcı tarafında görünmeyen test/kayıt butonları ve MP3 üretim tutarsızlıkları vardı.
-- Kurulum ve günlük kayıt akışı çok adımlıydı.
-- Hedef: tek ekranda, tek tıkla daha güvenilir kayıt deneyimi.
+## Kullanıcı Etkisi
+- Uygulama ilk açılıştan kayda kadar daha az adımda kullanılabilir.
+- Alt butonların görünmemesi kaynaklı tıkanma giderildi.
+- MP3 üretiminde sorun yaşansa dahi kayıt çıktısı kaybolmaz.
+- Profil tabanlı kullanım ile hızlı ton geçişi mümkün.
 
-## Test Notları
-- Uygulama açılışı (macOS) doğrulandı.
-- Scroll ile alt buton görünürlüğü doğrulandı.
-- Profil seçimi ve otomatik adlandırma doğrulandı.
+## Test / Doğrulama
+- macOS üzerinde uygulama açılışı doğrulandı.
+- Scroll ile alt kontrollerin erişimi doğrulandı.
+- Profil uygulama ve otomatik adlandırma doğrulandı.
 - Hızlı kayıt akışı doğrulandı.
 - Masaüstü çıktıları doğrulandı:
   - `*.mp3`
@@ -58,6 +56,10 @@ Bu PR, `v1.0.3` sonrası uygulamayı günlük kullanımda daha stabil ve hızlı
   - `*_vocal.wav`
   - `*_device_test.wav`
 
+## Risk ve Geri Dönüş
+- Kırıcı değişiklik yok.
+- Rollback: `v1.0.3` tag’ine dönüş + yeni build artifact’larının temizlenmesi.
+
 ## Sürümleme
-- Tag: `v1.1.0`
 - Branch: `codex/release-final`
+- Tag: `v1.1.0`

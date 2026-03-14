@@ -1,40 +1,40 @@
-# v1.1.0 Release Notes
+# GuitarAmpRecorder v1.1.0
 
-## Yeni
-- Hazır profil sistemi eklendi:
-  - `Clean (Temiz)`
-  - `Crunch (Ritmik)`
-  - `Lead (Solo)`
-- `Hızlı Kayıt (Test + Kayıt)` eklendi.
-- `Dosya Adını Otomatik Oluştur` eklendi.
-- `Yardım (Hızlı Kullanım)` penceresi eklendi.
+## Öne Çıkanlar
+- 3 hazır ton profili: `Clean (Temiz)`, `Crunch (Ritmik)`, `Lead (Solo)`.
+- Tek adım akış: `Hızlı Kayıt (Test + Kayıt)`.
+- `Dosya Adını Otomatik Oluştur` ile düzenli çıktı isimlendirme.
+- `Yardım (Hızlı Kullanım)` ile uygulama içi kısa rehber.
 
-## İyileştirmeler
-- Arayüz kaydırma desteği eklendi; alt butonlar her pencerede erişilebilir.
-- Buton görünürlüğü düzeltildi.
-- Preset değerleri daha dengeli ve profesyonel tona göre optimize edildi.
+## Stabilite ve Kullanılabilirlik
+- Alt butonların görünmeme sorunu çözüldü (kaydırılabilir arayüz).
+- Karanlık tema görünürlüğü iyileştirildi.
+- Preset değerleri günlük kullanımda daha dengeli ton için düzenlendi.
 - MP3 üretimi güçlendirildi:
-  - `ffmpeg` birden fazla standart yoldan aranır.
-  - MP3 üretilemese bile `mix.wav` ve `vocal.wav` garanti kaydedilir.
+  - `ffmpeg` birden fazla standart konumda aranır.
+  - MP3 üretilemezse kayıt yine kaybolmaz; WAV çıktıları garanti edilir.
 
-## Kurulum ve Paketleme
-- macOS build/kurulum akışı güncellendi:
-  - `build_macos_app.sh`
-  - `install_macos_professional.sh`
-  - `package_macos_release.sh`
-- Masaüstü başlatıcı akışı iyileştirildi.
-- Release workflow güncellendi (`release-macos.yml`).
+## Çıktı Garantisi
+Her kayıtta en az aşağıdaki dosyalar alınır:
+- `guitar_mix_..._mix.wav`
+- `guitar_mix_..._vocal.wav`
+- `guitar_mix_..._device_test.wav` (test adımı sonrası)
+- Uygun ortamda ek olarak: `guitar_mix_....mp3`
 
-## Kullanım (Hızlı)
+## Hızlı Kullanım
 1. `Müzik Dosyası Seç`
 2. `Hazır Profil` seç + `Profili Uygula`
 3. `Dosya Adını Otomatik Oluştur`
-4. `Hızlı Kayıt (Test + Kayıt)`
-5. Masaüstü çıktıları:
-   - `guitar_mix_... .mp3`
-   - `guitar_mix_..._mix.wav`
-   - `guitar_mix_..._vocal.wav`
-   - `guitar_mix_..._device_test.wav`
+4. `Hızlı Kayıt (Test + Kayıt)` veya `Kaydı Başlat ve MP3 Çıkar`
+5. Çıktıları masaüstünde kontrol et
 
-## Not
-- Bu sürüm özellikle kullanım akışını sadeleştirme ve kayıt güvenilirliğini artırma odaklıdır.
+## Altyapı / Release
+- macOS build + kurulum scriptleri güncellendi:
+  - `build_macos_app.sh`
+  - `install_macos_professional.sh`
+  - `package_macos_release.sh`
+- Release workflow netleştirildi (`release-macos.yml`).
+
+## Uyumluluk
+- Platform: macOS
+- Breaking change: yok
