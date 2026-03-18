@@ -12,6 +12,14 @@ permissions:
 jobs:
   build-macos:
     runs-on: macos-14
+    env:
+      APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_APP_CERT_BASE64 }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_APP_CERT_PASSWORD }}
+      APPLE_CODESIGN_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APP_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_NOTARY_APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_NOTARY_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_NOTARY_APP_PASSWORD }}
+      KEYCHAIN_PASSWORD: ${{ secrets.APPLE_BUILD_KEYCHAIN_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -31,10 +39,39 @@ jobs:
       - name: Build app bundle
         run: ./build_macos_app.sh
 
-      - name: Package zip
+      - name: Import Developer ID certificate
+        if: ${{ env.APPLE_CERTIFICATE_BASE64 != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.APPLE_CODESIGN_IDENTITY != '' && env.KEYCHAIN_PASSWORD != '' }}
         run: |
-          cd dist
-          ditto -c -k --sequesterRsrc --keepParent GuitarAmpRecorder.app GuitarAmpRecorder-macOS.zip
+          CERT_PATH="$RUNNER_TEMP/developer-id-app.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Sign app bundle
+        if: ${{ env.APPLE_CODESIGN_IDENTITY != '' }}
+        run: ./sign_macos_app.sh ./dist/GuitarAmpRecorder.app "$APPLE_CODESIGN_IDENTITY"
+
+      - name: Store notarization credentials
+        if: ${{ env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != '' }}
+        run: |
+          xcrun notarytool store-credentials "AC_PROFILE" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD"
+
+      - name: Notarize and staple app bundle
+        if: ${{ env.APPLE_CODESIGN_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != '' }}
+        run: ./notarize_macos_app.sh ./dist/GuitarAmpRecorder.app AC_PROFILE "$APPLE_TEAM_ID"
+
+      - name: Package zip
+        run: ./package_macos_release.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

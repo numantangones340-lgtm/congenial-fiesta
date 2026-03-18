@@ -25,9 +25,21 @@ if ! command -v xcrun >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! command -v codesign >/dev/null 2>&1; then
+  echo "Hata: codesign bulunamadi."
+  exit 1
+fi
+
+SIGNATURE_INFO="$(codesign -dv --verbose=4 "$APP_PATH" 2>&1 || true)"
+if grep -q "Signature=adhoc" <<<"$SIGNATURE_INFO"; then
+  echo "Hata: app ad-hoc imzali. Notarization icin Developer ID Application sertifikasi ile imzalanmali."
+  exit 1
+fi
+
 ZIP_PATH="$ROOT_DIR/dist/$(basename "$APP_PATH" .app)-notarize.zip"
 
 echo "Zipleme: $ZIP_PATH"
+rm -f "$ZIP_PATH"
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 
 echo "Notarization submit (wait):"

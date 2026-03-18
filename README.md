@@ -86,6 +86,17 @@ Notarization (Xcode notarytool ile):
    ./notarize_macos_app.sh ./dist/GuitarAmpRecorder.app AC_PROFILE TEAMID1234
    ```
 
+Tam release hattı:
+
+```bash
+./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID1234)" AC_PROFILE TEAMID1234
+```
+
+Detayli kontrol listesi:
+
+- `docs/MACOS_RELEASE_CHECKLIST.md`
+- `docs/PRODUCT_ROADMAP.md`
+
 ## Çalıştırma
 
 ```bash
@@ -100,6 +111,7 @@ Manuel mod seçimi:
 ```bash
 ./CALISTIR.command gui
 ./CALISTIR.command cli
+./CALISTIR.command quick
 ```
 
 Windows için:
@@ -111,6 +123,13 @@ CALISTIR.bat gui
 CALISTIR.bat cli
 ```
 
+CLI sürümünde son kullandığınız ayarlar proje klasöründeki `.last_preset.json` dosyasına kaydedilir.
+Bir sonraki açılışta `Kayıtlı ayarlar yüklensin mi? [E/h]:` sorusuna `E` diyerek tek adımda devam edebilirsiniz.
+`./CALISTIR.command quick` komutu ise kayıtlı ayarlar ile soru sormadan doğrudan kayıt alır.
+Bu kayda mikrofon/çıkış aygıt kimlikleri de dahildir.
+`CALISTIR.command`, `requirements.txt` ve Python sürümü değişmediyse `pip install` adımını otomatik atlar (daha hızlı açılış).
+Quick kayıt dosya adı otomatik artar: `quick_take_001`, `quick_take_002`, ...
+
 ## Masaustu Tek Tik Baslatici
 
 ```bash
@@ -119,6 +138,7 @@ cd /Users/numantangones/Documents/GuitarAmpRecorder
 ```
 
 Bu komut `~/Desktop/GuitarAmpRecorder.command` dosyasi olusturur.
+Ek olarak `~/Desktop/GuitarAmpRecorder-Quick.command` dosyasini da olusturur (sorusuz quick kayit).
 
 ## Masaustune macOS Kurulum Paketi Alma
 
@@ -131,6 +151,26 @@ Bu komut:
 - `dist/GuitarAmpRecorder-macOS.zip` olusturur
 - ayni zip dosyasini `~/Desktop/GuitarAmpRecorder-macOS.zip` olarak kopyalar
 
+Build + imza + zip islemini tek komutta almak icin:
+
+```bash
+cd /Users/numantangones/Documents/GuitarAmpRecorder
+chmod +x release_macos_desktop.sh
+./release_macos_desktop.sh
+```
+
+Developer ID ile:
+
+```bash
+./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID)"
+```
+
+Developer ID + notarization ile:
+
+```bash
+./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID1234)" AC_PROFILE TEAMID1234
+```
+
 ## Guvenilir Indirme Sayfalari
 
 - GitHub Releases (resmi surum dosyalari):
@@ -142,32 +182,63 @@ Bu komut:
 
 Bu repoda otomatik yayin akisi eklidir:
 - `.github/workflows/release-macos.yml`
-  - `v*` etiketi push edilince macOS zip build eder ve Release'e koyar.
+  - `v*` etiketi push edilince macOS app build eder, varsa codesign + notarization yapar, zip uretir ve Release'e koyar.
 - `.github/workflows/release-windows.yml`
   - `v*` etiketi push edilince Windows zip build eder ve Release'e koyar.
 - `.github/workflows/static.yml`
   - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
 
+macOS workflow icin onerilen GitHub secrets:
+
+- `APPLE_DEVELOPER_ID_APP_CERT_BASE64`
+- `APPLE_DEVELOPER_ID_APP_CERT_PASSWORD`
+- `APPLE_DEVELOPER_ID_APP_IDENTITY`
+- `APPLE_NOTARY_APPLE_ID`
+- `APPLE_NOTARY_TEAM_ID`
+- `APPLE_NOTARY_APP_PASSWORD`
+- `APPLE_BUILD_KEYCHAIN_PASSWORD`
+
 Ornek release:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 ## Kullanım
 
+Sürüm bilgisi:
+
+- `VERSION` dosyasından okunur
+- uygulama içinde `Hakkinda` ile görüntülenir
+- surum degisiklikleri `CHANGELOG.md` içinde tutulur
+- yayin ozeti icin `docs/RELEASE_NOTES_1.1.0.md` kullanilabilir
+
 1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
 2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.
-3. `Müzik Dosyası Seç` ile backing track seçin (`.wav/.aiff/.flac`).
-4. `Kazanç / Güçlendirme / Bas / Tiz / Distorsiyon` ayarlarını yapın.
-5. `Arka Plan Seviye / Vokal Seviye / Gürültü Azaltma / Hız / Çıkış Kazancı` ayarlarını yapın.
-6. `Kayıt Sınırı (1 veya 2 saat)` seçin.
-7. `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
-8. Kayıt bitince dosyalar Masaüstüne yazılır:
+3. `Müzik Dosyası Seç` ile backing track seçin (`.wav/.aiff/.flac`) veya boş bırakıp sadece mikrofon kaydı alın.
+4. `Kazanç / Güçlendirme / High-Pass / Bas / Presence / Tiz / Distorsiyon` ayarlarını yapın.
+5. `Arka Plan Seviye / Vokal Seviye / Gürültü Azaltma / Noise Gate Eşigi / Canli Monitor Seviye / Kompresor / Limiter / Hız / Çıkış Kazancı` ayarlarını yapın.
+6. `Çıkış Klasörü` seçin. Varsayılan olarak Masaüstü kullanılır.
+7. İsterseniz `Oturum Modu` ile tarihli veya isimli alt klasör kullanın.
+8. `MP3 Kalitesi` ve `WAV Export` modunu seçin.
+9. `Kayıt Sınırı (1 veya 2 saat)` seçin.
+10. `Preset Adi` alanına isim verip farkli kurulumlar icin `Preset Kaydet / Yükle / Sil` kullanabilirsiniz.
+11. `Kaydı Başlat ve MP3 Çıkar` butonuna basın.
+   - Backing seçilmediyse `Sadece Mikrofon Süresi (sn)` ayarındaki süre kadar kayıt alınır.
+   - Hızlı tek tuş için `Quick Kayıt (Preset, Sorusuz)` butonunu kullanabilirsiniz.
+   - Gerekirse `Monitor Ac` ile canli dinleme yapabilirsiniz. Kulaklik kullanin.
+   - `Guvenlik` satiri giris seviyesinin cok dusuk, uygun veya riskli oldugunu gosterir.
+   - `Kayıt Durumu` panelinde geçen süre ve kalan süre canlı görünür.
+   - Gerekirse `Kaydı Durdur ve Kaydet` ile o ana kadar alınan bölüm dışa aktarılır.
+12. Kayıt bitince dosyalar seçtiğiniz klasöre veya seçtiğiniz oturum alt klasörüne yazılır:
    - `dosyaadi.mp3` (mix)
    - `dosyaadi_vocal.wav` (işlenmiş vokal/gitar kanalınız)
+   - isteğe bağlı `dosyaadi_mix.wav` (tam mix WAV)
    - `dosyaadi_device_test.wav` (test kaydı)
+   - `session_summary.json` (oturum ayarlari ve uretilen dosyalar)
+13. `Son Ciktilar` panelinden son dosyayi Finder'da gosterebilir veya aktif cikis/oturum klasorunu acabilirsiniz.
+14. `Son Oturumu Yükle` ile son kullanilan oturum klasoru ve preset baglamini geri cagirabilirsiniz.
 
 ## Notlar
 

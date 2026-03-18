@@ -1,8 +1,13 @@
 .pycache/
 __pycache__/
 .pyinstaller/
+.pyinstaller-cache/
 .venv/
 build/
 dist/
 *.swp
 .DS_Store
+.gui_saved_preset.json
+.last_preset.json
+.last_session.json
+cleanup_*/
