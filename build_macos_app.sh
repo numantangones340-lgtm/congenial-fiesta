@@ -3,6 +3,7 @@ set -euo pipefail
 
 APP_NAME="GuitarAmpRecorder"
 ENTRY="app.py"
+STAMP_FILE=".venv/.build-deps-stamp"
 
 pick_python() {
   for candidate in /opt/homebrew/bin/python3.11 python3.11 python3; do
@@ -42,8 +43,29 @@ export PIP_DISABLE_PIP_VERSION_CHECK=1
 export PYINSTALLER_CONFIG_DIR="${PWD}/.pyinstaller-cache"
 mkdir -p "${PYINSTALLER_CONFIG_DIR}"
 
-pip install -r requirements.txt
-pip install pyinstaller
+CURRENT_STAMP="$(
+  python - <<'PY'
+from pathlib import Path
+import hashlib
+import sys
+
+requirements = Path("requirements.txt").read_bytes()
+digest = hashlib.sha256(requirements).hexdigest()
+print(f"{sys.version_info.major}.{sys.version_info.minor}|{digest}")
+PY
+)"
+
+INSTALLED_STAMP=""
+if [ -f "${STAMP_FILE}" ]; then
+  INSTALLED_STAMP="$(cat "${STAMP_FILE}")"
+fi
+
+if [ ! -x ".venv/bin/pyinstaller" ] || [ "${INSTALLED_STAMP}" != "${CURRENT_STAMP}" ]; then
+  python -m pip install --upgrade pip setuptools wheel
+  python -m pip install -r requirements.txt
+  python -m pip install pyinstaller
+  printf '%s\n' "${CURRENT_STAMP}" > "${STAMP_FILE}"
+fi
 
 TCL_DIR=""
 TK_DIR=""
@@ -111,7 +133,7 @@ fi
 PYI_ARGS+=("${ENTRY}")
 
 rm -rf build dist "${APP_NAME}.spec"
-pyinstaller "${PYI_ARGS[@]}"
+.venv/bin/pyinstaller "${PYI_ARGS[@]}"
 
 ditto -c -k --sequesterRsrc --keepParent "dist/${APP_NAME}.app" "dist/${APP_NAME}-macOS.zip"
 
