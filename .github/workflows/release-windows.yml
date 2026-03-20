@@ -30,6 +30,10 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Generate release body
+        run: |
+          python scripts/generate_release_notes.py
+
       - name: Build Windows app
         shell: pwsh
         run: |
@@ -50,4 +54,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          body_path: docs/RELEASE_BODY.md
           files: dist/GuitarAmpRecorder-Windows.zip

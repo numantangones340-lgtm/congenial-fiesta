@@ -24,6 +24,10 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Generate release body
+        run: |
+          python scripts/generate_release_notes.py
+
       - name: Build zip package
         run: |
           ./build_macos_app.sh
@@ -38,4 +42,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
+          body_path: docs/RELEASE_BODY.md
           files: dist/GuitarAmpRecorder-macOS.zip

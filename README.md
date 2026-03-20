@@ -212,7 +212,7 @@ Sürüm bilgisi:
 - `VERSION` dosyasından okunur
 - uygulama içinde `Hakkinda` ile görüntülenir
 - surum degisiklikleri `CHANGELOG.md` içinde tutulur
-- yayin ozeti icin `docs/RELEASE_NOTES_1.1.2.md` kullanilabilir
+- yayin body'si `docs/RELEASE_BODY.md` icinde `CHANGELOG.md` kaynagindan uretilir
 
 1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
 2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.
