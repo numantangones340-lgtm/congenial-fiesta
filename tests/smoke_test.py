@@ -151,6 +151,14 @@ def test_cli_settings_roundtrip() -> None:
         assert cli.list_named_presets() == []
 
     assert "Ses aygıtı bulunamadı" in cli.no_device_help_text()
+    help_text = cli.cli_usage_text()
+    assert "--quick" in help_text
+    assert "--list-presets" in help_text
+    parsed, err = cli.parse_cli_args(["--help"])
+    assert err is None
+    assert parsed["help_only"] is True
+    _, err = cli.parse_cli_args(["--unknown"])
+    assert err == "Bilinmeyen secenek: --unknown"
 
 
 def main() -> int:

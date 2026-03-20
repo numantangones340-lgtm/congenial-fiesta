@@ -143,6 +143,7 @@ python3 cli_app.py --preset "Temiz"
 python3 cli_app.py --quick --preset "Temiz"
 python3 cli_app.py --delete-preset "Temiz"
 python3 cli_app.py --save-preset "Yeni Preset"
+python3 cli_app.py --help
 ```
 
 ## Masaustu Tek Tik Baslatici
