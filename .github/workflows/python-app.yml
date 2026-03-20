@@ -21,3 +21,6 @@ jobs:
 
       - name: Syntax check
         run: python3 -m py_compile app.py cli_app.py
+
+      - name: Smoke tests
+        run: python3 tests/smoke_test.py
