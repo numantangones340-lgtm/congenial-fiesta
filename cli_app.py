@@ -184,6 +184,84 @@ def ask_named_preset_selection(default_name: str = "") -> str:
     return raw
 
 
+def cli_usage_text() -> str:
+    return (
+        "Kullanim:\n"
+        "  python3 cli_app.py [--quick] [--preset ADI]\n"
+        "  python3 cli_app.py --list-presets\n"
+        "  python3 cli_app.py --delete-preset ADI\n"
+        "  python3 cli_app.py --save-preset ADI\n"
+        "  python3 cli_app.py --help\n\n"
+        "Secenekler:\n"
+        "  --quick                 Kayitli ayarlar ile sorusuz hizli kayit baslatir.\n"
+        "  --preset ADI            Isimli CLI preset yukler.\n"
+        "  --save-preset ADI       Calisma sonunda mevcut ayarlari bu isimle kaydeder.\n"
+        "  --delete-preset ADI     Isimli CLI preset siler ve cikar.\n"
+        "  --list-presets          Kayitli CLI presetlerini listeler ve cikar.\n"
+        "  --help, -h              Bu yardim metnini gosterir.\n"
+    )
+
+
+def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
+    parsed = {
+        "quick_mode": False,
+        "list_only": False,
+        "help_only": False,
+        "preset_name": None,
+        "save_preset": None,
+        "delete_preset": None,
+    }
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg in ("--help", "-h"):
+            parsed["help_only"] = True
+            i += 1
+            continue
+        if arg == "--quick":
+            parsed["quick_mode"] = True
+            i += 1
+            continue
+        if arg == "--list-presets":
+            parsed["list_only"] = True
+            i += 1
+            continue
+        if arg in ("--preset", "--save-preset", "--delete-preset"):
+            if i + 1 >= len(args):
+                return parsed, f"Eksik deger: {arg}"
+            value = args[i + 1].strip()
+            if not value:
+                return parsed, f"Gecersiz bos deger: {arg}"
+            if arg == "--preset":
+                parsed["preset_name"] = value
+            elif arg == "--save-preset":
+                parsed["save_preset"] = value
+            else:
+                parsed["delete_preset"] = value
+            i += 2
+            continue
+        if arg.startswith("--preset="):
+            parsed["preset_name"] = arg.split("=", 1)[1].strip()
+            if not parsed["preset_name"]:
+                return parsed, "Gecersiz bos deger: --preset"
+            i += 1
+            continue
+        if arg.startswith("--save-preset="):
+            parsed["save_preset"] = arg.split("=", 1)[1].strip()
+            if not parsed["save_preset"]:
+                return parsed, "Gecersiz bos deger: --save-preset"
+            i += 1
+            continue
+        if arg.startswith("--delete-preset="):
+            parsed["delete_preset"] = arg.split("=", 1)[1].strip()
+            if not parsed["delete_preset"]:
+                return parsed, "Gecersiz bos deger: --delete-preset"
+            i += 1
+            continue
+        return parsed, f"Bilinmeyen secenek: {arg}"
+    return parsed, None
+
+
 def db_to_linear(db: float) -> float:
     return 10 ** (db / 20.0)
 
@@ -430,11 +508,23 @@ def prepare_backing(backing_file: Optional[Path], sr: int, record_seconds: float
 
 def main() -> None:
     args = sys.argv[1:]
-    quick_mode = "--quick" in args
-    list_only = "--list-presets" in args
-    preset_name_arg = extract_flag_value(args, "--preset")
-    save_preset_arg = extract_flag_value(args, "--save-preset")
-    delete_preset_arg = extract_flag_value(args, "--delete-preset")
+    parsed_args, parse_error = parse_cli_args(args)
+    if parse_error:
+        print(parse_error)
+        print()
+        print(cli_usage_text())
+        return
+
+    quick_mode = bool(parsed_args["quick_mode"])
+    list_only = bool(parsed_args["list_only"])
+    preset_name_arg = parsed_args["preset_name"]
+    save_preset_arg = parsed_args["save_preset"]
+    delete_preset_arg = parsed_args["delete_preset"]
+    help_only = bool(parsed_args["help_only"])
+
+    if help_only:
+        print(cli_usage_text())
+        return
 
     print("\n=== Gitar Amfi Kaydedici (Terminal Sürümü) ===")
     print("Not: Aygıt kimliği bilmiyorsanız boş bırakın. Enter ile varsayılan seçilir.\n")
