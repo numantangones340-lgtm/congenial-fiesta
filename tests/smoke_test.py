@@ -110,7 +110,9 @@ def test_cli_settings_roundtrip() -> None:
 
     with tempfile.TemporaryDirectory() as tmpdir:
         preset_path = Path(tmpdir) / ".last_preset.json"
+        named_preset_path = Path(tmpdir) / ".cli_presets.json"
         cli.PRESET_PATH = preset_path
+        cli.NAMED_PRESET_PATH = named_preset_path
 
         loaded = cli.load_saved_settings()
         assert loaded["gain"] == cli.DEFAULT_SETTINGS["gain"]
@@ -130,6 +132,23 @@ def test_cli_settings_roundtrip() -> None:
         loaded = cli.load_saved_settings()
         assert loaded["gain"] == 9.0
         assert loaded["output_device_id"] == 7
+
+        cli.save_named_preset(
+            "Temiz",
+            {
+                **cli.DEFAULT_SETTINGS,
+                "gain": 11,
+                "input_device_id": 3,
+            },
+        )
+        names = cli.list_named_presets()
+        assert names == ["Temiz"]
+        named_loaded = cli.load_named_preset("Temiz")
+        assert named_loaded is not None
+        assert named_loaded["gain"] == 11.0
+        assert named_loaded["input_device_id"] == 3
+        assert cli.delete_named_preset("Temiz") is True
+        assert cli.list_named_presets() == []
 
     assert "Ses aygıtı bulunamadı" in cli.no_device_help_text()
 

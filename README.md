@@ -130,6 +130,21 @@ Bu kayda mikrofon/çıkış aygıt kimlikleri de dahildir.
 `CALISTIR.command`, `requirements.txt` ve Python sürümü değişmediyse `pip install` adımını otomatik atlar (daha hızlı açılış).
 Quick kayıt dosya adı otomatik artar: `quick_take_001`, `quick_take_002`, ...
 
+CLI için isimli preset deposu da desteklenir:
+
+- proje klasöründeki `.cli_presets.json` içinde tutulur
+- açılışta kayıtlı isimli preset seçebilirsiniz
+- kayıt sonunda mevcut ayarları isimli preset olarak kaydedebilirsiniz
+- komut satırıyla da yönetebilirsiniz:
+
+```bash
+python3 cli_app.py --list-presets
+python3 cli_app.py --preset "Temiz"
+python3 cli_app.py --quick --preset "Temiz"
+python3 cli_app.py --delete-preset "Temiz"
+python3 cli_app.py --save-preset "Yeni Preset"
+```
+
 ## Masaustu Tek Tik Baslatici
 
 ```bash
