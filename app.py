@@ -288,6 +288,184 @@ def no_device_help_text() -> str:
     )
 
 
+def builtin_preset_store() -> dict:
+    return {
+        "selected": "Temiz Gitar",
+        "presets": {
+            "Temiz Konusma": {
+                "input_device_choice": "Varsayılan macOS girişi",
+                "output_device_choice": "Varsayılan macOS çıkışı",
+                "input_device_id": "",
+                "output_device_id": "",
+                "output_name": "",
+                "output_dir": str(Path.home() / "Desktop"),
+                "session_mode": "Tek Klasor",
+                "session_name": time.strftime("session_%Y%m%d"),
+                "mp3_quality": "Yuksek VBR",
+                "wav_export_mode": "Sadece Vocal WAV",
+                "record_limit_hours": "1",
+                "mic_record_seconds": "60",
+                "gain": 4,
+                "boost": 1,
+                "high_pass_hz": 90,
+                "bass": 1,
+                "presence": 1,
+                "treble": 1,
+                "distortion": 0,
+                "backing_level": 100,
+                "vocal_level": 85,
+                "noise_reduction": 10,
+                "noise_gate_threshold": 8,
+                "monitor_level": 100,
+                "compressor_amount": 10,
+                "compressor_threshold": -20,
+                "compressor_makeup": 1,
+                "limiter_enabled": "Acik",
+                "speed_ratio": 100,
+                "output_gain": -4,
+            },
+            "Ultra Temiz Tani": {
+                "input_device_choice": "Varsayılan macOS girişi",
+                "output_device_choice": "Varsayılan macOS çıkışı",
+                "input_device_id": "",
+                "output_device_id": "",
+                "output_name": "",
+                "output_dir": str(Path.home() / "Desktop"),
+                "session_mode": "Tek Klasor",
+                "session_name": time.strftime("session_%Y%m%d"),
+                "mp3_quality": "Yuksek VBR",
+                "wav_export_mode": "Sadece Vocal WAV",
+                "record_limit_hours": "1",
+                "mic_record_seconds": "60",
+                "gain": 2,
+                "boost": 0,
+                "high_pass_hz": 0,
+                "bass": 0,
+                "presence": 0,
+                "treble": 0,
+                "distortion": 0,
+                "backing_level": 100,
+                "vocal_level": 85,
+                "noise_reduction": 0,
+                "noise_gate_threshold": 0,
+                "monitor_level": 100,
+                "compressor_amount": 0,
+                "compressor_threshold": -12,
+                "compressor_makeup": 0,
+                "limiter_enabled": "Acik",
+                "speed_ratio": 100,
+                "output_gain": -6,
+            },
+            "Temiz Gitar": {
+                "input_device_choice": "Varsayılan macOS girişi",
+                "output_device_choice": "Varsayılan macOS çıkışı",
+                "input_device_id": "",
+                "output_device_id": "",
+                "output_name": "",
+                "output_dir": str(Path.home() / "Desktop"),
+                "session_mode": "Tek Klasor",
+                "session_name": time.strftime("session_%Y%m%d"),
+                "mp3_quality": "Yuksek VBR",
+                "wav_export_mode": "Sadece Vocal WAV",
+                "record_limit_hours": "1",
+                "mic_record_seconds": "60",
+                "gain": 2,
+                "boost": 0,
+                "high_pass_hz": 60,
+                "bass": 0,
+                "presence": 0,
+                "treble": 0,
+                "distortion": 0,
+                "backing_level": 100,
+                "vocal_level": 85,
+                "noise_reduction": 0,
+                "noise_gate_threshold": 0,
+                "monitor_level": 100,
+                "compressor_amount": 0,
+                "compressor_threshold": -12,
+                "compressor_makeup": 0,
+                "limiter_enabled": "Acik",
+                "speed_ratio": 100,
+                "output_gain": -6,
+            },
+            "Temiz Gitar Dengeli": {
+                "input_device_choice": "Varsayılan macOS girişi",
+                "output_device_choice": "Varsayılan macOS çıkışı",
+                "input_device_id": "",
+                "output_device_id": "",
+                "output_name": "",
+                "output_dir": str(Path.home() / "Desktop"),
+                "session_mode": "Tek Klasor",
+                "session_name": time.strftime("session_%Y%m%d"),
+                "mp3_quality": "Yuksek VBR",
+                "wav_export_mode": "Sadece Vocal WAV",
+                "record_limit_hours": "1",
+                "mic_record_seconds": "60",
+                "gain": 2,
+                "boost": 0,
+                "high_pass_hz": 60,
+                "bass": 0,
+                "presence": 0,
+                "treble": 0,
+                "distortion": 0,
+                "backing_level": 100,
+                "vocal_level": 85,
+                "noise_reduction": 0,
+                "noise_gate_threshold": 0,
+                "monitor_level": 100,
+                "compressor_amount": 0,
+                "compressor_threshold": -12,
+                "compressor_makeup": 0,
+                "limiter_enabled": "Acik",
+                "speed_ratio": 100,
+                "output_gain": -6,
+            },
+            "Guclu Performans": {
+                "input_device_choice": "Varsayılan macOS girişi",
+                "output_device_choice": "Varsayılan macOS çıkışı",
+                "input_device_id": "",
+                "output_device_id": "",
+                "output_name": "",
+                "output_dir": str(Path.home() / "Desktop"),
+                "session_mode": "Tek Klasor",
+                "session_name": time.strftime("session_%Y%m%d"),
+                "mp3_quality": "Yuksek VBR",
+                "wav_export_mode": "Mix + Vocal WAV",
+                "record_limit_hours": "1",
+                "mic_record_seconds": "60",
+                "gain": 5,
+                "boost": 3,
+                "high_pass_hz": 80,
+                "bass": 2,
+                "presence": 3,
+                "treble": 3,
+                "distortion": 8,
+                "backing_level": 100,
+                "vocal_level": 85,
+                "noise_reduction": 10,
+                "noise_gate_threshold": 10,
+                "monitor_level": 100,
+                "compressor_amount": 30,
+                "compressor_threshold": -18,
+                "compressor_makeup": 2,
+                "limiter_enabled": "Acik",
+                "speed_ratio": 100,
+                "output_gain": -5,
+            },
+        },
+    }
+
+
+def merge_builtin_presets(store: dict) -> dict:
+    merged = {"selected": str(store.get("selected", "Temiz Gitar") or "Temiz Gitar"), "presets": {}}
+    builtin = builtin_preset_store()
+    merged["presets"].update(builtin["presets"])
+    merged["presets"].update(store.get("presets", {}))
+    if merged["selected"] not in merged["presets"]:
+        merged["selected"] = builtin["selected"]
+    return merged
+
+
 class GuitarAmpRecorderApp:
     def __init__(self, root: Tk) -> None:
         self.root = root
@@ -316,7 +494,7 @@ class GuitarAmpRecorderApp:
         self.session_name = StringVar(value=time.strftime("session_%Y%m%d"))
         self.mp3_quality = StringVar(value="Yuksek VBR")
         self.wav_export_mode = StringVar(value="Sadece Vocal WAV")
-        self.preset_name = StringVar(value="Varsayilan")
+        self.preset_name = StringVar(value="Temiz Gitar")
         self.limiter_enabled = StringVar(value="Acik")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.input_device_id = StringVar(value="")
@@ -341,7 +519,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
         self.recent_exports_text = StringVar(value="Henuz export yok.")
-        self.preset_names = ["Varsayilan"]
+        self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
         self.output_device_options = ["Varsayılan macOS çıkışı"]
 
@@ -747,7 +925,7 @@ class GuitarAmpRecorderApp:
         self.set_status("Harici mikrofon preset uygulandı. USB PnP girişini test edip kayda geçebilirsiniz.")
 
     def default_preset_store(self) -> dict:
-        return {"selected": "Varsayilan", "presets": {}}
+        return builtin_preset_store()
 
     def load_preset_store_data(self) -> dict:
         if not GUI_PRESET_PATH.exists():
@@ -757,10 +935,10 @@ class GuitarAmpRecorderApp:
         except Exception:
             return self.default_preset_store()
         if isinstance(raw, dict) and "presets" in raw and isinstance(raw.get("presets"), dict):
-            selected = str(raw.get("selected", "Varsayilan") or "Varsayilan")
-            return {"selected": selected, "presets": raw["presets"]}
+            selected = str(raw.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            return merge_builtin_presets({"selected": selected, "presets": raw["presets"]})
         if isinstance(raw, dict):
-            return {"selected": "Varsayilan", "presets": {"Varsayilan": raw}}
+            return merge_builtin_presets({"selected": "Temiz Gitar", "presets": {"Varsayilan": raw}})
         return self.default_preset_store()
 
     def write_preset_store_data(self, store: dict) -> None:
@@ -768,20 +946,20 @@ class GuitarAmpRecorderApp:
 
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
         store = self.load_preset_store_data()
-        names = sorted(store.get("presets", {}).keys()) or ["Varsayilan"]
+        names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
         self.preset_names = names
         menu = self.preset_menu["menu"]
         menu.delete(0, "end")
         for name in self.preset_names:
             menu.add_command(label=name, command=lambda value=name: self.preset_name.set(value))
-        target = selected_name or self.preset_name.get() or store.get("selected", "Varsayilan")
+        target = selected_name or self.preset_name.get() or store.get("selected", "Temiz Gitar")
         if target not in self.preset_names:
             target = self.preset_names[0]
         self.preset_name.set(target)
 
     def load_preset_store(self, initial: bool = False) -> None:
         store = self.load_preset_store_data()
-        self.refresh_preset_menu(store.get("selected", "Varsayilan"))
+        self.refresh_preset_menu(store.get("selected", "Temiz Gitar"))
         presets = store.get("presets", {})
         selected = self.preset_name.get()
         if selected in presets:
@@ -884,7 +1062,7 @@ class GuitarAmpRecorderApp:
 
     def save_current_preset(self) -> None:
         try:
-            name = self.preset_name.get().strip() or "Varsayilan"
+            name = self.preset_name.get().strip() or "Temiz Gitar"
             store = self.load_preset_store_data()
             store.setdefault("presets", {})[name] = self.collect_current_preset()
             store["selected"] = name
@@ -897,7 +1075,7 @@ class GuitarAmpRecorderApp:
     def load_saved_preset(self) -> None:
         try:
             store = self.load_preset_store_data()
-            name = self.preset_name.get().strip() or store.get("selected", "Varsayilan")
+            name = self.preset_name.get().strip() or store.get("selected", "Temiz Gitar")
             presets = store.get("presets", {})
             if name not in presets:
                 self.set_status(f"Preset bulunamadı: {name}")
@@ -925,7 +1103,7 @@ class GuitarAmpRecorderApp:
             if not presets:
                 store = self.default_preset_store()
                 self.write_preset_store_data(store)
-                self.refresh_preset_menu("Varsayilan")
+                self.refresh_preset_menu("Temiz Gitar")
                 self.set_status(f"Preset silindi: {name}. Tum kullanici presetleri temizlendi.")
                 return
             next_name = sorted(presets.keys())[0]

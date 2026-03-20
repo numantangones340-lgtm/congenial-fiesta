@@ -4,9 +4,9 @@ Bu not, Git tarafini temiz tutup yeni surumu yayinlamadan once hangi adimlarin t
 
 ## Hedef Surum
 
-- `VERSION`: `1.1.0`
+- `VERSION`: `1.1.2`
 - Changelog: `CHANGELOG.md`
-- Release notes: `docs/RELEASE_NOTES_1.1.0.md`
+- Release notes: `docs/RELEASE_NOTES_1.1.2.md`
 
 ## Git Temizlik Kurallari
 
@@ -29,7 +29,7 @@ Not:
 - `README.md`
 - `VERSION`
 - `CHANGELOG.md`
-- `docs/RELEASE_NOTES_1.1.0.md`
+- `docs/RELEASE_NOTES_1.1.2.md`
 - `docs/MACOS_RELEASE_CHECKLIST.md`
 - `docs/PRODUCT_ROADMAP.md`
 - `.github/workflows/release-macos.yml`
@@ -41,9 +41,9 @@ Not:
 1. Uygulama testlerini tamamla.
 2. `git diff` ile yalnizca release'e girecek dosyalari gozden gecir.
 3. Release commit'ini olustur.
-4. `git tag v1.1.0`
+4. `git tag v1.1.2`
 5. `git push origin <branch>`
-6. `git push origin v1.1.0`
+6. `git push origin v1.1.2`
 
 ## Notarized macOS Release
 

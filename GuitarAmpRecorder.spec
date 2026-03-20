@@ -2,6 +2,9 @@
 from pathlib import Path
 import tkinter as tk
 
+root_dir = Path.cwd().resolve()
+version_file = root_dir / "VERSION"
+app_version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "0.1.0-dev"
 
 def detect_tcl_tk_dirs() -> tuple[Path, Path, str]:
     interp = tk.Tcl()
@@ -31,6 +34,7 @@ tcl_dir, tk_dir, tk_version = detect_tcl_tk_dirs()
 datas = [
     (str(tcl_dir), f"tcl/tcl{tk_version}"),
     (str(tk_dir), f"tcl/tk{tk_version}"),
+    (str(version_file), "."),
 ]
 
 a = Analysis(
@@ -81,4 +85,9 @@ app = BUNDLE(
     name="GuitarAmpRecorder.app",
     icon=None,
     bundle_identifier=None,
+    info_plist={
+        "CFBundleShortVersionString": app_version,
+        "CFBundleVersion": app_version,
+        "NSMicrophoneUsageDescription": "Ses kaydi almak ve mikrofon testini calistirmak icin mikrofon erisimi gerekir.",
+    },
 )

@@ -15,7 +15,10 @@ fi
 
 rm -f "$ZIP_PATH"
 ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
-cp "$ZIP_PATH" "$DESKTOP_ZIP"
 
 echo "Hazir zip: $ZIP_PATH"
-echo "Masaustune kopyalandi: $DESKTOP_ZIP"
+if cp "$ZIP_PATH" "$DESKTOP_ZIP" 2>/dev/null; then
+  echo "Masaustune kopyalandi: $DESKTOP_ZIP"
+else
+  echo "Not: Masaustu kopyasi olusturulamadi. Zip dosyasi dist klasorunde hazir."
+fi

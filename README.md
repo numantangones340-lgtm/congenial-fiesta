@@ -201,8 +201,8 @@ macOS workflow icin onerilen GitHub secrets:
 Ornek release:
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.1.2
+git push origin v1.1.2
 ```
 
 ## Kullanım
@@ -212,7 +212,7 @@ Sürüm bilgisi:
 - `VERSION` dosyasından okunur
 - uygulama içinde `Hakkinda` ile görüntülenir
 - surum degisiklikleri `CHANGELOG.md` içinde tutulur
-- yayin ozeti icin `docs/RELEASE_NOTES_1.1.0.md` kullanilabilir
+- yayin ozeti icin `docs/RELEASE_NOTES_1.1.2.md` kullanilabilir
 
 1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
 2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.

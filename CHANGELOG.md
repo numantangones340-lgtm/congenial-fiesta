@@ -2,7 +2,7 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
-## [1.1.0] - 2026-03-19
+## [1.1.2] - 2026-03-19
 
 ### Eklendi
 

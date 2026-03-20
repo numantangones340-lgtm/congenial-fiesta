@@ -1,4 +1,4 @@
-# Release Notes 1.1.0
+# Release Notes 1.1.2
 
 ## Ozet
 
