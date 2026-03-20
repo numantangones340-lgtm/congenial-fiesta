@@ -11,6 +11,7 @@ import sounddevice as sd
 import soundfile as sf
 
 PRESET_PATH = Path(__file__).resolve().with_name(".last_preset.json")
+NAMED_PRESET_PATH = Path(__file__).resolve().with_name(".cli_presets.json")
 DEFAULT_SETTINGS = {
     "gain": 6.0,
     "boost": 6.0,
@@ -28,21 +29,8 @@ DEFAULT_SETTINGS = {
 }
 
 
-def no_device_help_text() -> str:
-    return (
-        "Ses aygıtı bulunamadı. macOS'ta Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon bölümünden "
-        "Terminal veya GuitarAmpRecorder için izin verin. Harici mikrofon/ses kartı kullanıyorsanız yeniden takıp programı tekrar açın."
-    )
-
-
-def load_saved_settings() -> dict:
+def normalize_settings(raw: Optional[dict]) -> dict:
     settings = DEFAULT_SETTINGS.copy()
-    if not PRESET_PATH.exists():
-        return settings
-    try:
-        raw = json.loads(PRESET_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return settings
     if not isinstance(raw, dict):
         return settings
     for key in settings:
@@ -58,7 +46,7 @@ def load_saved_settings() -> dict:
     return settings
 
 
-def save_settings(settings: dict) -> None:
+def serialize_settings(settings: dict) -> dict:
     safe = {}
     for key in DEFAULT_SETTINGS:
         value = settings.get(key, DEFAULT_SETTINGS[key])
@@ -66,7 +54,134 @@ def save_settings(settings: dict) -> None:
             safe[key] = int(value) if isinstance(value, (int, float)) else None
         else:
             safe[key] = float(value) if isinstance(value, (int, float)) else DEFAULT_SETTINGS[key]
-    PRESET_PATH.write_text(json.dumps(safe, ensure_ascii=False, indent=2), encoding="utf-8")
+    return safe
+
+
+def no_device_help_text() -> str:
+    return (
+        "Ses aygıtı bulunamadı. macOS'ta Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon bölümünden "
+        "Terminal veya GuitarAmpRecorder için izin verin. Harici mikrofon/ses kartı kullanıyorsanız yeniden takıp programı tekrar açın."
+    )
+
+
+def load_saved_settings() -> dict:
+    if not PRESET_PATH.exists():
+        return DEFAULT_SETTINGS.copy()
+    try:
+        raw = json.loads(PRESET_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return DEFAULT_SETTINGS.copy()
+    return normalize_settings(raw)
+
+
+def save_settings(settings: dict) -> None:
+    PRESET_PATH.write_text(json.dumps(serialize_settings(settings), ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def default_named_preset_store() -> dict:
+    return {"selected": "", "presets": {}}
+
+
+def load_named_preset_store() -> dict:
+    if not NAMED_PRESET_PATH.exists():
+        return default_named_preset_store()
+    try:
+        raw = json.loads(NAMED_PRESET_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return default_named_preset_store()
+    if not isinstance(raw, dict):
+        return default_named_preset_store()
+    raw_presets = raw.get("presets", {})
+    presets = {}
+    if isinstance(raw_presets, dict):
+        for name, preset in raw_presets.items():
+            if isinstance(name, str):
+                presets[name] = normalize_settings(preset)
+    selected = raw.get("selected", "")
+    if not isinstance(selected, str):
+        selected = ""
+    if selected and selected not in presets:
+        selected = ""
+    return {"selected": selected, "presets": presets}
+
+
+def write_named_preset_store(store: dict) -> None:
+    presets = {}
+    raw_presets = store.get("presets", {})
+    if isinstance(raw_presets, dict):
+        for name, preset in raw_presets.items():
+            if isinstance(name, str):
+                presets[name] = serialize_settings(preset)
+    selected = store.get("selected", "")
+    if not isinstance(selected, str) or selected not in presets:
+        selected = ""
+    NAMED_PRESET_PATH.write_text(
+        json.dumps({"selected": selected, "presets": presets}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def list_named_presets() -> list[str]:
+    return sorted(load_named_preset_store().get("presets", {}).keys())
+
+
+def load_named_preset(name: str) -> Optional[dict]:
+    store = load_named_preset_store()
+    preset = store.get("presets", {}).get(name)
+    return normalize_settings(preset) if preset else None
+
+
+def save_named_preset(name: str, settings: dict) -> None:
+    safe_name = name.strip()
+    if not safe_name:
+        raise ValueError("Preset adı boş olamaz.")
+    store = load_named_preset_store()
+    store.setdefault("presets", {})[safe_name] = normalize_settings(settings)
+    store["selected"] = safe_name
+    write_named_preset_store(store)
+
+
+def delete_named_preset(name: str) -> bool:
+    safe_name = name.strip()
+    if not safe_name:
+        return False
+    store = load_named_preset_store()
+    presets = store.get("presets", {})
+    if safe_name not in presets:
+        return False
+    del presets[safe_name]
+    store["selected"] = safe_name if store.get("selected") != safe_name else ""
+    if presets and not store["selected"]:
+        store["selected"] = sorted(presets.keys())[0]
+    write_named_preset_store(store)
+    return True
+
+
+def extract_flag_value(args: list[str], flag: str) -> Optional[str]:
+    for idx, arg in enumerate(args):
+        if arg == flag and idx + 1 < len(args):
+            return args[idx + 1]
+        if arg.startswith(flag + "="):
+            return arg.split("=", 1)[1]
+    return None
+
+
+def ask_named_preset_selection(default_name: str = "") -> str:
+    names = list_named_presets()
+    if not names:
+        return ""
+    print("\n--- Kayitli CLI presetleri ---")
+    for name in names:
+        mark = " *" if name == default_name else ""
+        print(f"- {name}{mark}")
+    print("------------------------------")
+    prompt = "Yüklenecek preset adı"
+    if default_name:
+        prompt += f" [varsayılan={default_name}]"
+    raw = input(f"{prompt} (boş=geç): ").strip()
+    if not raw:
+        return default_name if default_name in names else ""
+    return raw
 
 
 def db_to_linear(db: float) -> float:
@@ -314,18 +429,62 @@ def prepare_backing(backing_file: Optional[Path], sr: int, record_seconds: float
 
 
 def main() -> None:
-    quick_mode = "--quick" in sys.argv[1:]
+    args = sys.argv[1:]
+    quick_mode = "--quick" in args
+    list_only = "--list-presets" in args
+    preset_name_arg = extract_flag_value(args, "--preset")
+    save_preset_arg = extract_flag_value(args, "--save-preset")
+    delete_preset_arg = extract_flag_value(args, "--delete-preset")
 
     print("\n=== Gitar Amfi Kaydedici (Terminal Sürümü) ===")
     print("Not: Aygıt kimliği bilmiyorsanız boş bırakın. Enter ile varsayılan seçilir.\n")
 
+    if list_only:
+        names = list_named_presets()
+        if names:
+            print("Kayitli CLI presetleri:")
+            for name in names:
+                print(f"- {name}")
+        else:
+            print("Kayitli CLI preseti bulunmuyor.")
+        return
+
+    if delete_preset_arg:
+        if delete_named_preset(delete_preset_arg):
+            print(f"CLI preset silindi: {delete_preset_arg}")
+        else:
+            print(f"CLI preset bulunamadı: {delete_preset_arg}")
+        return
+
     settings = load_saved_settings()
+    named_store = load_named_preset_store()
+    selected_preset_name = ""
+    if preset_name_arg:
+        preset = load_named_preset(preset_name_arg)
+        if preset is None:
+            print(f"CLI preset bulunamadı: {preset_name_arg}")
+            return
+        settings = preset
+        selected_preset_name = preset_name_arg
     if quick_mode:
-        print("Hızlı mod: kayıtlı ayarlar ile sorusuz kayıt başlatılıyor.")
+        if selected_preset_name:
+            print(f"Hızlı mod: '{selected_preset_name}' preset'i ile sorusuz kayıt başlatılıyor.")
+        else:
+            print("Hızlı mod: kayıtlı ayarlar ile sorusuz kayıt başlatılıyor.")
     elif PRESET_PATH.exists():
         use_saved = input("Kayıtlı ayarlar yüklensin mi? [E/h]: ").strip().lower()
         if use_saved in ("h", "hayır", "hayir", "n", "no"):
             settings = DEFAULT_SETTINGS.copy()
+        elif not selected_preset_name and named_store.get("presets"):
+            requested_name = ask_named_preset_selection(str(named_store.get("selected", "") or ""))
+            if requested_name:
+                preset = load_named_preset(requested_name)
+                if preset is not None:
+                    settings = preset
+                    selected_preset_name = requested_name
+                    print(f"CLI preset yüklendi: {selected_preset_name}")
+                else:
+                    print(f"CLI preset bulunamadı: {requested_name}. Son kullanılan ayarlar ile devam ediliyor.")
 
     if not quick_mode and input("Aygıt listesi gösterilsin mi? [E/h]: ").strip().lower() in ("", "e", "evet", "y", "yes"):
         try:
@@ -499,9 +658,31 @@ def main() -> None:
         }
     )
 
+    if save_preset_arg:
+        try:
+            save_named_preset(save_preset_arg, settings)
+            selected_preset_name = save_preset_arg.strip()
+            print(f"CLI preset kaydedildi: {selected_preset_name}")
+        except ValueError as exc:
+            print(f"CLI preset kaydedilemedi: {exc}")
+    elif not quick_mode:
+        prompt_default = selected_preset_name or str(named_store.get("selected", "") or "")
+        raw_name = input(
+            f"İsimli CLI preset olarak da kaydedilsin mi? [{prompt_default or 'boş=hayır'}]: "
+        ).strip()
+        target_name = raw_name or prompt_default
+        if raw_name or (prompt_default and raw_name == ""):
+            try:
+                save_named_preset(target_name, settings)
+                print(f"CLI preset kaydedildi: {target_name}")
+            except ValueError as exc:
+                print(f"CLI preset kaydedilemedi: {exc}")
+
     print(f"Mix WAV: {mix_wav_path}")
     print(f"İşlenmiş WAV: {vocal_wav_path}")
     print(f"Ayarlar kaydedildi: {PRESET_PATH}")
+    if NAMED_PRESET_PATH.exists():
+        print(f"CLI preset deposu: {NAMED_PRESET_PATH}")
     print("Tamamlandı.")
 
 
