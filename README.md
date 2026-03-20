@@ -201,9 +201,16 @@ macOS workflow icin onerilen GitHub secrets:
 Ornek release:
 
 ```bash
-git tag v1.1.2
+git checkout main
+git pull --ff-only origin main
+python3 scripts/tag_release.py
 git push origin v1.1.2
 ```
+
+Not:
+
+- tag her zaman merge edilmis `main` commit'i uzerinde olusturulmali
+- release body'si `CHANGELOG.md` kaynagindan `docs/RELEASE_BODY.md` olarak uretilir
 
 ## Kullanım
 

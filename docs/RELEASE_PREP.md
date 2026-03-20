@@ -35,16 +35,24 @@ Not:
 - `.github/workflows/release-macos.yml`
 - `release_macos_desktop.sh`
 - `notarize_macos_app.sh`
+- `scripts/generate_release_notes.py`
+- `scripts/tag_release.py`
 
 ## Onerilen Akis
 
 1. Uygulama testlerini tamamla.
 2. `python scripts/generate_release_notes.py` ile `docs/RELEASE_BODY.md` dosyasini guncelle.
-3. `git diff` ile yalnizca release'e girecek dosyalari gozden gecir.
-4. Release commit'ini olustur.
-5. `git tag v1.1.2`
-6. `git push origin <branch>`
-7. `git push origin v1.1.2`
+3. Release hazirlik PR'ini `main` branch'ine merge et.
+4. Temiz bir `main` checkout'u al ve `git pull --ff-only origin main` calistir.
+5. `python3 scripts/tag_release.py` ile `VERSION` tabanli tag'i mevcut `main` commit'i uzerinde olustur.
+6. `git push origin v1.1.2`
+
+## Tek Akis Kurali
+
+- Release tag'i her zaman merge edilmis `main` commit'i uzerinde olusmali.
+- Tag, release hazirlik branch'inde degil, `main` uzerinde acilmalidir.
+- `VERSION`, `CHANGELOG.md` ve `docs/RELEASE_BODY.md` ayni surumu gostermelidir.
+- GitHub Release body workflow tarafinda `docs/RELEASE_BODY.md` uzerinden otomatik yayinlanir.
 
 ## Notarized macOS Release
 
