@@ -5,7 +5,10 @@ __pycache__/
 .venv/
 build/
 dist/
-*.spec
-cleanup_*/
 *.swp
 .DS_Store
+.gui_saved_preset.json
+.last_preset.json
+.last_session.json
+.venv_py39_backup_*/
+cleanup_*/

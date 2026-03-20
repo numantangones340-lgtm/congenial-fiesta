@@ -1,12 +1,72 @@
 import shutil
 import subprocess
 import time
+import json
+import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
+
+PRESET_PATH = Path(__file__).resolve().with_name(".last_preset.json")
+DEFAULT_SETTINGS = {
+    "gain": 6.0,
+    "boost": 6.0,
+    "bass": 3.0,
+    "treble": 2.0,
+    "dist": 25.0,
+    "noise_reduction": 25.0,
+    "speed_percent": 100.0,
+    "output_gain_db": 0.0,
+    "backing_level": 100.0,
+    "vocal_level": 85.0,
+    "record_seconds": 60.0,
+    "input_device_id": None,
+    "output_device_id": None,
+}
+
+
+def no_device_help_text() -> str:
+    return (
+        "Ses aygıtı bulunamadı. macOS'ta Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon bölümünden "
+        "Terminal veya GuitarAmpRecorder için izin verin. Harici mikrofon/ses kartı kullanıyorsanız yeniden takıp programı tekrar açın."
+    )
+
+
+def load_saved_settings() -> dict:
+    settings = DEFAULT_SETTINGS.copy()
+    if not PRESET_PATH.exists():
+        return settings
+    try:
+        raw = json.loads(PRESET_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return settings
+    if not isinstance(raw, dict):
+        return settings
+    for key in settings:
+        value = raw.get(key)
+        if key in ("input_device_id", "output_device_id"):
+            if isinstance(value, (int, float)):
+                settings[key] = int(value)
+            elif value is None:
+                settings[key] = None
+            continue
+        if isinstance(value, (int, float)):
+            settings[key] = float(value)
+    return settings
+
+
+def save_settings(settings: dict) -> None:
+    safe = {}
+    for key in DEFAULT_SETTINGS:
+        value = settings.get(key, DEFAULT_SETTINGS[key])
+        if key in ("input_device_id", "output_device_id"):
+            safe[key] = int(value) if isinstance(value, (int, float)) else None
+        else:
+            safe[key] = float(value) if isinstance(value, (int, float)) else DEFAULT_SETTINGS[key]
+    PRESET_PATH.write_text(json.dumps(safe, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def db_to_linear(db: float) -> float:
@@ -134,6 +194,20 @@ def ask_int_optional(label: str) -> Optional[int]:
         return None
 
 
+def ask_int_optional_with_default(label: str, default: Optional[int]) -> Optional[int]:
+    if default is None:
+        return ask_int_optional(label)
+
+    raw = input(f"{label} [kayıtlı={default}] (boş bırak = kayıtlı): ").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        print("Geçersiz aygıt kimliği, kayıtlı değer kullanılıyor.")
+        return default
+
+
 def ask_record_limit_seconds() -> int:
     raw = input("Kayıt sınırı saat [1/2] (varsayılan: 1): ").strip()
     if raw == "2":
@@ -144,9 +218,41 @@ def ask_record_limit_seconds() -> int:
 def list_devices() -> None:
     print("\n--- Ses Aygıtları ---")
     devices = sd.query_devices()
+    if len(devices) == 0:
+        print(no_device_help_text())
+        print("---------------------\n")
+        return
     for i, dev in enumerate(devices):
         print(f"{i}: {dev['name']} | in={dev['max_input_channels']} out={dev['max_output_channels']}")
     print("---------------------\n")
+
+
+def find_first_input_device() -> Optional[int]:
+    try:
+        devices = sd.query_devices()
+    except Exception:
+        return None
+    for i, dev in enumerate(devices):
+        if int(dev.get("max_input_channels", 0)) > 0:
+            return i
+    return None
+
+
+def candidate_input_devices(preferred: Optional[int]) -> list[Optional[int]]:
+    out: list[Optional[int]] = []
+    for cand in (preferred, None, find_first_input_device()):
+        if cand not in out:
+            out.append(cand)
+    return out
+
+
+def next_take_name(prefix: str = "quick_take") -> str:
+    desktop = Path.home() / "Desktop"
+    for i in range(1, 10000):
+        name = f"{prefix}_{i:03d}"
+        if not (desktop / f"{name}.mp3").exists() and not (desktop / f"{name}_mix.wav").exists():
+            return name
+    return f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
 
 
 def run_test(
@@ -208,44 +314,83 @@ def prepare_backing(backing_file: Optional[Path], sr: int, record_seconds: float
 
 
 def main() -> None:
+    quick_mode = "--quick" in sys.argv[1:]
+
     print("\n=== Gitar Amfi Kaydedici (Terminal Sürümü) ===")
     print("Not: Aygıt kimliği bilmiyorsanız boş bırakın. Enter ile varsayılan seçilir.\n")
 
-    if input("Aygıt listesi gösterilsin mi? [E/h]: ").strip().lower() in ("", "e", "evet", "y", "yes"):
+    settings = load_saved_settings()
+    if quick_mode:
+        print("Hızlı mod: kayıtlı ayarlar ile sorusuz kayıt başlatılıyor.")
+    elif PRESET_PATH.exists():
+        use_saved = input("Kayıtlı ayarlar yüklensin mi? [E/h]: ").strip().lower()
+        if use_saved in ("h", "hayır", "hayir", "n", "no"):
+            settings = DEFAULT_SETTINGS.copy()
+
+    if not quick_mode and input("Aygıt listesi gösterilsin mi? [E/h]: ").strip().lower() in ("", "e", "evet", "y", "yes"):
         try:
             list_devices()
         except Exception as exc:
             print(f"Aygıt listeleme hatası: {exc}")
 
-    backing_file = ask_backing_file()
+    if find_first_input_device() is None:
+        print(no_device_help_text())
+        return
 
-    output_name = input("Çıkış dosya adı [guitar_mix_YYYYMMDD_HHMMSS]: ").strip()
-    if not output_name:
-        output_name = f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
+    backing_file = None if quick_mode else ask_backing_file()
 
-    gain = ask_float("Kazanç dB", 6)
-    boost = ask_float("Güçlendirme dB", 6)
-    bass = ask_float("Bas dB", 3)
-    treble = ask_float("Tiz dB", 2)
-    dist = ask_float("Distorsiyon %", 25)
-    noise_reduction = ask_float("Gürültü azaltma %", 25)
-    speed_percent = ask_float("Hız % (50-150)", 100)
-    output_gain_db = ask_float("Çıkış kazancı dB", 0)
+    if quick_mode:
+        output_name = next_take_name("quick_take")
+    else:
+        output_name = input("Çıkış dosya adı [guitar_mix_YYYYMMDD_HHMMSS]: ").strip()
+        if not output_name:
+            output_name = f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
 
-    backing_level = ask_float("Arka plan seviye %", 100)
-    vocal_level = ask_float("Vokal seviye %", 85)
+    if quick_mode:
+        gain = settings["gain"]
+        boost = settings["boost"]
+        bass = settings["bass"]
+        treble = settings["treble"]
+        dist = settings["dist"]
+        noise_reduction = settings["noise_reduction"]
+        speed_percent = settings["speed_percent"]
+        output_gain_db = settings["output_gain_db"]
+        backing_level = settings["backing_level"]
+        vocal_level = settings["vocal_level"]
+        record_seconds = settings["record_seconds"]
+        limit_seconds = 3600
+        input_idx = settings["input_device_id"]
+        output_idx = settings["output_device_id"]
+    else:
+        gain = ask_float("Kazanç dB", settings["gain"])
+        boost = ask_float("Güçlendirme dB", settings["boost"])
+        bass = ask_float("Bas dB", settings["bass"])
+        treble = ask_float("Tiz dB", settings["treble"])
+        dist = ask_float("Distorsiyon %", settings["dist"])
+        noise_reduction = ask_float("Gürültü azaltma %", settings["noise_reduction"])
+        speed_percent = ask_float("Hız % (50-150)", settings["speed_percent"])
+        output_gain_db = ask_float("Çıkış kazancı dB", settings["output_gain_db"])
 
-    record_seconds = ask_float("Kayıt süresi sn (sadece mikrofon için)", 60)
-    if record_seconds <= 0:
-        record_seconds = 60
-    limit_seconds = ask_record_limit_seconds()
+        backing_level = ask_float("Arka plan seviye %", settings["backing_level"])
+        vocal_level = ask_float("Vokal seviye %", settings["vocal_level"])
 
-    input_idx = ask_int_optional("Mikrofon Aygıt Kimliği")
-    output_idx = ask_int_optional("Çıkış Aygıt Kimliği")
+        record_seconds = ask_float("Kayıt süresi sn (sadece mikrofon için)", settings["record_seconds"])
+        if record_seconds <= 0:
+            record_seconds = 60
+        limit_seconds = ask_record_limit_seconds()
+
+        input_idx = ask_int_optional_with_default("Mikrofon Aygıt Kimliği", settings["input_device_id"])
+        output_idx = ask_int_optional_with_default("Çıkış Aygıt Kimliği", settings["output_device_id"])
 
     sr = 44100
-    do_test = input("Önce 5 sn test yapılsın mı? [E/h]: ").strip().lower()
-    if do_test in ("", "e", "evet", "y", "yes"):
+    if quick_mode and input_idx is None:
+        auto_input = find_first_input_device()
+        if auto_input is not None:
+            input_idx = auto_input
+            print(f"Hızlı mod: otomatik mikrofon aygıtı seçildi ({input_idx}).")
+
+    do_test = "" if quick_mode else input("Önce 5 sn test yapılsın mı? [E/h]: ").strip().lower()
+    if do_test in ("", "e", "evet", "y", "yes") and not quick_mode:
         try:
             run_test(sr, input_idx, output_idx, gain, boost, bass, treble, dist, output_name)
         except Exception as exc:
@@ -261,18 +406,36 @@ def main() -> None:
         return
 
     duration_sec = len(backing) / sr
-    try:
-        if has_backing:
+    recorded = None
+    record_error: Optional[Exception] = None
+    if has_backing:
+        try:
             print(f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir...")
             recorded = sd.playrec(backing, samplerate=sr, channels=1, dtype="float32", device=(input_idx, output_idx))
-        else:
-            print(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn).")
-            recorded = sd.rec(frames=len(backing), samplerate=sr, channels=1, dtype="float32", device=input_idx)
-        sd.wait()
-    except Exception as exc:
-        print(f"Kayıt hatası: {exc}")
-        print("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
-        return
+            sd.wait()
+        except Exception as exc:
+            print(f"Kayıt hatası: {exc}")
+            print("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
+            return
+    else:
+        for cand in candidate_input_devices(input_idx):
+            try:
+                if cand is None:
+                    print(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn).")
+                else:
+                    print(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn), aygıt={cand}.")
+                recorded = sd.rec(frames=len(backing), samplerate=sr, channels=1, dtype="float32", device=cand)
+                sd.wait()
+                input_idx = cand
+                record_error = None
+                break
+            except Exception as exc:
+                record_error = exc
+                continue
+        if recorded is None:
+            print(f"Kayıt hatası: {record_error}")
+            print("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
+            return
 
     voice = recorded[:, 0]
     print("Amfi efektleri uygulanıyor...")
@@ -318,8 +481,27 @@ def main() -> None:
     else:
         print("ffmpeg bulunamadı, MP3 atlandı.")
 
+    save_settings(
+        {
+            "gain": gain,
+            "boost": boost,
+            "bass": bass,
+            "treble": treble,
+            "dist": dist,
+            "noise_reduction": noise_reduction,
+            "speed_percent": speed_percent,
+            "output_gain_db": output_gain_db,
+            "backing_level": backing_level,
+            "vocal_level": vocal_level,
+            "record_seconds": record_seconds,
+            "input_device_id": input_idx,
+            "output_device_id": output_idx,
+        }
+    )
+
     print(f"Mix WAV: {mix_wav_path}")
     print(f"İşlenmiş WAV: {vocal_wav_path}")
+    print(f"Ayarlar kaydedildi: {PRESET_PATH}")
     print("Tamamlandı.")
 
 
