@@ -141,6 +141,7 @@ CLI için isimli preset deposu da desteklenir:
 python3 cli_app.py --list-presets
 python3 cli_app.py --show-preset "Temiz"
 python3 cli_app.py --select-preset "Temiz"
+python3 cli_app.py --rename-preset "Eski" "Yeni"
 python3 cli_app.py --show-settings
 python3 cli_app.py --show-settings --preset "Temiz"
 python3 cli_app.py --list-devices

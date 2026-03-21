@@ -242,6 +242,28 @@ def delete_named_preset(name: str) -> bool:
     return True
 
 
+def rename_named_preset(old_name: str, new_name: str) -> Tuple[bool, str]:
+    safe_old = old_name.strip()
+    safe_new = new_name.strip()
+    if not safe_old or not safe_new:
+        return False, "Preset adı boş olamaz."
+    if safe_old == safe_new:
+        return False, "Yeni preset adı farklı olmalı."
+
+    store = load_named_preset_store()
+    presets = store.get("presets", {})
+    if safe_old not in presets:
+        return False, f"CLI preset bulunamadı: {safe_old}"
+    if safe_new in presets:
+        return False, f"CLI preset zaten var: {safe_new}"
+
+    presets[safe_new] = presets.pop(safe_old)
+    if store.get("selected") == safe_old:
+        store["selected"] = safe_new
+    write_named_preset_store(store)
+    return True, f"CLI preset yeniden adlandırıldı: {safe_old} -> {safe_new}"
+
+
 def extract_flag_value(args: list[str], flag: str) -> Optional[str]:
     for idx, arg in enumerate(args):
         if arg == flag and idx + 1 < len(args):
@@ -275,6 +297,7 @@ def cli_usage_text() -> str:
         "  python3 cli_app.py --show-settings [--preset ADI]\n"
         "  python3 cli_app.py --show-preset ADI\n"
         "  python3 cli_app.py --select-preset ADI\n"
+        "  python3 cli_app.py --rename-preset ESKI YENI\n"
         "  python3 cli_app.py --list-devices\n"
         "  python3 cli_app.py --test [--preset ADI]\n"
         "  python3 cli_app.py --list-presets\n"
@@ -286,6 +309,7 @@ def cli_usage_text() -> str:
         "  --show-settings         Etkin CLI ayarlarini gosterir ve cikar.\n"
         "  --show-preset ADI       Isimli preset icerigini gosterir ve cikar.\n"
         "  --select-preset ADI     Isimli preset'i etkin varsayilan yapar ve cikar.\n"
+        "  --rename-preset ESKI YENI  Isimli CLI preset adini degistirir ve cikar.\n"
         "  --list-devices          Kullanilabilir ses aygitlarini listeler ve cikar.\n"
         "  --test                  5 sn cihaz testi yapar ve cikar.\n"
         "  --preset ADI            Isimli CLI preset yukler.\n"
@@ -304,6 +328,7 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
         "show_settings_only": False,
         "show_named_preset": None,
         "select_named_preset": None,
+        "rename_named_preset": None,
         "test_only": False,
         "help_only": False,
         "preset_name": None,
@@ -336,6 +361,16 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
         if arg == "--test":
             parsed["test_only"] = True
             i += 1
+            continue
+        if arg == "--rename-preset":
+            if i + 2 >= len(args):
+                return parsed, "Eksik deger: --rename-preset"
+            old_value = args[i + 1].strip()
+            new_value = args[i + 2].strip()
+            if not old_value or not new_value:
+                return parsed, "Gecersiz bos deger: --rename-preset"
+            parsed["rename_named_preset"] = (old_value, new_value)
+            i += 3
             continue
         if arg in ("--preset", "--save-preset", "--delete-preset", "--show-preset", "--select-preset"):
             if i + 1 >= len(args):
@@ -652,6 +687,7 @@ def main() -> None:
     show_settings_only = bool(parsed_args["show_settings_only"])
     show_named_preset = parsed_args["show_named_preset"]
     select_named_preset = parsed_args["select_named_preset"]
+    rename_named_preset_arg = parsed_args["rename_named_preset"]
     test_only = bool(parsed_args["test_only"])
     preset_name_arg = parsed_args["preset_name"]
     save_preset_arg = parsed_args["save_preset"]
@@ -676,6 +712,17 @@ def main() -> None:
             list_devices()
         except Exception as exc:
             print_warning(f"Aygıt listeleme hatası: {exc}")
+        return
+
+    if rename_named_preset_arg:
+        old_name, new_name = rename_named_preset_arg
+        renamed, message = rename_named_preset(old_name, new_name)
+        if renamed:
+            print_success(message)
+        else:
+            print_warning(message)
+        print_named_preset_list_summary(load_named_preset_store())
+        print_status(f"CLI preset deposu: {NAMED_PRESET_PATH}")
         return
 
     if delete_preset_arg:
