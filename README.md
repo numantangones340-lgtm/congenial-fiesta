@@ -181,10 +181,9 @@ Developer ID + notarization ile:
 ## Yayinlama (Diger Kullanicilar Icin)
 
 Bu repoda otomatik yayin akisi eklidir:
-- `.github/workflows/release-macos.yml`
-  - `v*` etiketi push edilince macOS app build eder, varsa codesign + notarization yapar, zip uretir ve Release'e koyar.
-- `.github/workflows/release-windows.yml`
-  - `v*` etiketi push edilince Windows zip build eder ve Release'e koyar.
+- `.github/workflows/release.yml`
+  - `v*` etiketi push edilince tek matrix workflow ile macOS ve Windows build alir.
+  - macOS kolu varsa codesign + notarization yapar, her iki platform icin zip ve Release asset uretir.
 - `.github/workflows/static.yml`
   - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
 
@@ -212,7 +211,7 @@ Sürüm bilgisi:
 - `VERSION` dosyasından okunur
 - uygulama içinde `Hakkinda` ile görüntülenir
 - surum degisiklikleri `CHANGELOG.md` içinde tutulur
-- yayin ozeti icin `docs/RELEASE_NOTES_1.1.2.md` kullanilabilir
+- GitHub Release notlari `scripts/generate_release_notes.py` ile `CHANGELOG.md` kaynagindan otomatik uretilir
 
 1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
 2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.

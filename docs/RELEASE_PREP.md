@@ -6,7 +6,8 @@ Bu not, Git tarafini temiz tutup yeni surumu yayinlamadan once hangi adimlarin t
 
 - `VERSION`: `1.1.2`
 - Changelog: `CHANGELOG.md`
-- Release notes: `docs/RELEASE_NOTES_1.1.2.md`
+- Release notes kaynagi: `CHANGELOG.md`
+- Release notes uretimi: `python scripts/generate_release_notes.py --output dist/release-notes.md`
 
 ## Git Temizlik Kurallari
 
@@ -29,10 +30,10 @@ Not:
 - `README.md`
 - `VERSION`
 - `CHANGELOG.md`
-- `docs/RELEASE_NOTES_1.1.2.md`
+- `scripts/generate_release_notes.py`
 - `docs/MACOS_RELEASE_CHECKLIST.md`
 - `docs/PRODUCT_ROADMAP.md`
-- `.github/workflows/release-macos.yml`
+- `.github/workflows/release.yml`
 - `release_macos_desktop.sh`
 - `notarize_macos_app.sh`
 
@@ -40,10 +41,13 @@ Not:
 
 1. Uygulama testlerini tamamla.
 2. `git diff` ile yalnizca release'e girecek dosyalari gozden gecir.
-3. Release commit'ini olustur.
-4. `git tag v1.1.2`
-5. `git push origin <branch>`
-6. `git push origin v1.1.2`
+3. Sadece hedef dosyalari `git add` ile secerek stage et:
+   `git add VERSION CHANGELOG.md README.md app.py cli_app.py scripts/ tests/ .github/workflows/release.yml .github/workflows/static.yml docs/RELEASE_PREP.md`
+4. `git status --short` ile `.venv/` degisikliklerinin stage disinda kaldigini dogrula.
+5. Release commit'ini olustur.
+6. `git tag v1.1.2`
+7. `git push origin <branch>`
+8. `git push origin v1.1.2`
 
 ## Notarized macOS Release
 

@@ -1,4 +1,4 @@
-name: Build and Release macOS App
+name: Build and Release Desktop Apps
 
 on:
   workflow_dispatch:
@@ -9,9 +9,26 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  build-macos:
-    runs-on: macos-14
+  build-release:
+    name: Build ${{ matrix.platform.label }}
+    runs-on: ${{ matrix.platform.runs_on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - label: macOS
+            runs_on: macos-14
+            artifact_name: GuitarAmpRecorder-macOS
+            asset_path: dist/GuitarAmpRecorder-macOS.zip
+          - label: Windows
+            runs_on: windows-latest
+            artifact_name: GuitarAmpRecorder-Windows
+            asset_path: dist/GuitarAmpRecorder-Windows.zip
     env:
       APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_APP_CERT_BASE64 }}
       APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_APP_CERT_PASSWORD }}
@@ -36,11 +53,12 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Build app bundle
+      - name: Build macOS app bundle
+        if: matrix.platform.label == 'macOS'
         run: ./build_macos_app.sh
 
       - name: Import Developer ID certificate
-        if: ${{ env.APPLE_CERTIFICATE_BASE64 != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.APPLE_CODESIGN_IDENTITY != '' && env.KEYCHAIN_PASSWORD != '' }}
+        if: matrix.platform.label == 'macOS' && env.APPLE_CERTIFICATE_BASE64 != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.APPLE_CODESIGN_IDENTITY != '' && env.KEYCHAIN_PASSWORD != ''
         run: |
           CERT_PATH="$RUNNER_TEMP/developer-id-app.p12"
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
@@ -54,12 +72,12 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
 
-      - name: Sign app bundle
-        if: ${{ env.APPLE_CODESIGN_IDENTITY != '' }}
+      - name: Sign macOS app bundle
+        if: matrix.platform.label == 'macOS' && env.APPLE_CODESIGN_IDENTITY != ''
         run: ./sign_macos_app.sh ./dist/GuitarAmpRecorder.app "$APPLE_CODESIGN_IDENTITY"
 
       - name: Store notarization credentials
-        if: ${{ env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != '' }}
+        if: matrix.platform.label == 'macOS' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
           xcrun notarytool store-credentials "AC_PROFILE" \
             --apple-id "$APPLE_ID" \
@@ -67,20 +85,37 @@ jobs:
             --password "$APPLE_APP_PASSWORD"
 
       - name: Notarize and staple app bundle
-        if: ${{ env.APPLE_CODESIGN_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != '' }}
+        if: matrix.platform.label == 'macOS' && env.APPLE_CODESIGN_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: ./notarize_macos_app.sh ./dist/GuitarAmpRecorder.app AC_PROFILE "$APPLE_TEAM_ID"
 
-      - name: Package zip
+      - name: Package macOS zip
+        if: matrix.platform.label == 'macOS'
         run: ./package_macos_release.sh
+
+      - name: Build Windows app
+        if: matrix.platform.label == 'Windows'
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --windowed --name GuitarAmpRecorder app.py
+
+      - name: Package Windows zip
+        if: matrix.platform.label == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/GuitarAmpRecorder/* -DestinationPath dist/GuitarAmpRecorder-Windows.zip -Force
+
+      - name: Generate release notes
+        run: python scripts/generate_release_notes.py --output dist/release-notes.md
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GuitarAmpRecorder-macOS
-          path: dist/GuitarAmpRecorder-macOS.zip
+          name: ${{ matrix.platform.artifact_name }}
+          path: ${{ matrix.platform.asset_path }}
 
       - name: Publish release asset
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/GuitarAmpRecorder-macOS.zip
+          files: ${{ matrix.platform.asset_path }}
+          body_path: dist/release-notes.md

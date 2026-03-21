@@ -11,6 +11,7 @@ import sounddevice as sd
 import soundfile as sf
 
 PRESET_PATH = Path(__file__).resolve().with_name(".last_preset.json")
+VERSION_PATH = Path(__file__).resolve().with_name("VERSION")
 DEFAULT_SETTINGS = {
     "gain": 6.0,
     "boost": 6.0,
@@ -26,6 +27,33 @@ DEFAULT_SETTINGS = {
     "input_device_id": None,
     "output_device_id": None,
 }
+
+
+def read_app_version() -> str:
+    try:
+        version = VERSION_PATH.read_text(encoding="utf-8").strip()
+    except Exception:
+        return "0.1.0-dev"
+    return version or "0.1.0-dev"
+
+
+def print_cli_usage() -> None:
+    print("Kullanim: python cli_app.py [--quick] [--help] [--version]")
+    print("")
+    print("--quick    Kayitli ayarlarla hizli kayit akisina girer.")
+    print("--help     Bu yardim metnini gosterir.")
+    print("--version  Uygulama surumunu yazdirir.")
+
+
+def handle_meta_args(argv: list[str]) -> bool:
+    args = set(argv)
+    if "--help" in args or "-h" in args:
+        print_cli_usage()
+        return True
+    if "--version" in args:
+        print(read_app_version())
+        return True
+    return False
 
 
 def no_device_help_text() -> str:
@@ -314,7 +342,11 @@ def prepare_backing(backing_file: Optional[Path], sr: int, record_seconds: float
 
 
 def main() -> None:
-    quick_mode = "--quick" in sys.argv[1:]
+    argv = sys.argv[1:]
+    if handle_meta_args(argv):
+        return
+
+    quick_mode = "--quick" in argv
 
     print("\n=== Gitar Amfi Kaydedici (Terminal Sürümü) ===")
     print("Not: Aygıt kimliği bilmiyorsanız boş bırakın. Enter ile varsayılan seçilir.\n")
