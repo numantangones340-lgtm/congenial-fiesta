@@ -77,6 +77,30 @@ def print_run_summary(mode: str, preset_name: str, input_idx: Optional[int], out
     )
 
 
+def print_settings_summary(settings: dict, preset_name: str = "") -> None:
+    print_block(
+        "CLI Ayar Özeti",
+        format_kv_lines(
+            [
+                ("Kaynak", preset_name or "son kullanılan ayarlar"),
+                ("Kazanç dB", settings["gain"]),
+                ("Güçlendirme dB", settings["boost"]),
+                ("Bas dB", settings["bass"]),
+                ("Tiz dB", settings["treble"]),
+                ("Distorsiyon %", settings["dist"]),
+                ("Gürültü azaltma %", settings["noise_reduction"]),
+                ("Hız %", settings["speed_percent"]),
+                ("Çıkış kazancı dB", settings["output_gain_db"]),
+                ("Arka plan %", settings["backing_level"]),
+                ("Vokal %", settings["vocal_level"]),
+                ("Kayıt süresi sn", settings["record_seconds"]),
+                ("Mikrofon aygıtı", settings["input_device_id"]),
+                ("Çıkış aygıtı", settings["output_device_id"]),
+            ]
+        ),
+    )
+
+
 def normalize_settings(raw: Optional[dict]) -> dict:
     settings = DEFAULT_SETTINGS.copy()
     if not isinstance(raw, dict):
@@ -235,6 +259,7 @@ def cli_usage_text() -> str:
     return (
         "Kullanim:\n"
         "  python3 cli_app.py [--quick] [--preset ADI]\n"
+        "  python3 cli_app.py --show-settings [--preset ADI]\n"
         "  python3 cli_app.py --list-devices\n"
         "  python3 cli_app.py --test [--preset ADI]\n"
         "  python3 cli_app.py --list-presets\n"
@@ -243,6 +268,7 @@ def cli_usage_text() -> str:
         "  python3 cli_app.py --help\n\n"
         "Secenekler:\n"
         "  --quick                 Kayitli ayarlar ile sorusuz hizli kayit baslatir.\n"
+        "  --show-settings         Etkin CLI ayarlarini gosterir ve cikar.\n"
         "  --list-devices          Kullanilabilir ses aygitlarini listeler ve cikar.\n"
         "  --test                  5 sn cihaz testi yapar ve cikar.\n"
         "  --preset ADI            Isimli CLI preset yukler.\n"
@@ -258,6 +284,7 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
         "quick_mode": False,
         "list_only": False,
         "list_devices_only": False,
+        "show_settings_only": False,
         "test_only": False,
         "help_only": False,
         "preset_name": None,
@@ -281,6 +308,10 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
             continue
         if arg == "--list-devices":
             parsed["list_devices_only"] = True
+            i += 1
+            continue
+        if arg == "--show-settings":
+            parsed["show_settings_only"] = True
             i += 1
             continue
         if arg == "--test":
@@ -583,6 +614,7 @@ def main() -> None:
     quick_mode = bool(parsed_args["quick_mode"])
     list_only = bool(parsed_args["list_only"])
     list_devices_only = bool(parsed_args["list_devices_only"])
+    show_settings_only = bool(parsed_args["show_settings_only"])
     test_only = bool(parsed_args["test_only"])
     preset_name_arg = parsed_args["preset_name"]
     save_preset_arg = parsed_args["save_preset"]
@@ -630,6 +662,14 @@ def main() -> None:
             return
         settings = preset
         selected_preset_name = preset_name_arg
+
+    if show_settings_only:
+        print_settings_summary(settings, selected_preset_name)
+        print_status(f"Ayar dosyası: {PRESET_PATH}")
+        if NAMED_PRESET_PATH.exists():
+            print_status(f"CLI preset deposu: {NAMED_PRESET_PATH}")
+        return
+
     if quick_mode:
         if selected_preset_name:
             print_status(f"Hızlı mod: '{selected_preset_name}' preset'i ile sorusuz kayıt başlatılıyor.")

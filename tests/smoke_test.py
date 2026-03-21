@@ -162,6 +162,7 @@ def test_cli_settings_roundtrip() -> None:
     assert "--quick" in help_text
     assert "--list-presets" in help_text
     assert "--list-devices" in help_text
+    assert "--show-settings" in help_text
     assert "--test" in help_text
     parsed, err = cli.parse_cli_args(["--help"])
     assert err is None
@@ -169,6 +170,10 @@ def test_cli_settings_roundtrip() -> None:
     parsed, err = cli.parse_cli_args(["--list-devices"])
     assert err is None
     assert parsed["list_devices_only"] is True
+    parsed, err = cli.parse_cli_args(["--show-settings", "--preset", "Temiz"])
+    assert err is None
+    assert parsed["show_settings_only"] is True
+    assert parsed["preset_name"] == "Temiz"
     parsed, err = cli.parse_cli_args(["--test", "--preset", "Temiz"])
     assert err is None
     assert parsed["test_only"] is True
@@ -176,6 +181,18 @@ def test_cli_settings_roundtrip() -> None:
     cli.next_take_name = lambda prefix: f"{prefix}_001"
     assert cli.device_test_output_name("") == "quick_take_001_device_test"
     assert cli.device_test_output_name("Temiz") == "Temiz_device_test"
+    settings_lines = cli.format_kv_lines(
+        [
+            ("Kaynak", "Temiz"),
+            ("Mikrofon aygıtı", None),
+            ("Çıkış aygıtı", 8),
+        ]
+    )
+    assert settings_lines == [
+        "- Kaynak          : Temiz",
+        "- Mikrofon aygıtı : varsayılan",
+        "- Çıkış aygıtı    : 8",
+    ]
     _, err = cli.parse_cli_args(["--unknown"])
     assert err == "Bilinmeyen secenek: --unknown"
 
