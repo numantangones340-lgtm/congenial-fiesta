@@ -154,9 +154,21 @@ def test_cli_settings_roundtrip() -> None:
     help_text = cli.cli_usage_text()
     assert "--quick" in help_text
     assert "--list-presets" in help_text
+    assert "--list-devices" in help_text
+    assert "--test" in help_text
     parsed, err = cli.parse_cli_args(["--help"])
     assert err is None
     assert parsed["help_only"] is True
+    parsed, err = cli.parse_cli_args(["--list-devices"])
+    assert err is None
+    assert parsed["list_devices_only"] is True
+    parsed, err = cli.parse_cli_args(["--test", "--preset", "Temiz"])
+    assert err is None
+    assert parsed["test_only"] is True
+    assert parsed["preset_name"] == "Temiz"
+    cli.next_take_name = lambda prefix: f"{prefix}_001"
+    assert cli.device_test_output_name("") == "quick_take_001_device_test"
+    assert cli.device_test_output_name("Temiz") == "Temiz_device_test"
     _, err = cli.parse_cli_args(["--unknown"])
     assert err == "Bilinmeyen secenek: --unknown"
 

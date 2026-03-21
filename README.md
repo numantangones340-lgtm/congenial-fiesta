@@ -139,6 +139,9 @@ CLI için isimli preset deposu da desteklenir:
 
 ```bash
 python3 cli_app.py --list-presets
+python3 cli_app.py --list-devices
+python3 cli_app.py --test
+python3 cli_app.py --test --preset "Temiz"
 python3 cli_app.py --preset "Temiz"
 python3 cli_app.py --quick --preset "Temiz"
 python3 cli_app.py --delete-preset "Temiz"

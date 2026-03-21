@@ -188,12 +188,16 @@ def cli_usage_text() -> str:
     return (
         "Kullanim:\n"
         "  python3 cli_app.py [--quick] [--preset ADI]\n"
+        "  python3 cli_app.py --list-devices\n"
+        "  python3 cli_app.py --test [--preset ADI]\n"
         "  python3 cli_app.py --list-presets\n"
         "  python3 cli_app.py --delete-preset ADI\n"
         "  python3 cli_app.py --save-preset ADI\n"
         "  python3 cli_app.py --help\n\n"
         "Secenekler:\n"
         "  --quick                 Kayitli ayarlar ile sorusuz hizli kayit baslatir.\n"
+        "  --list-devices          Kullanilabilir ses aygitlarini listeler ve cikar.\n"
+        "  --test                  5 sn cihaz testi yapar ve cikar.\n"
         "  --preset ADI            Isimli CLI preset yukler.\n"
         "  --save-preset ADI       Calisma sonunda mevcut ayarlari bu isimle kaydeder.\n"
         "  --delete-preset ADI     Isimli CLI preset siler ve cikar.\n"
@@ -206,6 +210,8 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
     parsed = {
         "quick_mode": False,
         "list_only": False,
+        "list_devices_only": False,
+        "test_only": False,
         "help_only": False,
         "preset_name": None,
         "save_preset": None,
@@ -224,6 +230,14 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
             continue
         if arg == "--list-presets":
             parsed["list_only"] = True
+            i += 1
+            continue
+        if arg == "--list-devices":
+            parsed["list_devices_only"] = True
+            i += 1
+            continue
+        if arg == "--test":
+            parsed["test_only"] = True
             i += 1
             continue
         if arg in ("--preset", "--save-preset", "--delete-preset"):
@@ -260,6 +274,11 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
             continue
         return parsed, f"Bilinmeyen secenek: {arg}"
     return parsed, None
+
+
+def device_test_output_name(base_name: str = "") -> str:
+    safe_name = base_name.strip()
+    return f"{safe_name or next_take_name('quick_take')}_device_test"
 
 
 def db_to_linear(db: float) -> float:
@@ -517,6 +536,8 @@ def main() -> None:
 
     quick_mode = bool(parsed_args["quick_mode"])
     list_only = bool(parsed_args["list_only"])
+    list_devices_only = bool(parsed_args["list_devices_only"])
+    test_only = bool(parsed_args["test_only"])
     preset_name_arg = parsed_args["preset_name"]
     save_preset_arg = parsed_args["save_preset"]
     delete_preset_arg = parsed_args["delete_preset"]
@@ -537,6 +558,13 @@ def main() -> None:
                 print(f"- {name}")
         else:
             print("Kayitli CLI preseti bulunmuyor.")
+        return
+
+    if list_devices_only:
+        try:
+            list_devices()
+        except Exception as exc:
+            print(f"Aygıt listeleme hatası: {exc}")
         return
 
     if delete_preset_arg:
@@ -637,6 +665,35 @@ def main() -> None:
         if auto_input is not None:
             input_idx = auto_input
             print(f"Hızlı mod: otomatik mikrofon aygıtı seçildi ({input_idx}).")
+
+    if test_only:
+        test_output_name = device_test_output_name(selected_preset_name)
+        try:
+            run_test(sr, input_idx, output_idx, gain, boost, bass, treble, dist, test_output_name)
+        except Exception as exc:
+            print(f"Test hatası: {exc}")
+            return
+        save_settings(
+            {
+                "gain": gain,
+                "boost": boost,
+                "bass": bass,
+                "treble": treble,
+                "dist": dist,
+                "noise_reduction": noise_reduction,
+                "speed_percent": speed_percent,
+                "output_gain_db": output_gain_db,
+                "backing_level": backing_level,
+                "vocal_level": vocal_level,
+                "record_seconds": record_seconds,
+                "input_device_id": input_idx,
+                "output_device_id": output_idx,
+            }
+        )
+        print(f"Ayarlar kaydedildi: {PRESET_PATH}")
+        if NAMED_PRESET_PATH.exists():
+            print(f"CLI preset deposu: {NAMED_PRESET_PATH}")
+        return
 
     do_test = "" if quick_mode else input("Önce 5 sn test yapılsın mı? [E/h]: ").strip().lower()
     if do_test in ("", "e", "evet", "y", "yes") and not quick_mode:
