@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT_DIR / "scripts" / "generate_release_notes.py"
+VERSION = ROOT_DIR.joinpath("VERSION").read_text(encoding="utf-8").strip()
 
 
 class ReleaseNotesGenerationTests(unittest.TestCase):
@@ -19,8 +20,8 @@ class ReleaseNotesGenerationTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(result.returncode, 0)
-        self.assertIn("# Release Notes 1.1.2", result.stdout)
-        self.assertIn("Canli giris metre sistemi", result.stdout)
+        self.assertIn(f"# Release Notes {VERSION}", result.stdout)
+        self.assertIn("otomatik GitHub Release notes uretimi", result.stdout)
 
     def test_output_file_is_written(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -35,8 +36,8 @@ class ReleaseNotesGenerationTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0)
             self.assertTrue(output_path.exists())
             content = output_path.read_text(encoding="utf-8")
-            self.assertIn("## [1.1.2]", ROOT_DIR.joinpath("CHANGELOG.md").read_text(encoding="utf-8"))
-            self.assertIn("# Release Notes 1.1.2", content)
+            self.assertIn(f"## [{VERSION}]", ROOT_DIR.joinpath("CHANGELOG.md").read_text(encoding="utf-8"))
+            self.assertIn(f"# Release Notes {VERSION}", content)
 
 
 if __name__ == "__main__":
