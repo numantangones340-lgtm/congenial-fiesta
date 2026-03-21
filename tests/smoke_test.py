@@ -151,6 +151,13 @@ def test_cli_settings_roundtrip() -> None:
         assert cli.list_named_presets() == []
 
     assert "Ses aygıtı bulunamadı" in cli.no_device_help_text()
+    assert cli.format_cli_value(None) == "varsayılan"
+    assert cli.format_cli_value(7) == "7"
+    lines = cli.format_kv_lines([("Mod", "test"), ("Mikrofon aygıtı", None)])
+    assert lines == [
+        "- Mod             : test",
+        "- Mikrofon aygıtı : varsayılan",
+    ]
     help_text = cli.cli_usage_text()
     assert "--quick" in help_text
     assert "--list-presets" in help_text

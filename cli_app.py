@@ -29,6 +29,54 @@ DEFAULT_SETTINGS = {
 }
 
 
+def print_block(title: str, lines: list[str]) -> None:
+    border = "=" * max(24, len(title) + 8)
+    print(f"\n{border}")
+    print(f"{title}")
+    print(border)
+    for line in lines:
+        print(line)
+    print(border)
+
+
+def format_cli_value(value: object) -> str:
+    if value is None or value == "":
+        return "varsayılan"
+    return str(value)
+
+
+def format_kv_lines(items: list[tuple[str, object]]) -> list[str]:
+    width = max((len(label) for label, _ in items), default=0)
+    return [f"- {label.ljust(width)} : {format_cli_value(value)}" for label, value in items]
+
+
+def print_status(message: str) -> None:
+    print(f"[bilgi] {message}")
+
+
+def print_success(message: str) -> None:
+    print(f"[tamam] {message}")
+
+
+def print_warning(message: str) -> None:
+    print(f"[uyarı] {message}")
+
+
+def print_run_summary(mode: str, preset_name: str, input_idx: Optional[int], output_idx: Optional[int], output_name: str) -> None:
+    print_block(
+        "CLI Oturum Özeti",
+        format_kv_lines(
+            [
+                ("Mod", mode),
+                ("Preset", preset_name or "son kullanılan"),
+                ("Mikrofon aygıtı", input_idx),
+                ("Çıkış aygıtı", output_idx),
+                ("Çıkış adı", output_name),
+            ]
+        ),
+    )
+
+
 def normalize_settings(raw: Optional[dict]) -> dict:
     settings = DEFAULT_SETTINGS.copy()
     if not isinstance(raw, dict):
@@ -170,11 +218,10 @@ def ask_named_preset_selection(default_name: str = "") -> str:
     names = list_named_presets()
     if not names:
         return ""
-    print("\n--- Kayitli CLI presetleri ---")
-    for name in names:
-        mark = " *" if name == default_name else ""
-        print(f"- {name}{mark}")
-    print("------------------------------")
+    print_block(
+        "Kayıtlı CLI Presetleri",
+        [f"- {name}{' *' if name == default_name else ''}" for name in names],
+    )
     prompt = "Yüklenecek preset adı"
     if default_name:
         prompt += f" [varsayılan={default_name}]"
@@ -428,15 +475,14 @@ def ask_record_limit_seconds() -> int:
 
 
 def list_devices() -> None:
-    print("\n--- Ses Aygıtları ---")
     devices = sd.query_devices()
     if len(devices) == 0:
-        print(no_device_help_text())
-        print("---------------------\n")
+        print_block("Ses Aygıtları", [no_device_help_text()])
         return
-    for i, dev in enumerate(devices):
-        print(f"{i}: {dev['name']} | in={dev['max_input_channels']} out={dev['max_output_channels']}")
-    print("---------------------\n")
+    print_block(
+        "Ses Aygıtları",
+        [f"{i}: {dev['name']} | in={dev['max_input_channels']} out={dev['max_output_channels']}" for i, dev in enumerate(devices)],
+    )
 
 
 def find_first_input_device() -> Optional[int]:
@@ -478,20 +524,20 @@ def run_test(
     dist: float,
     name: str,
 ) -> None:
-    print("5 sn test kaydı başlıyor...")
+    print_status("5 sn test kaydı başlıyor...")
     rec = sd.rec(frames=sr * 5, samplerate=sr, channels=1, dtype="float32", device=input_idx)
     sd.wait()
     voice = rec[:, 0]
     proc = apply_amp_chain(voice, sr, gain, boost, bass, treble, dist)
     preview = np.stack([proc, proc], axis=1)
     if output_idx is not None:
-        print("Test oynatılıyor...")
+        print_status("Test oynatılıyor...")
         sd.play(preview, samplerate=sr, device=output_idx)
         sd.wait()
 
     out = Path.home() / "Desktop" / f"{name}_device_test.wav"
     sf.write(out, proc, sr)
-    print(f"Test kaydı yazıldı: {out}")
+    print_success(f"Test kaydı yazıldı: {out}")
 
 
 def ask_backing_file() -> Optional[Path]:
@@ -512,15 +558,15 @@ def prepare_backing(backing_file: Optional[Path], sr: int, record_seconds: float
         frames = max(1, int(sr * capped_seconds))
         return np.zeros((frames, 2), dtype=np.float32), False
 
-    print("Arka plan müzik yükleniyor...")
+    print_status("Arka plan müzik yükleniyor...")
     backing, backing_sr = sf.read(backing_file, dtype="float32")
     backing = ensure_stereo(backing)
     if backing_sr != sr:
-        print(f"Örnekleme hızı {backing_sr} -> {sr} dönüştürülüyor...")
+        print_status(f"Örnekleme hızı {backing_sr} -> {sr} dönüştürülüyor...")
         backing = resample_linear(backing, backing_sr, sr)
     max_frames = int(sr * limit_seconds)
     if len(backing) > max_frames:
-        print(f"Kayıt sınırı uygulandı: {limit_seconds // 3600} saat (dosya kırpıldı).")
+        print_warning(f"Kayıt sınırı uygulandı: {limit_seconds // 3600} saat (dosya kırpıldı).")
         backing = backing[:max_frames]
     return backing, True
 
@@ -547,31 +593,31 @@ def main() -> None:
         print(cli_usage_text())
         return
 
-    print("\n=== Gitar Amfi Kaydedici (Terminal Sürümü) ===")
-    print("Not: Aygıt kimliği bilmiyorsanız boş bırakın. Enter ile varsayılan seçilir.\n")
+    print_block(
+        "Gitar Amfi Kaydedici (Terminal Sürümü)",
+        ["Not: Aygıt kimliği bilmiyorsanız boş bırakın. Enter ile varsayılan seçilir."],
+    )
 
     if list_only:
         names = list_named_presets()
         if names:
-            print("Kayitli CLI presetleri:")
-            for name in names:
-                print(f"- {name}")
+            print_block("Kayıtlı CLI Presetleri", [f"- {name}" for name in names])
         else:
-            print("Kayitli CLI preseti bulunmuyor.")
+            print_warning("Kayıtlı CLI preseti bulunmuyor.")
         return
 
     if list_devices_only:
         try:
             list_devices()
         except Exception as exc:
-            print(f"Aygıt listeleme hatası: {exc}")
+            print_warning(f"Aygıt listeleme hatası: {exc}")
         return
 
     if delete_preset_arg:
         if delete_named_preset(delete_preset_arg):
-            print(f"CLI preset silindi: {delete_preset_arg}")
+            print_success(f"CLI preset silindi: {delete_preset_arg}")
         else:
-            print(f"CLI preset bulunamadı: {delete_preset_arg}")
+            print_warning(f"CLI preset bulunamadı: {delete_preset_arg}")
         return
 
     settings = load_saved_settings()
@@ -580,15 +626,15 @@ def main() -> None:
     if preset_name_arg:
         preset = load_named_preset(preset_name_arg)
         if preset is None:
-            print(f"CLI preset bulunamadı: {preset_name_arg}")
+            print_warning(f"CLI preset bulunamadı: {preset_name_arg}")
             return
         settings = preset
         selected_preset_name = preset_name_arg
     if quick_mode:
         if selected_preset_name:
-            print(f"Hızlı mod: '{selected_preset_name}' preset'i ile sorusuz kayıt başlatılıyor.")
+            print_status(f"Hızlı mod: '{selected_preset_name}' preset'i ile sorusuz kayıt başlatılıyor.")
         else:
-            print("Hızlı mod: kayıtlı ayarlar ile sorusuz kayıt başlatılıyor.")
+            print_status("Hızlı mod: kayıtlı ayarlar ile sorusuz kayıt başlatılıyor.")
     elif PRESET_PATH.exists():
         use_saved = input("Kayıtlı ayarlar yüklensin mi? [E/h]: ").strip().lower()
         if use_saved in ("h", "hayır", "hayir", "n", "no"):
@@ -600,15 +646,15 @@ def main() -> None:
                 if preset is not None:
                     settings = preset
                     selected_preset_name = requested_name
-                    print(f"CLI preset yüklendi: {selected_preset_name}")
+                    print_success(f"CLI preset yüklendi: {selected_preset_name}")
                 else:
-                    print(f"CLI preset bulunamadı: {requested_name}. Son kullanılan ayarlar ile devam ediliyor.")
+                    print_warning(f"CLI preset bulunamadı: {requested_name}. Son kullanılan ayarlar ile devam ediliyor.")
 
     if not quick_mode and input("Aygıt listesi gösterilsin mi? [E/h]: ").strip().lower() in ("", "e", "evet", "y", "yes"):
         try:
             list_devices()
         except Exception as exc:
-            print(f"Aygıt listeleme hatası: {exc}")
+            print_warning(f"Aygıt listeleme hatası: {exc}")
 
     if find_first_input_device() is None:
         print(no_device_help_text())
@@ -664,14 +710,17 @@ def main() -> None:
         auto_input = find_first_input_device()
         if auto_input is not None:
             input_idx = auto_input
-            print(f"Hızlı mod: otomatik mikrofon aygıtı seçildi ({input_idx}).")
+            print_status(f"Hızlı mod: otomatik mikrofon aygıtı seçildi ({input_idx}).")
+
+    mode_name = "test" if test_only else ("hızlı kayıt" if quick_mode else "etkileşimli kayıt")
+    print_run_summary(mode_name, selected_preset_name, input_idx, output_idx, output_name)
 
     if test_only:
         test_output_name = device_test_output_name(selected_preset_name)
         try:
             run_test(sr, input_idx, output_idx, gain, boost, bass, treble, dist, test_output_name)
         except Exception as exc:
-            print(f"Test hatası: {exc}")
+            print_warning(f"Test hatası: {exc}")
             return
         save_settings(
             {
@@ -690,9 +739,9 @@ def main() -> None:
                 "output_device_id": output_idx,
             }
         )
-        print(f"Ayarlar kaydedildi: {PRESET_PATH}")
+        print_success(f"Ayarlar kaydedildi: {PRESET_PATH}")
         if NAMED_PRESET_PATH.exists():
-            print(f"CLI preset deposu: {NAMED_PRESET_PATH}")
+            print_status(f"CLI preset deposu: {NAMED_PRESET_PATH}")
         return
 
     do_test = "" if quick_mode else input("Önce 5 sn test yapılsın mı? [E/h]: ").strip().lower()
@@ -700,7 +749,7 @@ def main() -> None:
         try:
             run_test(sr, input_idx, output_idx, gain, boost, bass, treble, dist, output_name)
         except Exception as exc:
-            print(f"Test hatası: {exc}")
+            print_warning(f"Test hatası: {exc}")
             go_on = input("Yine de ana kayda devam edilsin mi? [E/h]: ").strip().lower()
             if go_on not in ("", "e", "evet", "y", "yes"):
                 return
@@ -708,7 +757,7 @@ def main() -> None:
     try:
         backing, has_backing = prepare_backing(backing_file, sr, record_seconds, limit_seconds)
     except Exception as exc:
-        print(f"Arka plan müzik yükleme hatası: {exc}")
+        print_warning(f"Arka plan müzik yükleme hatası: {exc}")
         return
 
     duration_sec = len(backing) / sr
@@ -716,20 +765,20 @@ def main() -> None:
     record_error: Optional[Exception] = None
     if has_backing:
         try:
-            print(f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir...")
+            print_status(f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir...")
             recorded = sd.playrec(backing, samplerate=sr, channels=1, dtype="float32", device=(input_idx, output_idx))
             sd.wait()
         except Exception as exc:
-            print(f"Kayıt hatası: {exc}")
-            print("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
+            print_warning(f"Kayıt hatası: {exc}")
+            print_warning("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
             return
     else:
         for cand in candidate_input_devices(input_idx):
             try:
                 if cand is None:
-                    print(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn).")
+                    print_status(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn).")
                 else:
-                    print(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn), aygıt={cand}.")
+                    print_status(f"Sadece mikrofon kaydı başlıyor ({duration_sec:.1f} sn), aygıt={cand}.")
                 recorded = sd.rec(frames=len(backing), samplerate=sr, channels=1, dtype="float32", device=cand)
                 sd.wait()
                 input_idx = cand
@@ -739,18 +788,18 @@ def main() -> None:
                 record_error = exc
                 continue
         if recorded is None:
-            print(f"Kayıt hatası: {record_error}")
-            print("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
+            print_warning(f"Kayıt hatası: {record_error}")
+            print_warning("İpucu: Programı yeniden açıp aygıt listesini gösterin ve Mikrofon/Çıkış Aygıt Kimliği değerlerini girin.")
             return
 
     voice = recorded[:, 0]
-    print("Amfi efektleri uygulanıyor...")
+    print_status("Amfi efektleri uygulanıyor...")
     processed = apply_amp_chain(voice, sr, gain, boost, bass, treble, dist)
     processed = reduce_background_noise(processed, sr, max(0.0, min(100.0, noise_reduction)) / 100.0)
 
     speed_ratio = max(0.5, min(1.5, speed_percent / 100.0))
     if abs(speed_ratio - 1.0) > 1e-6:
-        print(f"Hız ayarı uygulanıyor (%{speed_percent:.0f})...")
+        print_status(f"Hız ayarı uygulanıyor (%{speed_percent:.0f})...")
         backing = change_speed(backing, speed_ratio)
         processed = change_speed(processed, speed_ratio)
 
@@ -781,11 +830,11 @@ def main() -> None:
         cmd = [ffmpeg_bin, "-y", "-i", str(mix_wav_path), "-codec:a", "libmp3lame", "-qscale:a", "2", str(mp3_path)]
         try:
             subprocess.run(cmd, check=True, capture_output=True)
-            print(f"MP3 yazıldı: {mp3_path}")
+            print_success(f"MP3 yazıldı: {mp3_path}")
         except Exception as exc:
-            print(f"MP3 dönüştürme hatası: {exc}")
+            print_warning(f"MP3 dönüştürme hatası: {exc}")
     else:
-        print("ffmpeg bulunamadı, MP3 atlandı.")
+        print_warning("ffmpeg bulunamadı, MP3 atlandı.")
 
     save_settings(
         {
@@ -809,9 +858,9 @@ def main() -> None:
         try:
             save_named_preset(save_preset_arg, settings)
             selected_preset_name = save_preset_arg.strip()
-            print(f"CLI preset kaydedildi: {selected_preset_name}")
+            print_success(f"CLI preset kaydedildi: {selected_preset_name}")
         except ValueError as exc:
-            print(f"CLI preset kaydedilemedi: {exc}")
+            print_warning(f"CLI preset kaydedilemedi: {exc}")
     elif not quick_mode:
         prompt_default = selected_preset_name or str(named_store.get("selected", "") or "")
         raw_name = input(
@@ -821,16 +870,23 @@ def main() -> None:
         if raw_name or (prompt_default and raw_name == ""):
             try:
                 save_named_preset(target_name, settings)
-                print(f"CLI preset kaydedildi: {target_name}")
+                print_success(f"CLI preset kaydedildi: {target_name}")
             except ValueError as exc:
-                print(f"CLI preset kaydedilemedi: {exc}")
+                print_warning(f"CLI preset kaydedilemedi: {exc}")
 
-    print(f"Mix WAV: {mix_wav_path}")
-    print(f"İşlenmiş WAV: {vocal_wav_path}")
-    print(f"Ayarlar kaydedildi: {PRESET_PATH}")
+    print_block(
+        "Çıktılar",
+        format_kv_lines(
+            [
+                ("Mix WAV", mix_wav_path),
+                ("İşlenmiş WAV", vocal_wav_path),
+                ("Ayarlar", PRESET_PATH),
+            ]
+        ),
+    )
     if NAMED_PRESET_PATH.exists():
-        print(f"CLI preset deposu: {NAMED_PRESET_PATH}")
-    print("Tamamlandı.")
+        print_status(f"CLI preset deposu: {NAMED_PRESET_PATH}")
+    print_success("Tamamlandı.")
 
 
 if __name__ == "__main__":
