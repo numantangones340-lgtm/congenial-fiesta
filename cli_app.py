@@ -101,6 +101,19 @@ def print_settings_summary(settings: dict, preset_name: str = "") -> None:
     )
 
 
+def print_named_preset_list_summary(store: dict) -> None:
+    presets = store.get("presets", {})
+    selected = str(store.get("selected", "") or "")
+    names = sorted(presets.keys())
+    if not names:
+        print_warning("Kayıtlı CLI preseti bulunmuyor.")
+        return
+    print_block(
+        "Kayıtlı CLI Presetleri",
+        [f"- {name}{' [seçili]' if name == selected else ''}" for name in names],
+    )
+
+
 def normalize_settings(raw: Optional[dict]) -> dict:
     settings = DEFAULT_SETTINGS.copy()
     if not isinstance(raw, dict):
@@ -260,6 +273,7 @@ def cli_usage_text() -> str:
         "Kullanim:\n"
         "  python3 cli_app.py [--quick] [--preset ADI]\n"
         "  python3 cli_app.py --show-settings [--preset ADI]\n"
+        "  python3 cli_app.py --show-preset ADI\n"
         "  python3 cli_app.py --list-devices\n"
         "  python3 cli_app.py --test [--preset ADI]\n"
         "  python3 cli_app.py --list-presets\n"
@@ -269,6 +283,7 @@ def cli_usage_text() -> str:
         "Secenekler:\n"
         "  --quick                 Kayitli ayarlar ile sorusuz hizli kayit baslatir.\n"
         "  --show-settings         Etkin CLI ayarlarini gosterir ve cikar.\n"
+        "  --show-preset ADI       Isimli preset icerigini gosterir ve cikar.\n"
         "  --list-devices          Kullanilabilir ses aygitlarini listeler ve cikar.\n"
         "  --test                  5 sn cihaz testi yapar ve cikar.\n"
         "  --preset ADI            Isimli CLI preset yukler.\n"
@@ -285,6 +300,7 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
         "list_only": False,
         "list_devices_only": False,
         "show_settings_only": False,
+        "show_named_preset": None,
         "test_only": False,
         "help_only": False,
         "preset_name": None,
@@ -318,7 +334,7 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
             parsed["test_only"] = True
             i += 1
             continue
-        if arg in ("--preset", "--save-preset", "--delete-preset"):
+        if arg in ("--preset", "--save-preset", "--delete-preset", "--show-preset"):
             if i + 1 >= len(args):
                 return parsed, f"Eksik deger: {arg}"
             value = args[i + 1].strip()
@@ -328,6 +344,8 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
                 parsed["preset_name"] = value
             elif arg == "--save-preset":
                 parsed["save_preset"] = value
+            elif arg == "--show-preset":
+                parsed["show_named_preset"] = value
             else:
                 parsed["delete_preset"] = value
             i += 2
@@ -348,6 +366,12 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
             parsed["delete_preset"] = arg.split("=", 1)[1].strip()
             if not parsed["delete_preset"]:
                 return parsed, "Gecersiz bos deger: --delete-preset"
+            i += 1
+            continue
+        if arg.startswith("--show-preset="):
+            parsed["show_named_preset"] = arg.split("=", 1)[1].strip()
+            if not parsed["show_named_preset"]:
+                return parsed, "Gecersiz bos deger: --show-preset"
             i += 1
             continue
         return parsed, f"Bilinmeyen secenek: {arg}"
@@ -615,6 +639,7 @@ def main() -> None:
     list_only = bool(parsed_args["list_only"])
     list_devices_only = bool(parsed_args["list_devices_only"])
     show_settings_only = bool(parsed_args["show_settings_only"])
+    show_named_preset = parsed_args["show_named_preset"]
     test_only = bool(parsed_args["test_only"])
     preset_name_arg = parsed_args["preset_name"]
     save_preset_arg = parsed_args["save_preset"]
@@ -631,11 +656,7 @@ def main() -> None:
     )
 
     if list_only:
-        names = list_named_presets()
-        if names:
-            print_block("Kayıtlı CLI Presetleri", [f"- {name}" for name in names])
-        else:
-            print_warning("Kayıtlı CLI preseti bulunmuyor.")
+        print_named_preset_list_summary(load_named_preset_store())
         return
 
     if list_devices_only:
@@ -655,6 +676,17 @@ def main() -> None:
     settings = load_saved_settings()
     named_store = load_named_preset_store()
     selected_preset_name = ""
+
+    if show_named_preset:
+        preset = load_named_preset(show_named_preset)
+        if preset is None:
+            print_warning(f"CLI preset bulunamadı: {show_named_preset}")
+            print_named_preset_list_summary(named_store)
+            return
+        print_settings_summary(preset, show_named_preset)
+        print_status(f"CLI preset deposu: {NAMED_PRESET_PATH}")
+        return
+
     if preset_name_arg:
         preset = load_named_preset(preset_name_arg)
         if preset is None:
