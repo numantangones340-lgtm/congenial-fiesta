@@ -162,6 +162,7 @@ def test_cli_settings_roundtrip() -> None:
     assert "--quick" in help_text
     assert "--list-presets" in help_text
     assert "--show-preset ADI" in help_text
+    assert "--select-preset ADI" in help_text
     assert "--list-devices" in help_text
     assert "--show-settings" in help_text
     assert "--test" in help_text
@@ -178,6 +179,9 @@ def test_cli_settings_roundtrip() -> None:
     parsed, err = cli.parse_cli_args(["--show-preset", "Temiz"])
     assert err is None
     assert parsed["show_named_preset"] == "Temiz"
+    parsed, err = cli.parse_cli_args(["--select-preset", "Temiz"])
+    assert err is None
+    assert parsed["select_named_preset"] == "Temiz"
     parsed, err = cli.parse_cli_args(["--test", "--preset", "Temiz"])
     assert err is None
     assert parsed["test_only"] is True
