@@ -85,7 +85,7 @@ def test_release_body_generation() -> None:
             check=True,
         )
         body = output.read_text(encoding="utf-8")
-        assert "# Release 9.9.9" in body
+        assert "# Release Notes 9.9.9" in body
         assert "Ornek madde" in body
         assert "Onceki surum" not in body
 
