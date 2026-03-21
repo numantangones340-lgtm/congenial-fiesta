@@ -44,13 +44,29 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate GitHub release notes from CHANGELOG.md.")
     parser.add_argument("--version", help="Version to render. Defaults to VERSION file.")
     parser.add_argument(
+        "--version-file",
+        help="Backward-compatible alias for specifying a VERSION file path.",
+    )
+    parser.add_argument(
+        "--changelog",
+        help="Backward-compatible path override for CHANGELOG.md.",
+    )
+    parser.add_argument(
         "--output",
         help="Destination file path. Defaults to stdout when omitted.",
     )
     args = parser.parse_args()
 
-    version = read_version(args.version)
-    changelog_text = CHANGELOG_PATH.read_text(encoding="utf-8")
+    if args.version and args.version_file:
+        raise ValueError("--version and --version-file cannot be used together.")
+
+    if args.version_file:
+        version = Path(args.version_file).read_text(encoding="utf-8").strip()
+    else:
+        version = read_version(args.version)
+
+    changelog_path = Path(args.changelog) if args.changelog else CHANGELOG_PATH
+    changelog_text = changelog_path.read_text(encoding="utf-8")
     body = extract_release_section(changelog_text, version)
     rendered = build_release_notes(version, body)
 
