@@ -233,7 +233,7 @@ git push origin v1.1.2
 Not:
 
 - tag her zaman merge edilmis `main` commit'i uzerinde olusturulmali
-- release body'si `CHANGELOG.md` kaynagindan `docs/RELEASE_BODY.md` olarak uretilir
+- GitHub Release notlari `CHANGELOG.md` kaynagindan otomatik uretilir
 
 ## Kullanım
 
@@ -242,7 +242,7 @@ Sürüm bilgisi:
 - `VERSION` dosyasından okunur
 - uygulama içinde `Hakkinda` ile görüntülenir
 - surum degisiklikleri `CHANGELOG.md` içinde tutulur
-- yayin body'si `docs/RELEASE_BODY.md` icinde `CHANGELOG.md` kaynagindan uretilir
+- GitHub Release notlari `scripts/generate_release_notes.py` ile `CHANGELOG.md` kaynagindan otomatik uretilir
 
 1. Mikrofon/Çıkış Aygıt Kimliği kutularını boş bırakabilirsiniz (varsayılan cihaz).
 2. `Mikrofon/Ses Kartı Testi (5 sn)` butonuyla önce test yapın.

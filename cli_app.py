@@ -12,6 +12,7 @@ import soundfile as sf
 
 PRESET_PATH = Path(__file__).resolve().with_name(".last_preset.json")
 NAMED_PRESET_PATH = Path(__file__).resolve().with_name(".cli_presets.json")
+VERSION_PATH = Path(__file__).resolve().with_name("VERSION")
 DEFAULT_SETTINGS = {
     "gain": 6.0,
     "boost": 6.0,
@@ -75,6 +76,14 @@ def print_run_summary(mode: str, preset_name: str, input_idx: Optional[int], out
             ]
         ),
     )
+
+
+def read_app_version() -> str:
+    try:
+        version = VERSION_PATH.read_text(encoding="utf-8").strip()
+    except Exception:
+        return "0.1.0-dev"
+    return version or "0.1.0-dev"
 
 
 def print_settings_summary(settings: dict, preset_name: str = "") -> None:
@@ -278,6 +287,7 @@ def cli_usage_text() -> str:
         "  python3 cli_app.py --list-devices\n"
         "  python3 cli_app.py --test [--preset ADI]\n"
         "  python3 cli_app.py --list-presets\n"
+        "  python3 cli_app.py --version\n"
         "  python3 cli_app.py --delete-preset ADI\n"
         "  python3 cli_app.py --save-preset ADI\n"
         "  python3 cli_app.py --help\n\n"
@@ -292,6 +302,7 @@ def cli_usage_text() -> str:
         "  --save-preset ADI       Calisma sonunda mevcut ayarlari bu isimle kaydeder.\n"
         "  --delete-preset ADI     Isimli CLI preset siler ve cikar.\n"
         "  --list-presets          Kayitli CLI presetlerini listeler ve cikar.\n"
+        "  --version               Uygulama surumunu gosterir ve cikar.\n"
         "  --help, -h              Bu yardim metnini gosterir.\n"
     )
 
@@ -306,6 +317,7 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
         "select_named_preset": None,
         "test_only": False,
         "help_only": False,
+        "version_only": False,
         "preset_name": None,
         "save_preset": None,
         "delete_preset": None,
@@ -315,6 +327,10 @@ def parse_cli_args(args: list[str]) -> tuple[dict, Optional[str]]:
         arg = args[i]
         if arg in ("--help", "-h"):
             parsed["help_only"] = True
+            i += 1
+            continue
+        if arg == "--version":
+            parsed["version_only"] = True
             i += 1
             continue
         if arg == "--quick":
@@ -657,9 +673,13 @@ def main() -> None:
     save_preset_arg = parsed_args["save_preset"]
     delete_preset_arg = parsed_args["delete_preset"]
     help_only = bool(parsed_args["help_only"])
+    version_only = bool(parsed_args["version_only"])
 
     if help_only:
         print(cli_usage_text())
+        return
+    if version_only:
+        print(read_app_version())
         return
 
     print_block(

@@ -6,7 +6,8 @@ Bu not, Git tarafini temiz tutup yeni surumu yayinlamadan once hangi adimlarin t
 
 - `VERSION`: `1.1.2`
 - Changelog: `CHANGELOG.md`
-- Release body: `docs/RELEASE_BODY.md`
+- Release notes kaynagi: `CHANGELOG.md`
+- Release notes uretimi: `python scripts/generate_release_notes.py --output dist/release-notes.md`
 
 ## Git Temizlik Kurallari
 
@@ -29,10 +30,10 @@ Not:
 - `README.md`
 - `VERSION`
 - `CHANGELOG.md`
-- `docs/RELEASE_BODY.md`
+- `scripts/generate_release_notes.py`
 - `docs/MACOS_RELEASE_CHECKLIST.md`
 - `docs/PRODUCT_ROADMAP.md`
-- `.github/workflows/release-macos.yml`
+- `.github/workflows/release.yml`
 - `release_macos_desktop.sh`
 - `notarize_macos_app.sh`
 - `scripts/generate_release_notes.py`
@@ -41,18 +42,21 @@ Not:
 ## Onerilen Akis
 
 1. Uygulama testlerini tamamla.
-2. `python scripts/generate_release_notes.py` ile `docs/RELEASE_BODY.md` dosyasini guncelle.
-3. Release hazirlik PR'ini `main` branch'ine merge et.
-4. Temiz bir `main` checkout'u al ve `git pull --ff-only origin main` calistir.
-5. `python3 scripts/tag_release.py` ile `VERSION` tabanli tag'i mevcut `main` commit'i uzerinde olustur.
-6. `git push origin v1.1.2`
+2. `git diff` ile yalnizca release'e girecek dosyalari gozden gecir.
+3. Sadece hedef dosyalari `git add` ile secerek stage et:
+   `git add VERSION CHANGELOG.md README.md app.py cli_app.py scripts/ tests/ .github/workflows/release.yml .github/workflows/static.yml docs/RELEASE_PREP.md`
+4. `git status --short` ile `.venv/` degisikliklerinin stage disinda kaldigini dogrula.
+5. Release commit'ini olustur.
+6. `git tag v1.1.2`
+7. `git push origin <branch>`
+8. `git push origin v1.1.2`
 
 ## Tek Akis Kurali
 
 - Release tag'i her zaman merge edilmis `main` commit'i uzerinde olusmali.
 - Tag, release hazirlik branch'inde degil, `main` uzerinde acilmalidir.
-- `VERSION`, `CHANGELOG.md` ve `docs/RELEASE_BODY.md` ayni surumu gostermelidir.
-- GitHub Release body workflow tarafinda `docs/RELEASE_BODY.md` uzerinden otomatik yayinlanir.
+- `VERSION` ve `CHANGELOG.md` ayni surumu gostermelidir.
+- GitHub Release body workflow tarafinda `CHANGELOG.md` kaynagindan otomatik uretilir.
 
 ## Notarized macOS Release
 
