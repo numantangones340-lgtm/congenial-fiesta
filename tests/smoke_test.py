@@ -147,7 +147,17 @@ def test_cli_settings_roundtrip() -> None:
         assert named_loaded is not None
         assert named_loaded["gain"] == 11.0
         assert named_loaded["input_device_id"] == 3
-        assert cli.delete_named_preset("Temiz") is True
+        renamed, message = cli.rename_named_preset("Temiz", "Parlak")
+        assert renamed is True
+        assert "Temiz -> Parlak" in message
+        assert cli.list_named_presets() == ["Parlak"]
+        renamed_loaded = cli.load_named_preset("Parlak")
+        assert renamed_loaded is not None
+        assert renamed_loaded["gain"] == 11.0
+        assert renamed_loaded["input_device_id"] == 3
+        store = cli.load_named_preset_store()
+        assert store["selected"] == "Parlak"
+        assert cli.delete_named_preset("Parlak") is True
         assert cli.list_named_presets() == []
 
     assert "Ses aygıtı bulunamadı" in cli.no_device_help_text()
@@ -163,6 +173,7 @@ def test_cli_settings_roundtrip() -> None:
     assert "--list-presets" in help_text
     assert "--show-preset ADI" in help_text
     assert "--select-preset ADI" in help_text
+    assert "--rename-preset ESKI YENI" in help_text
     assert "--list-devices" in help_text
     assert "--show-settings" in help_text
     assert "--test" in help_text
@@ -182,10 +193,15 @@ def test_cli_settings_roundtrip() -> None:
     parsed, err = cli.parse_cli_args(["--select-preset", "Temiz"])
     assert err is None
     assert parsed["select_named_preset"] == "Temiz"
+    parsed, err = cli.parse_cli_args(["--rename-preset", "Eski", "Yeni"])
+    assert err is None
+    assert parsed["rename_named_preset"] == ("Eski", "Yeni")
     parsed, err = cli.parse_cli_args(["--test", "--preset", "Temiz"])
     assert err is None
     assert parsed["test_only"] is True
     assert parsed["preset_name"] == "Temiz"
+    _, err = cli.parse_cli_args(["--rename-preset", "Tek"])
+    assert err == "Eksik deger: --rename-preset"
     cli.next_take_name = lambda prefix: f"{prefix}_001"
     assert cli.device_test_output_name("") == "quick_take_001_device_test"
     assert cli.device_test_output_name("Temiz") == "Temiz_device_test"
