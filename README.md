@@ -204,10 +204,9 @@ Developer ID + notarization ile:
 ## Yayinlama (Diger Kullanicilar Icin)
 
 Bu repoda otomatik yayin akisi eklidir:
-- `.github/workflows/release-macos.yml`
-  - `v*` etiketi push edilince macOS app build eder, varsa codesign + notarization yapar, zip uretir ve Release'e koyar.
-- `.github/workflows/release-windows.yml`
-  - `v*` etiketi push edilince Windows zip build eder ve Release'e koyar.
+- `.github/workflows/release.yml`
+  - `v*` etiketi push edilince tek matrix workflow ile macOS ve Windows build alir.
+  - macOS kolu varsa codesign + notarization yapar, her iki platform icin zip ve Release asset uretir.
 - `.github/workflows/static.yml`
   - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
 
@@ -224,10 +223,8 @@ macOS workflow icin onerilen GitHub secrets:
 Ornek release:
 
 ```bash
-git checkout main
-git pull --ff-only origin main
-python3 scripts/tag_release.py
-git push origin v1.1.2
+git tag v1.1.3
+git push origin v1.1.3
 ```
 
 Not:

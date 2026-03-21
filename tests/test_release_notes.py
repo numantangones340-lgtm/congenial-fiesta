@@ -21,7 +21,7 @@ class ReleaseNotesGenerationTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0)
         self.assertIn(f"# Release Notes {VERSION}", result.stdout)
-        self.assertIn("Canli giris metre sistemi", result.stdout)
+        self.assertIn("otomatik GitHub Release notes uretimi", result.stdout)
 
     def test_output_file_is_written(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -2,6 +2,25 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.3] - 2026-03-21
+
+### Eklendi
+
+- `CHANGELOG.md` kaynagindan otomatik GitHub Release notes uretimi
+- temel import, CLI ve release notes dogrulamasi icin hafif smoke testleri
+- birlesik masaustu release workflow'u ile macOS ve Windows release otomasyonu
+
+### Degisti
+
+- release sureci tek matrix workflow altinda sadeleştirildi
+- CI akisina `py_compile`, smoke test ve shell script dogrulama adimlari eklendi
+- CLI'ya etkileşimsiz `--help` ve `--version` bayraklari eklendi
+
+### Guvenlik ve Kararlilik
+
+- release body ile etiketlenen surum arasinda tek kaynakli metadata akisi netlestirildi
+- manuel release adimlari azaltildi ve artefact isimleri standartlastirildi
+
 ## [1.1.2] - 2026-03-19
 
 ### Eklendi
