@@ -40,6 +40,29 @@ class TagReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Expected branch 'main'"):
                 tag_release.ensure_on_main()
 
+    def test_ensure_head_matches_origin_main_rejects_mismatch(self) -> None:
+        responses = {
+            ("rev-parse", "HEAD"): subprocess.CompletedProcess(
+                args=["git", "rev-parse", "HEAD"],
+                returncode=0,
+                stdout="abc123\n",
+                stderr="",
+            ),
+            ("rev-parse", "origin/main"): subprocess.CompletedProcess(
+                args=["git", "rev-parse", "origin/main"],
+                returncode=0,
+                stdout="def456\n",
+                stderr="",
+            ),
+        }
+
+        def fake_git(*args: str) -> subprocess.CompletedProcess[str]:
+            return responses[args]
+
+        with mock.patch.object(tag_release, "git", side_effect=fake_git):
+            with self.assertRaisesRegex(RuntimeError, "not aligned with origin/main"):
+                tag_release.ensure_head_matches_origin_main()
+
     def test_ensure_changelog_has_rejects_missing_heading(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -68,6 +91,10 @@ class TagReleaseTests(unittest.TestCase):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
             if args == ("branch", "--show-current"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="main\n", stderr="")
+            if args == ("rev-parse", "HEAD"):
+                return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="abc123\n", stderr="")
+            if args == ("rev-parse", "origin/main"):
+                return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="abc123\n", stderr="")
             if args == ("tag", "--list", "v1.1.3"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
             if args == ("tag", "v1.1.3"):
@@ -94,6 +121,8 @@ class TagReleaseTests(unittest.TestCase):
             [
                 ("status", "--short"),
                 ("branch", "--show-current"),
+                ("rev-parse", "HEAD"),
+                ("rev-parse", "origin/main"),
                 ("tag", "--list", "v1.1.3"),
                 ("tag", "v1.1.3"),
             ],
