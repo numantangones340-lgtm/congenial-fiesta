@@ -25,6 +25,28 @@ class FakeVar:
         self.value = value
 
 
+class FakeMenu:
+    def __init__(self) -> None:
+        self.deleted = []
+        self.commands = []
+
+    def delete(self, start, end) -> None:
+        self.deleted.append((start, end))
+
+    def add_command(self, label, command) -> None:
+        self.commands.append((label, command))
+
+
+class FakeOptionMenu:
+    def __init__(self) -> None:
+        self.menu = FakeMenu()
+
+    def __getitem__(self, key):
+        if key != "menu":
+            raise KeyError(key)
+        return self.menu
+
+
 class ExportAndDeviceViewTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
@@ -40,6 +62,8 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_device_menus = mock.Mock()
         recorder.restart_input_meter = mock.Mock()
+        recorder.input_device_menu = FakeOptionMenu()
+        recorder.output_device_menu = FakeOptionMenu()
         recorder.last_export_path = None
         return recorder
 
@@ -104,6 +128,45 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.device_summary_text.get(), "summary")
         self.assertIn("Mikrofon içinde izin verin", recorder.setup_hint_text.get())
         self.assertEqual(recorder.status_messages[-1], "No devices help")
+
+    def test_refresh_device_menus_resets_unknown_choices_and_updates_route(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("999 - Missing Input")
+        recorder.output_device_choice.set("999 - Missing Output")
+
+        app.GuitarAmpRecorderApp.refresh_device_menus(recorder, [(1, "USB Mic")], [(2, "USB Output")])
+
+        self.assertEqual(recorder.input_device_options, ["Varsayılan macOS girişi", "1 - USB Mic"])
+        self.assertEqual(recorder.output_device_options, ["Varsayılan macOS çıkışı", "2 - USB Output"])
+        self.assertEqual(recorder.input_device_choice.get(), "Varsayılan macOS girişi")
+        self.assertEqual(recorder.output_device_choice.get(), "Varsayılan macOS çıkışı")
+        self.assertIn("Aktif giriş: Varsayılan macOS girişi", recorder.selected_route_text.get())
+        self.assertEqual(recorder.input_device_menu.menu.deleted, [(0, "end")])
+        self.assertEqual(recorder.output_device_menu.menu.deleted, [(0, "end")])
+        self.assertEqual(
+            [label for label, _command in recorder.input_device_menu.menu.commands],
+            ["Varsayılan macOS girişi", "1 - USB Mic"],
+        )
+
+    def test_choice_change_helpers_sync_ids(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("4 - USB Mic")
+        recorder.output_device_choice.set("Varsayılan macOS çıkışı")
+
+        app.GuitarAmpRecorderApp.on_input_choice_changed(recorder)
+        app.GuitarAmpRecorderApp.on_output_choice_changed(recorder)
+
+        self.assertEqual(recorder.input_device_id.get(), "4")
+        self.assertEqual(recorder.output_device_id.get(), "")
+        self.assertIn("Aktif çıkış: Varsayılan macOS çıkışı", recorder.selected_route_text.get())
+
+    def test_open_last_export_in_finder_handles_missing_export(self) -> None:
+        recorder = self.make_app()
+        recorder.last_export_path = None
+
+        recorder.open_last_export_in_finder()
+
+        self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
 
 
 if __name__ == "__main__":
