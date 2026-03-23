@@ -31,11 +31,11 @@ Not:
 - `VERSION`
 - `CHANGELOG.md`
 - `scripts/generate_release_notes.py`
-- `docs/MACOS_RELEASE_CHECKLIST.md`
-- `docs/PRODUCT_ROADMAP.md`
+- `docs/RELEASE_PREP.md`
+- `docs/ROADMAP_1.1.3.md`
 - `.github/workflows/release.yml`
-- `release_macos_desktop.sh`
-- `notarize_macos_app.sh`
+- `build_macos_app.sh`
+- `package_macos_release.sh`
 - `scripts/generate_release_notes.py`
 - `scripts/tag_release.py`
 

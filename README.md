@@ -58,44 +58,20 @@ pip install pyinstaller
 
 - `dist/GuitarAmpRecorder.app`
 
-## Codesign + Notarization
+## Release Hazirligi
 
-Yerel test için ad-hoc imza:
-
-```bash
-./sign_macos_app.sh
-```
-
-Developer ID ile imzalama:
+Repo icinde dogrudan kullanilabilen macOS release paketleme komutu:
 
 ```bash
-./sign_macos_app.sh ./dist/GuitarAmpRecorder.app "Developer ID Application: YOUR NAME (TEAMID)"
+./package_macos_release.sh
 ```
 
-Notarization (Xcode notarytool ile):
-
-1. Bir kez keychain profile oluşturun:
-   ```bash
-   xcrun notarytool store-credentials "AC_PROFILE" \
-     --apple-id "you@example.com" \
-     --team-id "TEAMID1234" \
-     --password "app-specific-password"
-   ```
-2. Sonra notarize edin:
-   ```bash
-   ./notarize_macos_app.sh ./dist/GuitarAmpRecorder.app AC_PROFILE TEAMID1234
-   ```
-
-Tam release hattı:
-
-```bash
-./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID1234)" AC_PROFILE TEAMID1234
-```
+Bu komut mevcut `.app` paketini zip'ler; paket yoksa once `./build_macos_app.sh` calisir.
 
 Detayli kontrol listesi:
 
-- `docs/MACOS_RELEASE_CHECKLIST.md`
-- `docs/PRODUCT_ROADMAP.md`
+- `docs/RELEASE_PREP.md`
+- `docs/ROADMAP_1.1.3.md`
 
 ## Çalıştırma
 
@@ -175,24 +151,12 @@ Bu komut:
 - `dist/GuitarAmpRecorder-macOS.zip` olusturur
 - ayni zip dosyasini `~/Desktop/GuitarAmpRecorder-macOS.zip` olarak kopyalar
 
-Build + imza + zip islemini tek komutta almak icin:
+Build + zip islemini tek komutta almak icin:
 
 ```bash
 cd /Users/numantangones/Documents/GuitarAmpRecorder
-chmod +x release_macos_desktop.sh
-./release_macos_desktop.sh
-```
-
-Developer ID ile:
-
-```bash
-./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID)"
-```
-
-Developer ID + notarization ile:
-
-```bash
-./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID1234)" AC_PROFILE TEAMID1234
+./build_macos_app.sh
+./package_macos_release.sh
 ```
 
 ## Guvenilir Indirme Sayfalari

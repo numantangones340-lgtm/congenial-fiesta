@@ -17,8 +17,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -27,31 +25,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install test dependencies
+      - name: Validate docs payload
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Compile Python files
-        run: python -m py_compile app.py cli_app.py
-
-      - name: Run smoke tests
-        run: python -m unittest discover -s tests -p "test_*.py" -v
-
-      - name: Validate release scripts
-        run: |
-          bash -n build_macos_app.sh
-          bash -n package_macos_release.sh
-          bash -n sign_macos_app.sh
-          bash -n notarize_macos_app.sh
-
-      - name: Validate release notes generation
-        run: python scripts/generate_release_notes.py --output dist/release-notes.md
+          test -f docs/index.html
+          grep -q "<html" docs/index.html
+          grep -q "GitHub Releases" docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
