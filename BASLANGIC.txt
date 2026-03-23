@@ -10,4 +10,4 @@ Not:
 - Dogrudan GUI acmak icin: ./CALISTIR.command gui
 - Masaustune tek tik kisayol icin: ./install_desktop_shortcut.sh
 - Paylasim icin macOS zip paketi olusturup masaustune kopyalamak icin: ./package_macos_release.sh
-- Tek komutta build + imza + masaustu zip icin: ./release_macos_desktop.sh
+- Tek akista build alip masaustune zip kopyalamak icin: ./build_macos_app.sh && ./package_macos_release.sh
