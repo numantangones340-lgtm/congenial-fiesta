@@ -151,6 +151,38 @@ def serialize_settings(settings: dict) -> dict:
     return safe
 
 
+def build_runtime_settings(
+    gain: float,
+    boost: float,
+    bass: float,
+    treble: float,
+    dist: float,
+    noise_reduction: float,
+    speed_percent: float,
+    output_gain_db: float,
+    backing_level: float,
+    vocal_level: float,
+    record_seconds: float,
+    input_device_id: Optional[int],
+    output_device_id: Optional[int],
+) -> dict:
+    return {
+        "gain": gain,
+        "boost": boost,
+        "bass": bass,
+        "treble": treble,
+        "dist": dist,
+        "noise_reduction": noise_reduction,
+        "speed_percent": speed_percent,
+        "output_gain_db": output_gain_db,
+        "backing_level": backing_level,
+        "vocal_level": vocal_level,
+        "record_seconds": record_seconds,
+        "input_device_id": input_device_id,
+        "output_device_id": output_device_id,
+    }
+
+
 def no_device_help_text() -> str:
     return (
         "Ses aygıtı bulunamadı. macOS'ta Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon bölümünden "
@@ -1002,27 +1034,26 @@ def main() -> None:
     else:
         print_warning("ffmpeg bulunamadı, MP3 atlandı.")
 
-    save_settings(
-        {
-            "gain": gain,
-            "boost": boost,
-            "bass": bass,
-            "treble": treble,
-            "dist": dist,
-            "noise_reduction": noise_reduction,
-            "speed_percent": speed_percent,
-            "output_gain_db": output_gain_db,
-            "backing_level": backing_level,
-            "vocal_level": vocal_level,
-            "record_seconds": record_seconds,
-            "input_device_id": input_idx,
-            "output_device_id": output_idx,
-        }
+    current_settings = build_runtime_settings(
+        gain,
+        boost,
+        bass,
+        treble,
+        dist,
+        noise_reduction,
+        speed_percent,
+        output_gain_db,
+        backing_level,
+        vocal_level,
+        record_seconds,
+        input_idx,
+        output_idx,
     )
+    save_settings(current_settings)
 
     if save_preset_arg:
         try:
-            save_named_preset(save_preset_arg, settings)
+            save_named_preset(save_preset_arg, current_settings)
             selected_preset_name = save_preset_arg.strip()
             print_success(f"CLI preset kaydedildi: {selected_preset_name}")
         except ValueError as exc:
@@ -1035,7 +1066,7 @@ def main() -> None:
         target_name = raw_name or prompt_default
         if raw_name or (prompt_default and raw_name == ""):
             try:
-                save_named_preset(target_name, settings)
+                save_named_preset(target_name, current_settings)
                 print_success(f"CLI preset kaydedildi: {target_name}")
             except ValueError as exc:
                 print_warning(f"CLI preset kaydedilemedi: {exc}")

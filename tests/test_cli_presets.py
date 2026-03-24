@@ -1,8 +1,11 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from runtime_stubs import load_module, runtime_stubs
 
@@ -74,6 +77,41 @@ class CliPresetStoreTests(unittest.TestCase):
             with mock.patch.object(cli_app, "NAMED_PRESET_PATH", named_preset_path):
                 store = cli_app.load_named_preset_store()
             self.assertEqual(store, {"selected": "", "presets": {}})
+
+    def test_build_runtime_settings_uses_latest_values(self) -> None:
+        settings = cli_app.build_runtime_settings(
+            gain=9,
+            boost=4,
+            bass=1,
+            treble=3,
+            dist=12,
+            noise_reduction=15,
+            speed_percent=95,
+            output_gain_db=-2,
+            backing_level=70,
+            vocal_level=90,
+            record_seconds=75,
+            input_device_id=5,
+            output_device_id=7,
+        )
+        self.assertEqual(
+            settings,
+            {
+                "gain": 9,
+                "boost": 4,
+                "bass": 1,
+                "treble": 3,
+                "dist": 12,
+                "noise_reduction": 15,
+                "speed_percent": 95,
+                "output_gain_db": -2,
+                "backing_level": 70,
+                "vocal_level": 90,
+                "record_seconds": 75,
+                "input_device_id": 5,
+                "output_device_id": 7,
+            },
+        )
 
 
 class CliArgParsingTests(unittest.TestCase):
