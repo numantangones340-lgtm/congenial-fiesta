@@ -113,6 +113,29 @@ class CliPresetStoreTests(unittest.TestCase):
             },
         )
 
+    def test_delete_named_preset_keeps_existing_selection_when_deleting_other_preset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            named_preset_path = Path(tmpdir) / ".cli_presets.json"
+            named_preset_path.write_text(
+                json.dumps(
+                    {
+                        "selected": "Temiz",
+                        "presets": {
+                            "Temiz": {"gain": 6},
+                            "Parlak": {"gain": 9},
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(cli_app, "NAMED_PRESET_PATH", named_preset_path):
+                self.assertTrue(cli_app.delete_named_preset("Parlak"))
+                store = cli_app.load_named_preset_store()
+
+        self.assertEqual(store["selected"], "Temiz")
+        self.assertEqual(sorted(store["presets"].keys()), ["Temiz"])
+
 
 class CliArgParsingTests(unittest.TestCase):
     def test_parse_cli_args_supports_common_paths(self) -> None:
