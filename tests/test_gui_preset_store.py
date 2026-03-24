@@ -94,6 +94,31 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu.assert_called_once_with("Aksam")
         self.assertEqual(recorder.status_messages[-1], "Preset kaydedildi: Aksam")
 
+    def test_save_current_preset_uses_existing_selected_name_when_entry_blank(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("")
+        recorder.gain.set(7)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            preset_path.write_text(
+                json.dumps(
+                    {
+                        "selected": "Aksam",
+                        "presets": {"Aksam": {"gain": 4}},
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.save_current_preset()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["selected"], "Aksam")
+        self.assertEqual(raw["presets"]["Aksam"]["gain"], 7)
+        recorder.refresh_preset_menu.assert_called_once_with("Aksam")
+        self.assertEqual(recorder.status_messages[-1], "Preset kaydedildi: Aksam")
+
     def test_delete_selected_preset_falls_back_to_builtin_presets(self) -> None:
         recorder = self.make_app()
         recorder.preset_name.set("TekPreset")
