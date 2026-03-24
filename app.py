@@ -938,7 +938,7 @@ class GuitarAmpRecorderApp:
             selected = str(raw.get("selected", "Temiz Gitar") or "Temiz Gitar")
             return merge_builtin_presets({"selected": selected, "presets": raw["presets"]})
         if isinstance(raw, dict):
-            return merge_builtin_presets({"selected": "Temiz Gitar", "presets": {"Varsayilan": raw}})
+            return merge_builtin_presets({"selected": "Varsayilan", "presets": {"Varsayilan": raw}})
         return self.default_preset_store()
 
     def write_preset_store_data(self, store: dict) -> None:
