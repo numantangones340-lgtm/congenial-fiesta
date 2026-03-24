@@ -275,8 +275,9 @@ def delete_named_preset(name: str) -> bool:
     presets = store.get("presets", {})
     if safe_name not in presets:
         return False
+    previous_selected = store.get("selected", "")
     del presets[safe_name]
-    store["selected"] = safe_name if store.get("selected") != safe_name else ""
+    store["selected"] = previous_selected if previous_selected != safe_name else ""
     if presets and not store["selected"]:
         store["selected"] = sorted(presets.keys())[0]
     write_named_preset_store(store)
