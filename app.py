@@ -1103,6 +1103,7 @@ class GuitarAmpRecorderApp:
             if name not in presets:
                 self.set_status(f"Preset bulunamadi: {name}")
                 return
+            previous_selected = str(store.get("selected", "") or "")
             del presets[name]
             if not presets:
                 store = self.default_preset_store()
@@ -1110,7 +1111,7 @@ class GuitarAmpRecorderApp:
                 self.refresh_preset_menu("Temiz Gitar")
                 self.set_status(f"Preset silindi: {name}. Tum kullanici presetleri temizlendi.")
                 return
-            next_name = sorted(presets.keys())[0]
+            next_name = previous_selected if previous_selected in presets else sorted(presets.keys())[0]
             store["selected"] = next_name
             self.write_preset_store_data(store)
             self.refresh_preset_menu(next_name)
