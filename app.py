@@ -1062,8 +1062,8 @@ class GuitarAmpRecorderApp:
 
     def save_current_preset(self) -> None:
         try:
-            name = self.preset_name.get().strip() or "Temiz Gitar"
             store = self.load_preset_store_data()
+            name = self.preset_name.get().strip() or str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
             store.setdefault("presets", {})[name] = self.collect_current_preset()
             store["selected"] = name
             self.write_preset_store_data(store)
