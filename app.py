@@ -1094,6 +1094,10 @@ class GuitarAmpRecorderApp:
             if not name:
                 self.set_status("Silinecek preset secilmedi.")
                 return
+            builtin_names = set(builtin_preset_store().get("presets", {}).keys())
+            if name in builtin_names:
+                self.set_status(f"Hazir preset silinemez: {name}")
+                return
             store = self.load_preset_store_data()
             presets = store.get("presets", {})
             if name not in presets:
