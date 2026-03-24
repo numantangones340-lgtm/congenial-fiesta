@@ -9,10 +9,12 @@ import subprocess
 import sys
 import tempfile
 import types
+from contextlib import contextmanager
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+STUBBED_MODULES = ("numpy", "sounddevice", "soundfile", "tkinter")
 
 
 def stub_module(name: str, **attrs: object) -> None:
@@ -22,7 +24,10 @@ def stub_module(name: str, **attrs: object) -> None:
     sys.modules[name] = module
 
 
-def prepare_import_stubs() -> None:
+@contextmanager
+def import_stubs():
+    previous = {name: sys.modules.get(name) for name in STUBBED_MODULES}
+
     stub_module("numpy", ndarray=object, float32=float)
     stub_module("sounddevice", query_devices=lambda: [])
     stub_module("soundfile")
@@ -42,6 +47,14 @@ def prepare_import_stubs() -> None:
         Frame=object,
         Scrollbar=object,
     )
+    try:
+        yield
+    finally:
+        for name, module in previous.items():
+            if module is None:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = module
 
 
 def load_module(module_name: str, file_name: str):
@@ -104,134 +117,141 @@ def test_release_scripts_exist() -> None:
 
 
 def test_app_helpers() -> None:
-    prepare_import_stubs()
-    app = load_module("app_smoke", "app.py")
-    assert app.read_app_version() == (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    assert app.format_mm_ss(65) == "01:05"
-    assert app.format_mm_ss(3661) == "01:01:01"
+    with import_stubs():
+        app = load_module("app_smoke", "app.py")
+        assert app.read_app_version() == (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        assert app.format_mm_ss(65) == "01:05"
+        assert app.format_mm_ss(3661) == "01:01:01"
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        directory = Path(tmpdir)
-        assert app.next_take_name_for_dir(directory, "take") == "take_001"
-        (directory / "take_001.mp3").write_text("", encoding="utf-8")
-        assert app.next_take_name_for_dir(directory, "take") == "take_002"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            assert app.next_take_name_for_dir(directory, "take") == "take_001"
+            (directory / "take_001.mp3").write_text("", encoding="utf-8")
+            assert app.next_take_name_for_dir(directory, "take") == "take_002"
 
 
 def test_cli_settings_roundtrip() -> None:
-    prepare_import_stubs()
-    cli = load_module("cli_smoke", "cli_app.py")
+    with import_stubs():
+        cli = load_module("cli_smoke", "cli_app.py")
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        preset_path = Path(tmpdir) / ".last_preset.json"
-        named_preset_path = Path(tmpdir) / ".cli_presets.json"
-        cli.PRESET_PATH = preset_path
-        cli.NAMED_PRESET_PATH = named_preset_path
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".last_preset.json"
+            named_preset_path = Path(tmpdir) / ".cli_presets.json"
+            cli.PRESET_PATH = preset_path
+            cli.NAMED_PRESET_PATH = named_preset_path
 
-        loaded = cli.load_saved_settings()
-        assert loaded["gain"] == cli.DEFAULT_SETTINGS["gain"]
-        assert loaded["input_device_id"] is None
+            loaded = cli.load_saved_settings()
+            assert loaded["gain"] == cli.DEFAULT_SETTINGS["gain"]
+            assert loaded["input_device_id"] is None
 
-        cli.save_settings(
-            {
-                **cli.DEFAULT_SETTINGS,
-                "gain": 9,
-                "output_device_id": 7,
-            }
-        )
-        raw = json.loads(preset_path.read_text(encoding="utf-8"))
-        assert raw["gain"] == 9.0
-        assert raw["output_device_id"] == 7
+            cli.save_settings(
+                {
+                    **cli.DEFAULT_SETTINGS,
+                    "gain": 9,
+                    "output_device_id": 7,
+                }
+            )
+            raw = json.loads(preset_path.read_text(encoding="utf-8"))
+            assert raw["gain"] == 9.0
+            assert raw["output_device_id"] == 7
 
-        loaded = cli.load_saved_settings()
-        assert loaded["gain"] == 9.0
-        assert loaded["output_device_id"] == 7
+            loaded = cli.load_saved_settings()
+            assert loaded["gain"] == 9.0
+            assert loaded["output_device_id"] == 7
 
-        cli.save_named_preset(
-            "Temiz",
-            {
-                **cli.DEFAULT_SETTINGS,
-                "gain": 11,
-                "input_device_id": 3,
-            },
-        )
-        names = cli.list_named_presets()
-        assert names == ["Temiz"]
-        named_loaded = cli.load_named_preset("Temiz")
-        assert named_loaded is not None
-        assert named_loaded["gain"] == 11.0
-        assert named_loaded["input_device_id"] == 3
-        renamed, message = cli.rename_named_preset("Temiz", "Parlak")
-        assert renamed is True
-        assert "Temiz -> Parlak" in message
-        assert cli.list_named_presets() == ["Parlak"]
-        renamed_loaded = cli.load_named_preset("Parlak")
-        assert renamed_loaded is not None
-        assert renamed_loaded["gain"] == 11.0
-        assert renamed_loaded["input_device_id"] == 3
-        store = cli.load_named_preset_store()
-        assert store["selected"] == "Parlak"
-        assert cli.delete_named_preset("Parlak") is True
-        assert cli.list_named_presets() == []
+            cli.save_named_preset(
+                "Temiz",
+                {
+                    **cli.DEFAULT_SETTINGS,
+                    "gain": 11,
+                    "input_device_id": 3,
+                },
+            )
+            names = cli.list_named_presets()
+            assert names == ["Temiz"]
+            named_loaded = cli.load_named_preset("Temiz")
+            assert named_loaded is not None
+            assert named_loaded["gain"] == 11.0
+            assert named_loaded["input_device_id"] == 3
+            renamed, message = cli.rename_named_preset("Temiz", "Parlak")
+            assert renamed is True
+            assert "Temiz -> Parlak" in message
+            assert cli.list_named_presets() == ["Parlak"]
+            renamed_loaded = cli.load_named_preset("Parlak")
+            assert renamed_loaded is not None
+            assert renamed_loaded["gain"] == 11.0
+            assert renamed_loaded["input_device_id"] == 3
+            store = cli.load_named_preset_store()
+            assert store["selected"] == "Parlak"
+            assert cli.delete_named_preset("Parlak") is True
+            assert cli.list_named_presets() == []
 
-    assert "Ses aygıtı bulunamadı" in cli.no_device_help_text()
-    assert cli.format_cli_value(None) == "varsayılan"
-    assert cli.format_cli_value(7) == "7"
-    lines = cli.format_kv_lines([("Mod", "test"), ("Mikrofon aygıtı", None)])
-    assert lines == [
-        "- Mod             : test",
-        "- Mikrofon aygıtı : varsayılan",
-    ]
-    help_text = cli.cli_usage_text()
-    assert "--quick" in help_text
-    assert "--list-presets" in help_text
-    assert "--show-preset ADI" in help_text
-    assert "--select-preset ADI" in help_text
-    assert "--rename-preset ESKI YENI" in help_text
-    assert "--list-devices" in help_text
-    assert "--show-settings" in help_text
-    assert "--test" in help_text
-    parsed, err = cli.parse_cli_args(["--help"])
-    assert err is None
-    assert parsed["help_only"] is True
-    parsed, err = cli.parse_cli_args(["--list-devices"])
-    assert err is None
-    assert parsed["list_devices_only"] is True
-    parsed, err = cli.parse_cli_args(["--show-settings", "--preset", "Temiz"])
-    assert err is None
-    assert parsed["show_settings_only"] is True
-    assert parsed["preset_name"] == "Temiz"
-    parsed, err = cli.parse_cli_args(["--show-preset", "Temiz"])
-    assert err is None
-    assert parsed["show_named_preset"] == "Temiz"
-    parsed, err = cli.parse_cli_args(["--select-preset", "Temiz"])
-    assert err is None
-    assert parsed["select_named_preset"] == "Temiz"
-    parsed, err = cli.parse_cli_args(["--rename-preset", "Eski", "Yeni"])
-    assert err is None
-    assert parsed["rename_named_preset"] == ("Eski", "Yeni")
-    parsed, err = cli.parse_cli_args(["--test", "--preset", "Temiz"])
-    assert err is None
-    assert parsed["test_only"] is True
-    assert parsed["preset_name"] == "Temiz"
-    _, err = cli.parse_cli_args(["--rename-preset", "Tek"])
-    assert err == "Eksik deger: --rename-preset"
-    cli.next_take_name = lambda prefix: f"{prefix}_001"
-    assert cli.device_test_output_name("") == "quick_take_001_device_test"
-    assert cli.device_test_output_name("Temiz") == "Temiz_device_test"
-    settings_lines = cli.format_kv_lines(
-        [
-            ("Kaynak", "Temiz"),
-            ("Mikrofon aygıtı", None),
-            ("Çıkış aygıtı", 8),
+        assert "Ses aygıtı bulunamadı" in cli.no_device_help_text()
+        assert cli.format_cli_value(None) == "varsayılan"
+        assert cli.format_cli_value(7) == "7"
+        lines = cli.format_kv_lines([("Mod", "test"), ("Mikrofon aygıtı", None)])
+        assert lines == [
+            "- Mod             : test",
+            "- Mikrofon aygıtı : varsayılan",
         ]
-    )
-    assert settings_lines == [
-        "- Kaynak          : Temiz",
-        "- Mikrofon aygıtı : varsayılan",
-        "- Çıkış aygıtı    : 8",
-    ]
-    _, err = cli.parse_cli_args(["--unknown"])
-    assert err == "Bilinmeyen secenek: --unknown"
+        help_text = cli.cli_usage_text()
+        assert "--quick" in help_text
+        assert "--list-presets" in help_text
+        assert "--show-preset ADI" in help_text
+        assert "--select-preset ADI" in help_text
+        assert "--rename-preset ESKI YENI" in help_text
+        assert "--list-devices" in help_text
+        assert "--show-settings" in help_text
+        assert "--test" in help_text
+        parsed, err = cli.parse_cli_args(["--help"])
+        assert err is None
+        assert parsed["help_only"] is True
+        parsed, err = cli.parse_cli_args(["--list-devices"])
+        assert err is None
+        assert parsed["list_devices_only"] is True
+        parsed, err = cli.parse_cli_args(["--show-settings", "--preset", "Temiz"])
+        assert err is None
+        assert parsed["show_settings_only"] is True
+        assert parsed["preset_name"] == "Temiz"
+        parsed, err = cli.parse_cli_args(["--show-preset", "Temiz"])
+        assert err is None
+        assert parsed["show_named_preset"] == "Temiz"
+        parsed, err = cli.parse_cli_args(["--select-preset", "Temiz"])
+        assert err is None
+        assert parsed["select_named_preset"] == "Temiz"
+        parsed, err = cli.parse_cli_args(["--rename-preset", "Eski", "Yeni"])
+        assert err is None
+        assert parsed["rename_named_preset"] == ("Eski", "Yeni")
+        parsed, err = cli.parse_cli_args(["--test", "--preset", "Temiz"])
+        assert err is None
+        assert parsed["test_only"] is True
+        assert parsed["preset_name"] == "Temiz"
+        _, err = cli.parse_cli_args(["--rename-preset", "Tek"])
+        assert err == "Eksik deger: --rename-preset"
+        cli.next_take_name = lambda prefix: f"{prefix}_001"
+        assert cli.device_test_output_name("") == "quick_take_001_device_test"
+        assert cli.device_test_output_name("Temiz") == "Temiz_device_test"
+        settings_lines = cli.format_kv_lines(
+            [
+                ("Kaynak", "Temiz"),
+                ("Mikrofon aygıtı", None),
+                ("Çıkış aygıtı", 8),
+            ]
+        )
+        assert settings_lines == [
+            "- Kaynak          : Temiz",
+            "- Mikrofon aygıtı : varsayılan",
+            "- Çıkış aygıtı    : 8",
+        ]
+        _, err = cli.parse_cli_args(["--unknown"])
+        assert err == "Bilinmeyen secenek: --unknown"
+
+
+def test_import_stubs_restore_modules() -> None:
+    original_numpy = sys.modules.get("numpy")
+    with import_stubs():
+        assert sys.modules["numpy"].float32 is float
+    assert sys.modules.get("numpy") is original_numpy
 
 
 def main() -> int:
