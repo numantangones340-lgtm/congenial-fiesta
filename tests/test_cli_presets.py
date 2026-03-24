@@ -4,7 +4,10 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import cli_app
+from runtime_stubs import load_module, runtime_stubs
+
+with runtime_stubs():
+    cli_app = load_module("cli_app_test_cli_presets", "cli_app.py")
 
 
 class CliPresetStoreTests(unittest.TestCase):
