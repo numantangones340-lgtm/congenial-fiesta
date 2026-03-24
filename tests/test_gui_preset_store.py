@@ -156,6 +156,18 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu.assert_not_called()
         self.assertEqual(recorder.status_messages[-1], "Hazir preset uzerine kaydedilemez: Temiz Gitar")
 
+    def test_save_current_preset_requires_name_when_builtin_is_selected_and_entry_blank(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.save_current_preset()
+                self.assertFalse(preset_path.exists())
+
+        recorder.refresh_preset_menu.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Yeni bir preset adı girin.")
+
     def test_delete_selected_preset_falls_back_to_builtin_presets(self) -> None:
         recorder = self.make_app()
         recorder.preset_name.set("TekPreset")
