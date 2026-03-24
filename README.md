@@ -172,6 +172,7 @@ Bu repoda otomatik yayin akisi eklidir:
 - `.github/workflows/release.yml`
   - `v*` etiketi push edilince tek matrix workflow ile macOS ve Windows build alir.
   - macOS kolu varsa codesign + notarization yapar, her iki platform icin zip ve Release asset uretir.
+  - macOS signing/notarization icin `sign_macos_app.sh` ve `notarize_macos_app.sh` scriptlerini kullanir.
 - `.github/workflows/static.yml`
   - `main` branch push edilince `docs/` klasorunu GitHub Pages'e deploy eder.
 
