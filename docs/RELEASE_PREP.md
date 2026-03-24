@@ -35,6 +35,8 @@ Not:
 - `docs/ROADMAP_1.1.3.md`
 - `.github/workflows/release.yml`
 - `build_macos_app.sh`
+- `sign_macos_app.sh`
+- `notarize_macos_app.sh`
 - `package_macos_release.sh`
 - `scripts/generate_release_notes.py`
 - `scripts/tag_release.py`
@@ -44,7 +46,7 @@ Not:
 1. Uygulama testlerini tamamla.
 2. `git diff` ile yalnizca release'e girecek dosyalari gozden gecir.
 3. Sadece hedef dosyalari `git add` ile secerek stage et:
-   `git add VERSION CHANGELOG.md README.md app.py cli_app.py scripts/ tests/ .github/workflows/release.yml .github/workflows/static.yml docs/RELEASE_PREP.md`
+   `git add VERSION CHANGELOG.md README.md app.py cli_app.py sign_macos_app.sh notarize_macos_app.sh scripts/ tests/ .github/workflows/release.yml .github/workflows/static.yml docs/RELEASE_PREP.md`
 4. `git status --short` ile `.venv/` degisikliklerinin stage disinda kaldigini dogrula.
 5. Release commit'ini olustur.
 6. `git tag v1.1.3`
@@ -65,5 +67,6 @@ Gercek notarized yayin icin ayrica:
 - Apple `Developer ID Application` sertifikasi
 - notarytool credentials
 - GitHub secrets
+- repo icindeki `sign_macos_app.sh` ve `notarize_macos_app.sh` scriptleri
 
 gereklidir.
