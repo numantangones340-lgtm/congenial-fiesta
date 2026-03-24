@@ -1,16 +1,13 @@
 import json
-import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
 from unittest import mock
 
-sys.modules.setdefault("numpy", types.SimpleNamespace(ndarray=object))
-sys.modules.setdefault("sounddevice", types.SimpleNamespace())
-sys.modules.setdefault("soundfile", types.SimpleNamespace())
+from runtime_stubs import load_module, runtime_stubs
 
-import app
+with runtime_stubs():
+    app = load_module("app_test_session_state", "app.py")
 
 
 class FakeVar:
