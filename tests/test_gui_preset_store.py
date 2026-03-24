@@ -113,6 +113,24 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu.assert_called_once_with(raw["selected"])
         self.assertEqual(recorder.status_messages[-1], "Preset silindi: TekPreset")
 
+    def test_delete_selected_preset_rejects_builtin_presets(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            preset_path.write_text(
+                json.dumps({"selected": "Temiz Gitar", "presets": {"Kullanici": {"gain": 4}}}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.delete_selected_preset()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["selected"], "Temiz Gitar")
+        self.assertIn("Kullanici", raw["presets"])
+        recorder.refresh_preset_menu.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Hazir preset silinemez: Temiz Gitar")
+
 
 if __name__ == "__main__":
     unittest.main()
