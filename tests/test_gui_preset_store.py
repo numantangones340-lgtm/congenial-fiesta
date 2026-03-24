@@ -79,6 +79,31 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(store["selected"], "Varsayilan")
         self.assertEqual(store["presets"]["Varsayilan"]["gain"], 9)
 
+    def test_load_preset_store_data_filters_user_overrides_of_builtin_names(self) -> None:
+        recorder = self.make_app()
+        builtin_gain = app.builtin_preset_store()["presets"]["Temiz Gitar"]["gain"]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            preset_path.write_text(
+                json.dumps(
+                    {
+                        "selected": "Temiz Gitar",
+                        "presets": {
+                            "Temiz Gitar": {"gain": 99},
+                            "Kullanici": {"gain": 7},
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                store = recorder.load_preset_store_data()
+
+        self.assertEqual(store["selected"], "Temiz Gitar")
+        self.assertEqual(store["presets"]["Temiz Gitar"]["gain"], builtin_gain)
+        self.assertEqual(store["presets"]["Kullanici"]["gain"], 7)
+
     def test_save_current_preset_persists_selected_name(self) -> None:
         recorder = self.make_app()
         recorder.preset_name.set("Aksam")

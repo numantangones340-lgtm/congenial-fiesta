@@ -459,8 +459,14 @@ def builtin_preset_store() -> dict:
 def merge_builtin_presets(store: dict) -> dict:
     merged = {"selected": str(store.get("selected", "Temiz Gitar") or "Temiz Gitar"), "presets": {}}
     builtin = builtin_preset_store()
+    builtin_names = set(builtin["presets"].keys())
+    user_presets = {
+        name: preset
+        for name, preset in store.get("presets", {}).items()
+        if name not in builtin_names
+    }
     merged["presets"].update(builtin["presets"])
-    merged["presets"].update(store.get("presets", {}))
+    merged["presets"].update(user_presets)
     if merged["selected"] not in merged["presets"]:
         merged["selected"] = builtin["selected"]
     return merged
