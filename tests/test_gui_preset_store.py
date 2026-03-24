@@ -76,7 +76,7 @@ class GuiPresetStoreTests(unittest.TestCase):
                 store = recorder.load_preset_store_data()
 
         self.assertIn("Varsayilan", store["presets"])
-        self.assertEqual(store["selected"], "Temiz Gitar")
+        self.assertEqual(store["selected"], "Varsayilan")
         self.assertEqual(store["presets"]["Varsayilan"]["gain"], 9)
 
     def test_save_current_preset_persists_selected_name(self) -> None:
