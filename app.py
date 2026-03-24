@@ -1064,6 +1064,9 @@ class GuitarAmpRecorderApp:
         try:
             store = self.load_preset_store_data()
             name = self.preset_name.get().strip() or str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            if name in set(builtin_preset_store().get("presets", {}).keys()):
+                self.set_status(f"Hazir preset uzerine kaydedilemez: {name}")
+                return
             store.setdefault("presets", {})[name] = self.collect_current_preset()
             store["selected"] = name
             self.write_preset_store_data(store)
