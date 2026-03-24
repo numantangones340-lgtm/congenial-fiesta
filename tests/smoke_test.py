@@ -90,6 +90,19 @@ def test_release_body_generation() -> None:
         assert "Onceki surum" not in body
 
 
+def test_release_scripts_exist() -> None:
+    expected = [
+        "build_macos_app.sh",
+        "package_macos_release.sh",
+        "sign_macos_app.sh",
+        "notarize_macos_app.sh",
+    ]
+    for name in expected:
+        path = ROOT / name
+        assert path.exists(), f"Eksik release scripti: {name}"
+        assert path.read_text(encoding="utf-8").startswith("#!/usr/bin/env bash")
+
+
 def test_app_helpers() -> None:
     prepare_import_stubs()
     app = load_module("app_smoke", "app.py")
@@ -223,6 +236,7 @@ def test_cli_settings_roundtrip() -> None:
 
 def main() -> int:
     test_release_body_generation()
+    test_release_scripts_exist()
     test_app_helpers()
     test_cli_settings_roundtrip()
     print("smoke tests passed")
