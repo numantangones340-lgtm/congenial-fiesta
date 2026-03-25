@@ -58,6 +58,8 @@ def ensure_changelog_has(version: str) -> None:
 def ensure_tag_absent(tag_name: str) -> None:
     if git("tag", "--list", tag_name).stdout.strip():
         raise RuntimeError(f"Tag {tag_name} already exists locally")
+    if git("ls-remote", "--tags", "origin", f"refs/tags/{tag_name}").stdout.strip():
+        raise RuntimeError(f"Tag {tag_name} already exists on origin")
 
 
 def main() -> int:

@@ -82,6 +82,29 @@ class TagReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Tag v1.1.3 already exists locally"):
                 tag_release.ensure_tag_absent("v1.1.3")
 
+    def test_ensure_tag_absent_rejects_existing_origin_tag(self) -> None:
+        responses = {
+            ("tag", "--list", "v1.1.3"): subprocess.CompletedProcess(
+                args=["git", "tag", "--list", "v1.1.3"],
+                returncode=0,
+                stdout="",
+                stderr="",
+            ),
+            ("ls-remote", "--tags", "origin", "refs/tags/v1.1.3"): subprocess.CompletedProcess(
+                args=["git", "ls-remote", "--tags", "origin", "refs/tags/v1.1.3"],
+                returncode=0,
+                stdout="abc123\trefs/tags/v1.1.3\n",
+                stderr="",
+            ),
+        }
+
+        def fake_git(*args: str) -> subprocess.CompletedProcess[str]:
+            return responses[args]
+
+        with mock.patch.object(tag_release, "git", side_effect=fake_git):
+            with self.assertRaisesRegex(RuntimeError, "Tag v1.1.3 already exists on origin"):
+                tag_release.ensure_tag_absent("v1.1.3")
+
     def test_main_creates_tag_and_prints_push_hint(self) -> None:
         calls: list[tuple[str, ...]] = []
 
@@ -96,6 +119,8 @@ class TagReleaseTests(unittest.TestCase):
             if args == ("rev-parse", "origin/main"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="abc123\n", stderr="")
             if args == ("tag", "--list", "v1.1.3"):
+                return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
+            if args == ("ls-remote", "--tags", "origin", "refs/tags/v1.1.3"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
             if args == ("tag", "v1.1.3"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
@@ -124,6 +149,7 @@ class TagReleaseTests(unittest.TestCase):
                 ("rev-parse", "HEAD"),
                 ("rev-parse", "origin/main"),
                 ("tag", "--list", "v1.1.3"),
+                ("ls-remote", "--tags", "origin", "refs/tags/v1.1.3"),
                 ("tag", "v1.1.3"),
             ],
         )
