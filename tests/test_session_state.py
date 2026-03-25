@@ -169,6 +169,26 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("- take_007_mix.wav", note_text)
         self.assertIn("- take_007_vocal.wav", note_text)
 
+    def test_build_recording_prep_text_summarizes_plan_clearly(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+        recorder.session_mode.set("Isimli Oturum")
+        recorder.session_name.set("Canli Set")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+            with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
+                prep_text = recorder.build_recording_prep_text()
+
+        self.assertIn("Preset: Temiz Gitar", prep_text)
+        self.assertIn("Oturum: Isimli Oturum (Canli Set)", prep_text)
+        self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", prep_text)
+        self.assertIn("Take Adi: aksam_take", prep_text)
+        self.assertIn("Klasor: /tmp/out/Canli Set", prep_text)
+        self.assertIn("Ciktilar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
+        self.assertIn(f"Not: Son export hatasi icin recovery notu hazir ({recovery_note_path.name})", prep_text)
+
     def test_remember_completed_take_name_updates_output_name(self) -> None:
         recorder = self.make_app()
 
