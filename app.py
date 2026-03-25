@@ -617,6 +617,7 @@ class GuitarAmpRecorderApp:
         self.monitor_status_text = StringVar(value="Canli monitor kapali")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
         self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
+        self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayit plani hazirlaniyor...")
         self.next_step_text = StringVar(value="Hazirlik kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Secenek aciklamalari hazirlaniyor...")
@@ -720,6 +721,19 @@ class GuitarAmpRecorderApp:
             pady=10,
         )
         self.readiness_label.pack(fill="x", padx=14, pady=(12, 14))
+
+        preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitle="Kayda basmadan hemen önce kısa risk özetini burada görün.")
+        self.preflight_warning_label = Label(
+            preflight_box,
+            textvariable=self.preflight_warning_text,
+            bg="#2a1c1c",
+            fg="#f6e7cb",
+            justify="left",
+            wraplength=640,
+            padx=10,
+            pady=10,
+        )
+        self.preflight_warning_label.pack(fill="x", padx=14, pady=(12, 14))
 
         setup = self.create_section(title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         Label(
@@ -1099,6 +1113,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_option_explanation_summary()
 
@@ -1129,6 +1144,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_option_explanation_summary()
 
@@ -1265,6 +1281,30 @@ class GuitarAmpRecorderApp:
     def update_readiness_summary(self) -> None:
         try:
             self.readiness_text.set(self.build_readiness_text())
+        except Exception:
+            pass
+
+    def build_preflight_warning_text(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Ön uyarı: kayıt klasörü seçilmedi."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return f"Ön uyarı: son export için recovery notu var ({self.last_recovery_note_path.name})."
+        if self.last_input_peak >= 0.985:
+            return "Ön uyarı: giriş çok yüksek, gain düşürmeden kayda başlamayın."
+        if self.last_input_peak < 0.01:
+            return "Ön uyarı: giriş çok zayıf, önce kısa test yapın."
+        if self.last_input_peak < 0.05:
+            return "Ön uyarı: giriş düşük, gerekirse gain artırın."
+        return "Hazır: seviye uygun görünüyor, kısa testten sonra kayda geçebilirsiniz."
+
+    def update_preflight_warning_summary(self) -> None:
+        try:
+            text = self.build_preflight_warning_text()
+            self.preflight_warning_text.set(text)
+            if text.startswith("Hazır:"):
+                self.preflight_warning_label.configure(bg="#1f2b22", fg="#d8f3dc")
+            else:
+                self.preflight_warning_label.configure(bg="#2a1c1c", fg="#f6e7cb")
         except Exception:
             pass
 
@@ -1940,6 +1980,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
@@ -2353,6 +2394,7 @@ class GuitarAmpRecorderApp:
             safety_message, safety_color = self.classify_input_level(peak_level)
             self.safety_text.set(f"Durum: {safety_message}")
             self.safety_label.configure(fg=safety_color)
+            self.update_preflight_warning_summary()
             self.root.after(120, self.update_meter_ui)
         except TclError:
             pass
@@ -2568,6 +2610,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
 
     def clear_backing_selection(self) -> None:
@@ -2577,6 +2620,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
 
@@ -2725,6 +2769,7 @@ class GuitarAmpRecorderApp:
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
+            self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
 
             final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
@@ -2996,6 +3041,7 @@ class GuitarAmpRecorderApp:
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
+            self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
@@ -3012,6 +3058,7 @@ class GuitarAmpRecorderApp:
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
+            self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.set_status(f"Hata: {exc} | Recovery notu: {self.last_recovery_note_path}")

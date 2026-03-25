@@ -37,6 +37,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.action_guidance_text = FakeVar("")
+        recorder.preflight_warning_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
@@ -68,6 +69,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_recent_exports = mock.Mock()
         recorder.load_saved_preset = mock.Mock()
+        recorder.preflight_warning_label = mock.Mock()
         recorder.last_output_dir = None
         recorder.last_export_path = None
         recorder.last_summary_path = None
@@ -302,6 +304,38 @@ class SessionStateTests(unittest.TestCase):
             guidance_text = recorder.build_action_guidance_text()
 
         self.assertIn("Önce recovery notunu inceleyin.", guidance_text)
+
+    def test_build_preflight_warning_text_requires_output_dir_first(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        warning_text = recorder.build_preflight_warning_text()
+
+        self.assertEqual(warning_text, "Ön uyarı: kayıt klasörü seçilmedi.")
+
+    def test_build_preflight_warning_text_flags_clipping_risk(self) -> None:
+        recorder = self.make_app()
+        recorder.last_input_peak = 0.99
+
+        warning_text = recorder.build_preflight_warning_text()
+
+        self.assertEqual(warning_text, "Ön uyarı: giriş çok yüksek, gain düşürmeden kayda başlamayın.")
+
+    def test_build_preflight_warning_text_flags_very_low_input(self) -> None:
+        recorder = self.make_app()
+        recorder.last_input_peak = 0.005
+
+        warning_text = recorder.build_preflight_warning_text()
+
+        self.assertEqual(warning_text, "Ön uyarı: giriş çok zayıf, önce kısa test yapın.")
+
+    def test_build_preflight_warning_text_reports_ready_when_level_is_good(self) -> None:
+        recorder = self.make_app()
+        recorder.last_input_peak = 0.32
+
+        warning_text = recorder.build_preflight_warning_text()
+
+        self.assertEqual(warning_text, "Hazır: seviye uygun görünüyor, kısa testten sonra kayda geçebilirsiniz.")
 
     def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
         recorder = self.make_app()
