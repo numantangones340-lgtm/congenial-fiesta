@@ -713,40 +713,25 @@ class GuitarAmpRecorderApp:
         self.next_step_label = Label(
             next_step_box,
             textvariable=self.next_step_text,
-            bg="#1c2a1f",
-            fg="#d8f3dc",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#1c2a1f", "#d8f3dc"),
         )
-        self.next_step_label.pack(fill="x", padx=14, pady=(12, 14))
+        self.next_step_label.pack(fill="x", padx=14, pady=(10, 10))
 
         readiness_box = self.create_section(title="Hazırlık Durumu", subtitle="Kayda başlamadan önce kritik noktaları tek bakışta kontrol edin.")
         self.readiness_label = Label(
             readiness_box,
             textvariable=self.readiness_text,
-            bg="#1b2029",
-            fg="#dce6ef",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#1b2029", "#dce6ef"),
         )
-        self.readiness_label.pack(fill="x", padx=14, pady=(12, 14))
+        self.readiness_label.pack(fill="x", padx=14, pady=(10, 10))
 
         preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitle="Kayda basmadan hemen önce kısa risk özetini burada görün.")
         self.preflight_warning_label = Label(
             preflight_box,
             textvariable=self.preflight_warning_text,
-            bg="#2a1c1c",
-            fg="#f6e7cb",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#2a1c1c", "#f6e7cb"),
         )
-        self.preflight_warning_label.pack(fill="x", padx=14, pady=(12, 14))
+        self.preflight_warning_label.pack(fill="x", padx=14, pady=(10, 10))
 
         setup = self.create_section(title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         Label(
@@ -893,27 +878,17 @@ class GuitarAmpRecorderApp:
         self.prep_summary_label = Label(
             prep_box,
             textvariable=self.prep_summary_text,
-            bg="#11202d",
-            fg="#d7eefb",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#11202d", "#d7eefb"),
         )
-        self.prep_summary_label.pack(fill="x", padx=14, pady=(12, 14))
+        self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
         option_box = self.create_section(title="Seçenek Özeti", subtitle="Seçili ayarların ne yapacağını sade dille okuyun.")
         self.option_summary_label = Label(
             option_box,
             textvariable=self.option_summary_text,
-            bg="#2a2014",
-            fg="#f6e7cb",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#2a2014", "#f6e7cb"),
         )
-        self.option_summary_label.pack(fill="x", padx=14, pady=(12, 14))
+        self.option_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
         tone = self.create_section(title="Ton Ayarları", subtitle="Amfi karakterini ve distorsiyonu burada ayarlayın.")
         self.gain = self.make_slider(tone, "Kazanç (dB)", -12, 24, 6)
@@ -943,14 +918,9 @@ class GuitarAmpRecorderApp:
         self.action_guidance_label = Label(
             actions,
             textvariable=self.action_guidance_text,
-            bg="#1b2230",
-            fg="#dfe9f5",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#1b2230", "#dfe9f5"),
         )
-        self.action_guidance_label.pack(fill="x", padx=14, pady=(12, 6))
+        self.action_guidance_label.pack(fill="x", padx=14, pady=(10, 6))
         self.start_test_button = Button(actions, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white")
         self.start_test_button.pack(
             fill="x", padx=14, pady=(0, 6)
@@ -981,14 +951,9 @@ class GuitarAmpRecorderApp:
         self.recent_output_summary_label = Label(
             recent_box,
             textvariable=self.recent_output_summary_text,
-            bg="#1b2029",
-            fg="#dce6ef",
-            justify="left",
-            wraplength=640,
-            padx=10,
-            pady=10,
+            **self.summary_card_style("#1b2029", "#dce6ef"),
         )
-        self.recent_output_summary_label.pack(fill="x", padx=14, pady=(12, 8))
+        self.recent_output_summary_label.pack(fill="x", padx=14, pady=(10, 8))
         recent_buttons = Frame(recent_box, bg="#151b22")
         recent_buttons.pack(fill="x", padx=14, pady=(0, 8))
         self.open_last_export_button = Button(
@@ -1508,6 +1473,16 @@ class GuitarAmpRecorderApp:
                 label.configure(**self.build_recent_output_summary_palette())
         except Exception:
             pass
+
+    def summary_card_style(self, bg: str, fg: str) -> dict[str, object]:
+        return {
+            "bg": bg,
+            "fg": fg,
+            "justify": "left",
+            "wraplength": 620,
+            "padx": 9,
+            "pady": 7,
+        }
 
     def make_slider(self, parent: Frame, label: str, min_v: int, max_v: int, default: int) -> Scale:
         Label(parent, text=label, bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14)

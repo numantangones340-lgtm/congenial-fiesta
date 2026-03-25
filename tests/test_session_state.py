@@ -311,6 +311,23 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(palette, {"bg": "#182028", "fg": "#9fb0c2"})
 
+    def test_summary_card_style_returns_compact_shared_layout(self) -> None:
+        recorder = self.make_app()
+
+        style = recorder.summary_card_style("#111111", "#eeeeee")
+
+        self.assertEqual(
+            style,
+            {
+                "bg": "#111111",
+                "fg": "#eeeeee",
+                "justify": "left",
+                "wraplength": 620,
+                "padx": 9,
+                "pady": 7,
+            },
+        )
+
     def test_build_operation_state_palette_reports_meter_colors(self) -> None:
         recorder = self.make_app()
         recorder.meter_stream = object()
