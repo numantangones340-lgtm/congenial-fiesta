@@ -76,6 +76,17 @@ class SessionStateTests(unittest.TestCase):
         recorder.start_quick_record_button = mock.Mock()
         recorder.start_recording_button = mock.Mock()
         recorder.stop_recording_button = mock.Mock()
+        recorder.open_last_export_button = mock.Mock()
+        recorder.play_last_export_button = mock.Mock()
+        recorder.copy_last_export_path_button = mock.Mock()
+        recorder.open_last_summary_button = mock.Mock()
+        recorder.copy_last_summary_button = mock.Mock()
+        recorder.copy_last_summary_path_button = mock.Mock()
+        recorder.copy_last_brief_button = mock.Mock()
+        recorder.export_last_brief_button = mock.Mock()
+        recorder.open_last_take_notes_button = mock.Mock()
+        recorder.copy_last_recovery_note_button = mock.Mock()
+        recorder.open_last_output_dir_button = mock.Mock()
         recorder.last_output_dir = None
         recorder.last_export_path = None
         recorder.last_summary_path = None
@@ -263,6 +274,23 @@ class SessionStateTests(unittest.TestCase):
         recorder.start_quick_record_button.configure.assert_called_once_with(state="normal")
         recorder.start_recording_button.configure.assert_called_once_with(state="normal")
         recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
+
+    def test_set_recent_output_button_states_disables_recent_actions(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recent_output_button_states(enabled=False)
+
+        recorder.open_last_export_button.configure.assert_called_once_with(state="disabled")
+        recorder.play_last_export_button.configure.assert_called_once_with(state="disabled")
+        recorder.copy_last_export_path_button.configure.assert_called_once_with(state="disabled")
+        recorder.open_last_summary_button.configure.assert_called_once_with(state="disabled")
+        recorder.copy_last_summary_button.configure.assert_called_once_with(state="disabled")
+        recorder.copy_last_summary_path_button.configure.assert_called_once_with(state="disabled")
+        recorder.copy_last_brief_button.configure.assert_called_once_with(state="disabled")
+        recorder.export_last_brief_button.configure.assert_called_once_with(state="disabled")
+        recorder.open_last_take_notes_button.configure.assert_called_once_with(state="disabled")
+        recorder.copy_last_recovery_note_button.configure.assert_called_once_with(state="disabled")
+        recorder.open_last_output_dir_button.configure.assert_called_once_with(state="disabled")
 
     def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
         recorder = self.make_app()

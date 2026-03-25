@@ -2521,6 +2521,20 @@ class GuitarAmpRecorderApp:
         self.start_recording_button.configure(state=start_state)
         self.stop_recording_button.configure(state=stop_state)
 
+    def set_recent_output_button_states(self, enabled: bool) -> None:
+        state = "normal" if enabled else "disabled"
+        self.open_last_export_button.configure(state=state)
+        self.play_last_export_button.configure(state=state)
+        self.copy_last_export_path_button.configure(state=state)
+        self.open_last_summary_button.configure(state=state)
+        self.copy_last_summary_button.configure(state=state)
+        self.copy_last_summary_path_button.configure(state=state)
+        self.copy_last_brief_button.configure(state=state)
+        self.export_last_brief_button.configure(state=state)
+        self.open_last_take_notes_button.configure(state=state)
+        self.copy_last_recovery_note_button.configure(state=state)
+        self.open_last_output_dir_button.configure(state=state)
+
     def begin_recording_progress(self, mode: str, total_seconds: float) -> None:
         self.recording_active = True
         self.recording_started_at = time.time()
@@ -2529,6 +2543,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         try:
             self.set_recording_action_button_states(recording_active=True)
+            self.set_recent_output_button_states(enabled=False)
             self.update_action_guidance_summary()
         except TclError:
             pass
