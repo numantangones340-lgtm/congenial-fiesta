@@ -2,6 +2,20 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.7] - 2026-03-25
+
+### Degisti
+
+- `tag_release.py` release etiketi olusturmadan once `origin` durumunu `fetch --prune` ile yeniler hale getirildi
+- release tag olusturma akisi, `origin` uzerinde zaten var olan etiketleri de onceden reddedecek sekilde guclendirildi
+- macOS build sureci PyInstaller gecici spec dosyasini cache altina yazar hale getirilerek tracked `GuitarAmpRecorder.spec` dosyasinin kirlenmesi onlendi
+
+### Guvenlik ve Kararlilik
+
+- release metadata surekliligi icin `VERSION`, `CHANGELOG`, `README` ve `RELEASE_PREP` uyumunu kontrol eden smoke test eklendi
+- macOS bundle metadata stamping adimini koruyan smoke test ile packaging regresyonu daha erken yakalanir hale getirildi
+- release tagging komutunun stale remote state ile calisma riski azaltildi
+
 ## [1.1.6] - 2026-03-25
 
 ### Degisti

@@ -189,8 +189,8 @@ macOS workflow icin onerilen GitHub secrets:
 Ornek release:
 
 ```bash
-git tag v1.1.6
-git push origin v1.1.6
+git tag v1.1.7
+git push origin v1.1.7
 ```
 
 Not:
