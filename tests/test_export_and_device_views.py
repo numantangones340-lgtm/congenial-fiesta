@@ -65,6 +65,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
         recorder.last_export_path = None
+        recorder.last_summary_path = None
         return recorder
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
@@ -167,6 +168,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_export_in_finder()
 
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
+
+    def test_open_last_session_summary_in_finder_handles_missing_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.last_summary_path = None
+
+        recorder.open_last_session_summary_in_finder()
+
+        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti bulunamadi.")
 
 
 if __name__ == "__main__":

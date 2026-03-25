@@ -64,6 +64,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_recent_exports = mock.Mock()
         recorder.load_saved_preset = mock.Mock()
+        recorder.last_summary_path = None
         return recorder
 
     def test_build_session_summary_contains_export_and_generated_files(self) -> None:
@@ -157,6 +158,31 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(recorder.session_mode.get(), "Tek Klasor")
         recorder.load_saved_preset.assert_not_called()
         self.assertIn(str(output_dir), recorder.status_messages[-1])
+
+    def test_reload_last_session_sets_existing_summary_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "session"
+            output_dir.mkdir()
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            state_path = Path(tmpdir) / ".last_session.json"
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "output_dir": str(output_dir),
+                        "session_mode": "Tek Klasor",
+                        "summary_path": str(summary_path),
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
+            with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
+                recorder.reload_last_session()
+
+        self.assertEqual(recorder.last_summary_path, summary_path)
 
 
 if __name__ == "__main__":

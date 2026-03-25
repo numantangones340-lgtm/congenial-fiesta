@@ -524,6 +524,7 @@ class GuitarAmpRecorderApp:
         self.recording_mode = ""
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
+        self.last_summary_path: Optional[Path] = None
         self.recent_exports_text = StringVar(value="Henuz export yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
@@ -768,6 +769,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.open_last_export_button.pack(side="left")
+        self.open_last_summary_button = Button(
+            recent_buttons,
+            text="Oturum Ozetini Ac",
+            command=self.open_last_session_summary_in_finder,
+            bg="#6c5ce7",
+            fg="white",
+            state="disabled",
+        )
+        self.open_last_summary_button.pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Klasoru Ac", command=self.open_output_dir_in_finder, bg="#34495e", fg="white").pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
@@ -1269,6 +1279,13 @@ class GuitarAmpRecorderApp:
         if preset_name:
             self.preset_name.set(preset_name)
             self.load_saved_preset()
+        summary_path = str(data.get("summary_path", "")).strip()
+        if summary_path:
+            path = Path(summary_path)
+            self.last_summary_path = path if path.exists() else None
+        elif output_dir:
+            fallback_summary_path = Path(output_dir) / "session_summary.json"
+            self.last_summary_path = fallback_summary_path if fallback_summary_path.exists() else None
         self.refresh_recent_exports()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
@@ -1303,6 +1320,15 @@ class GuitarAmpRecorderApp:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
         except Exception as exc:
             self.set_status(f"Finder acilamadi: {exc}")
+
+    def open_last_session_summary_in_finder(self) -> None:
+        if self.last_summary_path is None or not self.last_summary_path.exists():
+            self.set_status("Oturum ozeti bulunamadi.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(self.last_summary_path)], check=False)
+        except Exception as exc:
+            self.set_status(f"Oturum ozeti acilamadi: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -1625,6 +1651,10 @@ class GuitarAmpRecorderApp:
                 self.open_last_export_button.configure(state="normal")
             else:
                 self.open_last_export_button.configure(state="disabled")
+            if self.last_summary_path is not None and self.last_summary_path.exists():
+                self.open_last_summary_button.configure(state="normal")
+            else:
+                self.open_last_summary_button.configure(state="disabled")
         except TclError:
             pass
 
@@ -1802,6 +1832,7 @@ class GuitarAmpRecorderApp:
             sf.write(test_path, processed, sr)
             self.last_export_path = test_path
             summary_path = self.write_session_summary(output_dir, [test_path], "device_test")
+            self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
             self.write_last_session_state(output_dir, summary_path)
             self.refresh_recent_exports()
 
@@ -2016,6 +2047,7 @@ class GuitarAmpRecorderApp:
                     self.last_export_path = vocal_wav_path
                 generated_files = [path for path in [mp3_path, mix_wav_path, vocal_wav_path] if path.exists()]
                 summary_path = self.write_session_summary(output_dir, generated_files, "record_export")
+                self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
                 self.write_last_session_state(output_dir, summary_path)
                 if summary_path is not None:
                     notes.append(f"Oturum Ozeti: {summary_path}")
