@@ -216,6 +216,36 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(next_step, "Backing ve cihazlar hazır. Test kaydı iyi ise tam kaydı başlatabilirsiniz.")
 
+    def test_build_readiness_text_summarizes_ready_state(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
+            readiness_text = recorder.build_readiness_text()
+
+        self.assertIn("Genel durum: Kayda hazır", readiness_text)
+        self.assertIn("Giriş: hazır (Built-in Mic)", readiness_text)
+        self.assertIn("Çıkış: hazır (Built-in Output)", readiness_text)
+        self.assertIn("Kaynak: hazır (Arka plan + mikrofon, backing_track.wav)", readiness_text)
+        self.assertIn("Klasör: hazır (/tmp/out/Canli Set)", readiness_text)
+        self.assertIn("Take adı: hazır (aksam_take)", readiness_text)
+
+    def test_build_readiness_text_flags_missing_items_and_auto_take_name(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("")
+        recorder.output_device_choice.set("")
+        recorder.output_dir.set("")
+        recorder.output_name.set("")
+        recorder.backing_file = None
+        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path(".")):
+            readiness_text = recorder.build_readiness_text()
+
+        self.assertIn("Genel durum: Birkaç eksik nokta var", readiness_text)
+        self.assertIn("Giriş: seçilmedi, önce mikrofon seçin", readiness_text)
+        self.assertIn("Çıkış: seçilmedi, önce çıkış seçin", readiness_text)
+        self.assertIn("Kaynak: hazır (Sadece mikrofon, 90 sn)", readiness_text)
+        self.assertIn("Klasör: seçilmedi, önce kayıt klasörü belirleyin", readiness_text)
+        self.assertIn("Take adı: boş bırakıldı, kayıt sırasında otomatik oluşturulacak", readiness_text)
+
     def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
         recorder = self.make_app()
         recorder.mp3_quality.set("320 kbps")

@@ -614,6 +614,7 @@ class GuitarAmpRecorderApp:
         self.record_limit_hours = StringVar(value="1")
         self.mic_record_seconds = StringVar(value="60")
         self.monitor_status_text = StringVar(value="Canli monitor kapali")
+        self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
         self.prep_summary_text = StringVar(value="Kayit plani hazirlaniyor...")
         self.next_step_text = StringVar(value="Hazirlik kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Secenek aciklamalari hazirlaniyor...")
@@ -693,6 +694,19 @@ class GuitarAmpRecorderApp:
             pady=10,
         )
         self.next_step_label.pack(fill="x", padx=14, pady=(12, 14))
+
+        readiness_box = self.create_section(title="Hazırlık Durumu", subtitle="Kayda başlamadan önce kritik noktaları tek bakışta kontrol edin.")
+        self.readiness_label = Label(
+            readiness_box,
+            textvariable=self.readiness_text,
+            bg="#1b2029",
+            fg="#dce6ef",
+            justify="left",
+            wraplength=640,
+            padx=10,
+            pady=10,
+        )
+        self.readiness_label.pack(fill="x", padx=14, pady=(12, 14))
 
         setup = self.create_section(title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         Label(
@@ -1059,6 +1073,7 @@ class GuitarAmpRecorderApp:
         self.root.after(250, self.start_input_meter)
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_readiness_summary()
         self.update_option_explanation_summary()
 
     def create_section(
@@ -1086,6 +1101,7 @@ class GuitarAmpRecorderApp:
     def on_plan_inputs_changed(self, *_args) -> None:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_readiness_summary()
         self.update_option_explanation_summary()
 
     def plan_take_name_hint(self) -> str:
@@ -1155,6 +1171,50 @@ class GuitarAmpRecorderApp:
     def update_next_step_summary(self) -> None:
         try:
             self.next_step_text.set(self.build_next_step_text())
+        except Exception:
+            pass
+
+    def build_readiness_text(self) -> str:
+        input_name = self.input_device_choice.get().strip()
+        output_name = self.output_device_choice.get().strip()
+        output_dir_value = self.output_dir.get().strip()
+        take_name = self.output_name.get().strip()
+        resolved_output_dir = self.resolve_output_dir()
+        input_line = (
+            f"Giriş: hazır ({input_name})"
+            if input_name
+            else "Giriş: seçilmedi, önce mikrofon seçin"
+        )
+        output_line = (
+            f"Çıkış: hazır ({output_name})"
+            if output_name
+            else "Çıkış: seçilmedi, önce çıkış seçin"
+        )
+        source_line = (
+            f"Kaynak: hazır (Arka plan + mikrofon, {self.backing_file.name})"
+            if self.backing_file is not None
+            else f"Kaynak: hazır (Sadece mikrofon, {self.mic_record_seconds.get().strip() or '60'} sn)"
+        )
+        folder_line = (
+            f"Klasör: hazır ({resolved_output_dir})"
+            if output_dir_value
+            else "Klasör: seçilmedi, önce kayıt klasörü belirleyin"
+        )
+        take_line = (
+            f"Take adı: hazır ({take_name})"
+            if take_name
+            else "Take adı: boş bırakıldı, kayıt sırasında otomatik oluşturulacak"
+        )
+        overall_ready = bool(input_name and output_name and output_dir_value)
+        overall_line = "Genel durum: Kayda hazır" if overall_ready else "Genel durum: Birkaç eksik nokta var"
+        lines = [overall_line, input_line, output_line, source_line, folder_line, take_line]
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            lines.append(f"Uyarı: Son export için recovery notu var ({self.last_recovery_note_path.name})")
+        return "\n".join(lines)
+
+    def update_readiness_summary(self) -> None:
+        try:
+            self.readiness_text.set(self.build_readiness_text())
         except Exception:
             pass
 
@@ -1798,6 +1858,7 @@ class GuitarAmpRecorderApp:
         self.refresh_recent_exports()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_readiness_summary()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
     def current_recent_exports_dir(self) -> Path:
@@ -2423,12 +2484,14 @@ class GuitarAmpRecorderApp:
         self.backing_label.config(text=self.backing_file.name, fg="#2c3e50")
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_readiness_summary()
 
     def clear_backing_selection(self) -> None:
         self.backing_file = None
         self.backing_label.config(text="Dosya seçilmedi", fg="#9aa7b5")
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_readiness_summary()
         self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
@@ -2574,6 +2637,7 @@ class GuitarAmpRecorderApp:
             self.notify_success()
             self.update_recording_prep_summary()
             self.update_next_step_summary()
+            self.update_readiness_summary()
 
             final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
             if take_notes_path is not None:
@@ -2842,6 +2906,7 @@ class GuitarAmpRecorderApp:
             self.notify_success()
             self.update_recording_prep_summary()
             self.update_next_step_summary()
+            self.update_readiness_summary()
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.restore_previous_success_paths(
@@ -2855,6 +2920,7 @@ class GuitarAmpRecorderApp:
             self.finish_recording_progress("Kayıt durumu: hata")
             self.update_recording_prep_summary()
             self.update_next_step_summary()
+            self.update_readiness_summary()
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.set_status(f"Hata: {exc} | Recovery notu: {self.last_recovery_note_path}")
             else:
