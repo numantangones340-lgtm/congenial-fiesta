@@ -778,6 +778,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.open_last_summary_button.pack(side="left", padx=(8, 0))
+        self.copy_last_summary_button = Button(
+            recent_buttons,
+            text="Ozeti Kopyala",
+            command=self.copy_last_session_summary_to_clipboard,
+            bg="#8e44ad",
+            fg="white",
+            state="disabled",
+        )
+        self.copy_last_summary_button.pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Klasoru Ac", command=self.open_output_dir_in_finder, bg="#34495e", fg="white").pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
@@ -1330,6 +1339,19 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Oturum ozeti acilamadi: {exc}")
 
+    def copy_last_session_summary_to_clipboard(self) -> None:
+        if self.last_summary_path is None or not self.last_summary_path.exists():
+            self.set_status("Oturum ozeti bulunamadi.")
+            return
+        try:
+            content = self.last_summary_path.read_text(encoding="utf-8")
+            self.root.clipboard_clear()
+            self.root.clipboard_append(content)
+            self.root.update()
+            self.set_status(f"Oturum ozeti panoya kopyalandi: {self.last_summary_path.name}")
+        except Exception as exc:
+            self.set_status(f"Oturum ozeti kopyalanamadi: {exc}")
+
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
         outputs = list_output_devices()
@@ -1653,8 +1675,10 @@ class GuitarAmpRecorderApp:
                 self.open_last_export_button.configure(state="disabled")
             if self.last_summary_path is not None and self.last_summary_path.exists():
                 self.open_last_summary_button.configure(state="normal")
+                self.copy_last_summary_button.configure(state="normal")
             else:
                 self.open_last_summary_button.configure(state="disabled")
+                self.copy_last_summary_button.configure(state="disabled")
         except TclError:
             pass
 

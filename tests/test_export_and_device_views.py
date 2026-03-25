@@ -50,6 +50,7 @@ class FakeOptionMenu:
 class ExportAndDeviceViewTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.root = mock.Mock()
         recorder.recent_exports_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
@@ -176,6 +177,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_session_summary_in_finder()
 
         self.assertEqual(recorder.status_messages[-1], "Oturum ozeti bulunamadi.")
+
+    def test_copy_last_session_summary_to_clipboard_reads_and_copies_content(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text('{"event":"record_export"}', encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.copy_last_session_summary_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with('{"event":"record_export"}')
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti panoya kopyalandi: session_summary.json")
 
 
 if __name__ == "__main__":
