@@ -109,11 +109,26 @@ def test_release_scripts_exist() -> None:
         "package_macos_release.sh",
         "sign_macos_app.sh",
         "notarize_macos_app.sh",
+        "scripts/write_sha256.py",
     ]
     for name in expected:
         path = ROOT / name
         assert path.exists(), f"Eksik release scripti: {name}"
-        assert path.read_text(encoding="utf-8").startswith("#!/usr/bin/env bash")
+        if path.suffix == ".sh":
+            assert path.read_text(encoding="utf-8").startswith("#!/usr/bin/env bash")
+        else:
+            assert path.read_text(encoding="utf-8").startswith("#!/usr/bin/env python3")
+
+
+def test_release_workflow_publishes_checksum_assets() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    expected_snippets = [
+        "python scripts/write_sha256.py dist/GuitarAmpRecorder-macOS.zip",
+        "python scripts/write_sha256.py dist/GuitarAmpRecorder-Windows.zip",
+        "${{ matrix.platform.asset_path }}.sha256",
+    ]
+    for snippet in expected_snippets:
+        assert snippet in workflow, f"release workflow checksum adimi eksik: {snippet}"
 
 
 def test_build_script_stamps_bundle_metadata() -> None:

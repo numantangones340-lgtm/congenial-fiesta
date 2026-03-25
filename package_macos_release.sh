@@ -15,6 +15,7 @@ fi
 
 rm -f "$ZIP_PATH"
 ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ZIP_PATH"
+python3 "$ROOT_DIR/scripts/write_sha256.py" "$ZIP_PATH"
 
 echo "Hazir zip: $ZIP_PATH"
 if cp "$ZIP_PATH" "$DESKTOP_ZIP" 2>/dev/null; then
