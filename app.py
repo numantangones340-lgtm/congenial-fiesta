@@ -592,6 +592,7 @@ class GuitarAmpRecorderApp:
         self.backing_file: Optional[Path] = None
 
         self.status_text = StringVar(value="Hazır")
+        self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
@@ -681,6 +682,17 @@ class GuitarAmpRecorderApp:
             justify="left",
             wraplength=620,
         ).pack(anchor="w", padx=14, pady=(0, 10))
+        self.compact_status_label = Label(
+            hero,
+            textvariable=self.compact_status_text,
+            bg="#0f1720",
+            fg="#d7eefb",
+            justify="left",
+            wraplength=620,
+            padx=10,
+            pady=8,
+        )
+        self.compact_status_label.pack(fill="x", padx=14, pady=(0, 10))
         Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
 
         next_step_box = self.create_section(title="Sonraki Adım", subtitle="Ne yapmanız gerektiği tek satırda görünsün.")
@@ -1083,6 +1095,7 @@ class GuitarAmpRecorderApp:
         self.root.after(200, self.update_recording_progress_ui)
         self.root.after(220, self.refresh_recent_exports)
         self.root.after(250, self.start_input_meter)
+        self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
@@ -1112,6 +1125,7 @@ class GuitarAmpRecorderApp:
         return section
 
     def on_plan_inputs_changed(self, *_args) -> None:
+        self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
@@ -1142,6 +1156,28 @@ class GuitarAmpRecorderApp:
         labels.append("session_summary.json")
         labels.append("take_notes.txt")
         return labels
+
+    def build_compact_status_text(self) -> str:
+        source_text = f"{self.backing_file.name} + mikrofon" if self.backing_file is not None else "Sadece mikrofon"
+        take_text = self.output_name.get().strip() or "otomatik"
+        output_dir_value = self.output_dir.get().strip()
+        target_text = str(self.resolve_output_dir()) if output_dir_value else "klasör seçilmedi"
+        parts = [
+            f"Preset: {self.preset_name.get()}",
+            f"Kaynak: {source_text}",
+            f"Oturum: {self.plan_session_hint()}",
+            f"Take: {take_text}",
+            f"Hedef: {target_text}",
+        ]
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            parts.append("Recovery: var")
+        return " | ".join(parts)
+
+    def update_compact_status_summary(self) -> None:
+        try:
+            self.compact_status_text.set(self.build_compact_status_text())
+        except Exception:
+            pass
 
     def build_recording_prep_text(self) -> str:
         output_dir = self.resolve_output_dir()
@@ -1891,6 +1927,7 @@ class GuitarAmpRecorderApp:
             self.load_saved_preset()
         self.restore_last_session_paths(data)
         self.refresh_recent_exports()
+        self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
@@ -2518,6 +2555,7 @@ class GuitarAmpRecorderApp:
             return
         self.backing_file = Path(file_path)
         self.backing_label.config(text=self.backing_file.name, fg="#2c3e50")
+        self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
@@ -2526,6 +2564,7 @@ class GuitarAmpRecorderApp:
     def clear_backing_selection(self) -> None:
         self.backing_file = None
         self.backing_label.config(text="Dosya seçilmedi", fg="#9aa7b5")
+        self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
@@ -2673,6 +2712,7 @@ class GuitarAmpRecorderApp:
             self.refresh_recent_exports()
             self.remember_completed_take_name(base_name)
             self.notify_success()
+            self.update_compact_status_summary()
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
@@ -2943,6 +2983,7 @@ class GuitarAmpRecorderApp:
             self.refresh_recent_exports()
             self.remember_completed_take_name(base_name)
             self.notify_success()
+            self.update_compact_status_summary()
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
@@ -2958,6 +2999,7 @@ class GuitarAmpRecorderApp:
             recovery_note_path = write_export_recovery_note(output_dir, base_name, exc)
             self.last_recovery_note_path = recovery_note_path if recovery_note_path is not None and recovery_note_path.exists() else previous_last_recovery_note_path
             self.finish_recording_progress("Kayıt durumu: hata")
+            self.update_compact_status_summary()
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()

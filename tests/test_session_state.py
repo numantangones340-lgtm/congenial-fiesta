@@ -30,6 +30,7 @@ class SessionStateTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.app_version = "1.1.3"
+        recorder.compact_status_text = FakeVar("")
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("Isimli Oturum")
         recorder.session_name = FakeVar("Aksam Kaydi")
@@ -189,6 +190,30 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Klasör: /tmp/out/Canli Set", prep_text)
         self.assertIn("Çıktılar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn(f"Not: Son export hatasi icin recovery notu hazir ({recovery_note_path.name})", prep_text)
+
+    def test_build_compact_status_text_summarizes_core_state_on_one_line(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+        recorder.session_mode.set("Isimli Oturum")
+        recorder.session_name.set("Canli Set")
+        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
+            compact_text = recorder.build_compact_status_text()
+
+        self.assertEqual(
+            compact_text,
+            "Preset: Temiz Gitar | Kaynak: backing_track.wav + mikrofon | Oturum: Isimli Oturum (Canli Set) | Take: aksam_take | Hedef: /tmp/out/Canli Set",
+        )
+
+    def test_build_compact_status_text_marks_auto_take_and_missing_folder(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+        recorder.output_name.set("")
+        recorder.output_dir.set("")
+        compact_text = recorder.build_compact_status_text()
+
+        self.assertIn("Kaynak: Sadece mikrofon", compact_text)
+        self.assertIn("Take: otomatik", compact_text)
+        self.assertIn("Hedef: klasör seçilmedi", compact_text)
 
     def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
         recorder = self.make_app()
