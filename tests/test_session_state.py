@@ -35,6 +35,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.session_name = FakeVar("Aksam Kaydi")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
+        recorder.action_guidance_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
@@ -245,6 +246,37 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Kaynak: hazır (Sadece mikrofon, 90 sn)", readiness_text)
         self.assertIn("Klasör: seçilmedi, önce kayıt klasörü belirleyin", readiness_text)
         self.assertIn("Take adı: boş bırakıldı, kayıt sırasında otomatik oluşturulacak", readiness_text)
+
+    def test_build_action_guidance_text_prefers_test_then_quick_for_mic_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        guidance_text = recorder.build_action_guidance_text()
+
+        self.assertIn("Önce 5 saniyelik test yapın.", guidance_text)
+        self.assertIn("Quick Kayıt hızlı yol", guidance_text)
+
+    def test_build_action_guidance_text_requires_input_selection_first(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("")
+
+        guidance_text = recorder.build_action_guidance_text()
+
+        self.assertEqual(
+            guidance_text,
+            "Önerilen sıra: 1. Mikrofonları tara. 2. Girişi seç. 3. Sonra 5 saniyelik testi çalıştır.",
+        )
+
+    def test_build_action_guidance_text_prefers_recovery_before_retry(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+
+            guidance_text = recorder.build_action_guidance_text()
+
+        self.assertIn("Önce recovery notunu inceleyin.", guidance_text)
 
     def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
         recorder = self.make_app()

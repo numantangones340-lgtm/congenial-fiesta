@@ -615,6 +615,7 @@ class GuitarAmpRecorderApp:
         self.mic_record_seconds = StringVar(value="60")
         self.monitor_status_text = StringVar(value="Canli monitor kapali")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
+        self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayit plani hazirlaniyor...")
         self.next_step_text = StringVar(value="Hazirlik kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Secenek aciklamalari hazirlaniyor...")
@@ -900,8 +901,19 @@ class GuitarAmpRecorderApp:
         self.output_gain = self.make_slider(mix, "Çıkış Kazancı (dB)", -12, 12, 0)
 
         actions = self.create_section(title="İşlem", subtitle="Önce test, sonra quick kayıt veya tam kayıt.")
+        self.action_guidance_label = Label(
+            actions,
+            textvariable=self.action_guidance_text,
+            bg="#1b2230",
+            fg="#dfe9f5",
+            justify="left",
+            wraplength=640,
+            padx=10,
+            pady=10,
+        )
+        self.action_guidance_label.pack(fill="x", padx=14, pady=(12, 6))
         Button(actions, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white").pack(
-            fill="x", padx=14, pady=(12, 6)
+            fill="x", padx=14, pady=(0, 6)
         )
         Button(actions, text="Quick Kayıt (Preset, Sorusuz)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white").pack(
             fill="x", padx=14, pady=(0, 6)
@@ -1074,6 +1086,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_action_guidance_summary()
         self.update_option_explanation_summary()
 
     def create_section(
@@ -1102,6 +1115,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_action_guidance_summary()
         self.update_option_explanation_summary()
 
     def plan_take_name_hint(self) -> str:
@@ -1215,6 +1229,27 @@ class GuitarAmpRecorderApp:
     def update_readiness_summary(self) -> None:
         try:
             self.readiness_text.set(self.build_readiness_text())
+        except Exception:
+            pass
+
+    def build_action_guidance_text(self) -> str:
+        input_name = self.input_device_choice.get().strip()
+        output_name = self.output_device_choice.get().strip()
+        if not input_name:
+            return "Önerilen sıra: 1. Mikrofonları tara. 2. Girişi seç. 3. Sonra 5 saniyelik testi çalıştır."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return "Önerilen sıra: Önce recovery notunu inceleyin. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın."
+        if self.backing_file is None:
+            if not output_name:
+                return "Önerilen sıra: Çıkışı seçin. Ardından 5 saniyelik test yapın. Sorunsuzsa Quick Kayıt ile hızlıca kayıt alın."
+            return "Önerilen sıra: Önce 5 saniyelik test yapın. Ses temizse Quick Kayıt hızlı yol, tam kayıt ise kontrollü yol olarak hazır."
+        if not output_name:
+            return "Önerilen sıra: Backing hazır. Önce çıkışı seçin, sonra 5 saniyelik test yapın. Son adımda tam kaydı başlatın."
+        return "Önerilen sıra: 5 saniyelik test ile dengeyi kontrol edin. Kısa deneme istiyorsanız Quick Kayıt, final take için tam kayıt kullanın."
+
+    def update_action_guidance_summary(self) -> None:
+        try:
+            self.action_guidance_text.set(self.build_action_guidance_text())
         except Exception:
             pass
 
@@ -1859,6 +1894,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_action_guidance_summary()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
     def current_recent_exports_dir(self) -> Path:
@@ -2485,6 +2521,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_action_guidance_summary()
 
     def clear_backing_selection(self) -> None:
         self.backing_file = None
@@ -2492,6 +2529,7 @@ class GuitarAmpRecorderApp:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
         self.update_readiness_summary()
+        self.update_action_guidance_summary()
         self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
@@ -2638,6 +2676,7 @@ class GuitarAmpRecorderApp:
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
+            self.update_action_guidance_summary()
 
             final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
             if take_notes_path is not None:
@@ -2907,6 +2946,7 @@ class GuitarAmpRecorderApp:
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
+            self.update_action_guidance_summary()
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.restore_previous_success_paths(
@@ -2921,6 +2961,7 @@ class GuitarAmpRecorderApp:
             self.update_recording_prep_summary()
             self.update_next_step_summary()
             self.update_readiness_summary()
+            self.update_action_guidance_summary()
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.set_status(f"Hata: {exc} | Recovery notu: {self.last_recovery_note_path}")
             else:
