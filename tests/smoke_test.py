@@ -122,12 +122,15 @@ def test_build_script_stamps_bundle_metadata() -> None:
         'APP_VERSION="$(tr -d \'\\r\\n\' < VERSION',
         "plistlib",
         "Info.plist",
+        'SPEC_DIR="${PYINSTALLER_CONFIG_DIR}/spec"',
+        '--specpath "${SPEC_DIR}"',
         'info["CFBundleShortVersionString"] = os.environ["APP_VERSION"]',
         'info["CFBundleVersion"] = os.environ["APP_VERSION"]',
         'info["NSMicrophoneUsageDescription"] = os.environ["MIC_USAGE_TEXT"]',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"build_macos_app.sh metadata adimi eksik: {snippet}"
+    assert 'rm -rf build dist "${APP_NAME}.spec"' not in script, "build script tracked spec dosyasini silmemeli"
 
 
 def test_release_metadata_is_version_aligned() -> None:

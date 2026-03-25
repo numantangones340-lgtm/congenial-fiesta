@@ -47,6 +47,8 @@ export APP_NAME
 export APP_VERSION
 export MIC_USAGE_TEXT
 mkdir -p "${PYINSTALLER_CONFIG_DIR}"
+SPEC_DIR="${PYINSTALLER_CONFIG_DIR}/spec"
+mkdir -p "${SPEC_DIR}"
 
 CURRENT_STAMP="$(
   python - <<'PY'
@@ -128,7 +130,7 @@ PY
 TCL_DIR="$(printf '%s\n' "${TK_OUT}" | sed -n '1p')"
 TK_DIR="$(printf '%s\n' "${TK_OUT}" | sed -n '2p')"
 
-PYI_ARGS=(--noconfirm --clean --windowed --name "${APP_NAME}")
+PYI_ARGS=(--noconfirm --clean --windowed --specpath "${SPEC_DIR}" --name "${APP_NAME}")
 if [ -n "${TCL_DIR}" ] && [ -d "${TCL_DIR}" ]; then
   PYI_ARGS+=(--add-data "${TCL_DIR}:lib/$(basename "${TCL_DIR}")")
 fi
@@ -137,7 +139,7 @@ if [ -n "${TK_DIR}" ] && [ -d "${TK_DIR}" ]; then
 fi
 PYI_ARGS+=("${ENTRY}")
 
-rm -rf build dist "${APP_NAME}.spec"
+rm -rf build dist
 .venv/bin/pyinstaller "${PYI_ARGS[@]}"
 
 python - <<'PY'
