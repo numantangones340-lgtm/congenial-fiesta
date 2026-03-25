@@ -594,6 +594,7 @@ class GuitarAmpRecorderApp:
         self.status_text = StringVar(value="Hazır")
         self.operation_state_text = StringVar(value="Durum: hazır")
         self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
+        self.recent_output_summary_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
@@ -977,8 +978,19 @@ class GuitarAmpRecorderApp:
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
 
         recent_box = self.create_section(title="Son Çıktılar", subtitle="Son üretilen dosyayı Finder'da açabilir ve son exportları görebilirsiniz.")
+        self.recent_output_summary_label = Label(
+            recent_box,
+            textvariable=self.recent_output_summary_text,
+            bg="#1b2029",
+            fg="#dce6ef",
+            justify="left",
+            wraplength=640,
+            padx=10,
+            pady=10,
+        )
+        self.recent_output_summary_label.pack(fill="x", padx=14, pady=(12, 8))
         recent_buttons = Frame(recent_box, bg="#151b22")
-        recent_buttons.pack(fill="x", padx=14, pady=(12, 8))
+        recent_buttons.pack(fill="x", padx=14, pady=(0, 8))
         self.open_last_export_button = Button(
             recent_buttons,
             text="Son Dosyayı Seçili Göster",
@@ -1132,6 +1144,7 @@ class GuitarAmpRecorderApp:
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_option_explanation_summary()
+        self.update_recent_output_summary()
 
     def create_section(
         self,
@@ -1447,6 +1460,52 @@ class GuitarAmpRecorderApp:
     def update_option_explanation_summary(self) -> None:
         try:
             self.option_summary_text.set(self.build_option_explanation_text())
+        except Exception:
+            pass
+
+    def build_recent_output_summary_text(self) -> str:
+        if self.recording_active:
+            return "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return "Recovery notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
+            return "Recovery notu hazır. Önce notu kopyalayın, sonra klasörü açın."
+        if self.last_export_path is not None and self.last_export_path.exists():
+            ready_items = ["son kayıt"]
+            if self.last_summary_path is not None and self.last_summary_path.exists():
+                ready_items.append("özet")
+            if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
+                ready_items.append("take notu")
+            return f"Hazır: {', '.join(ready_items)}. Önce son kaydı açın veya oynatın."
+        if self.last_summary_path is not None and self.last_summary_path.exists():
+            if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
+                return "Hazır: özet ve take notu. Önce özeti açın, sonra kısa raporu kopyalayın."
+            return "Hazır: oturum özeti. Önce özeti açın veya kısa raporu kopyalayın."
+        if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
+            return "Hazır: take notu. Önce take notunu açın veya klasörü açın."
+        if self.current_recent_exports_dir().exists():
+            return "Son oturum klasörü hazır. Önce klasörü açın veya listeyi yenileyin."
+        return "Henüz son çıktı yok. İlk test veya kayıttan sonra bu bölüm dolacak."
+
+    def build_recent_output_summary_palette(self) -> dict[str, str]:
+        if self.recording_active:
+            return {"bg": "#10283a", "fg": "#d7eefb"}
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return {"bg": "#2c2418", "fg": "#ffe7b3"}
+        if (
+            (self.last_export_path is not None and self.last_export_path.exists())
+            or (self.last_summary_path is not None and self.last_summary_path.exists())
+            or (self.last_take_notes_path is not None and self.last_take_notes_path.exists())
+        ):
+            return {"bg": "#1f2b22", "fg": "#d8f3dc"}
+        return {"bg": "#1b2029", "fg": "#dce6ef"}
+
+    def update_recent_output_summary(self) -> None:
+        try:
+            self.recent_output_summary_text.set(self.build_recent_output_summary_text())
+            label = getattr(self, "recent_output_summary_label", None)
+            if label is not None:
+                label.configure(**self.build_recent_output_summary_palette())
         except Exception:
             pass
 
@@ -2074,6 +2133,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_recent_output_summary()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
     def current_recent_exports_dir(self) -> Path:
@@ -2085,6 +2145,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
             self.recent_exports_text.set(f"Klasör bulunamadı: {output_dir}")
+            self.update_recent_output_summary()
             return
         recent_files = sorted(
             [path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}],
@@ -2093,9 +2154,11 @@ class GuitarAmpRecorderApp:
         )[:6]
         if not recent_files:
             self.recent_exports_text.set("Henuz export yok.")
+            self.update_recent_output_summary()
             return
         lines = [f"- {path.name}" for path in recent_files]
         self.recent_exports_text.set("\n".join(lines))
+        self.update_recent_output_summary()
 
     def copy_text_to_clipboard(self, content: str, success_message: str, failure_prefix: str) -> None:
         try:
@@ -2632,6 +2695,7 @@ class GuitarAmpRecorderApp:
             self.set_recent_output_button_states(enabled=False)
             self.update_action_guidance_summary()
             self.update_operation_state_summary()
+            self.update_recent_output_summary()
         except TclError:
             pass
 
@@ -2678,6 +2742,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_output_dir_button.configure(state="normal")
             else:
                 self.open_last_output_dir_button.configure(state="disabled")
+            self.update_recent_output_summary()
         except TclError:
             pass
 

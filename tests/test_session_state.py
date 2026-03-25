@@ -33,8 +33,10 @@ class SessionStateTests(unittest.TestCase):
         recorder.operation_state_text = FakeVar("")
         recorder.compact_status_text = FakeVar("")
         recorder.readiness_text = FakeVar("")
+        recorder.recent_output_summary_text = FakeVar("")
         recorder.operation_state_label = mock.Mock()
         recorder.readiness_label = mock.Mock()
+        recorder.recent_output_summary_label = mock.Mock()
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("Isimli Oturum")
         recorder.session_name = FakeVar("Aksam Kaydi")
@@ -463,6 +465,60 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertIn("Eksikler: klasör", recorder.readiness_text.get())
         recorder.readiness_label.configure.assert_called_once_with(bg="#2c2418", fg="#ffe7b3")
+
+    def test_build_recent_output_summary_text_reports_recording_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        summary_text = recorder.build_recent_output_summary_text()
+
+        self.assertEqual(summary_text, "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak.")
+
+    def test_build_recent_output_summary_text_prioritizes_recovery_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            recovery_path = output_dir / "export_recovery_note.txt"
+            recovery_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
+            recorder.last_recovery_note_path = recovery_path
+
+            summary_text = recorder.build_recent_output_summary_text()
+
+        self.assertEqual(summary_text, "Recovery notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın.")
+
+    def test_build_recent_output_summary_text_prefers_last_export_actions(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.mp3"
+            summary_path = output_dir / "session_summary.json"
+            notes_path = output_dir / "take_notes.txt"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            notes_path.write_text("notes", encoding="utf-8")
+            recorder.last_export_path = export_path
+            recorder.last_summary_path = summary_path
+            recorder.last_take_notes_path = notes_path
+
+            summary_text = recorder.build_recent_output_summary_text()
+
+        self.assertEqual(summary_text, "Hazır: son kayıt, özet, take notu. Önce son kaydı açın veya oynatın.")
+
+    def test_update_recent_output_summary_updates_text_and_label_style(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.update_recent_output_summary()
+
+        self.assertEqual(recorder.recent_output_summary_text.get(), "Hazır: oturum özeti. Önce özeti açın veya kısa raporu kopyalayın.")
+        recorder.recent_output_summary_label.configure.assert_called_once_with(bg="#1f2b22", fg="#d8f3dc")
 
     def test_build_action_guidance_text_prefers_test_then_quick_for_mic_mode(self) -> None:
         recorder = self.make_app()

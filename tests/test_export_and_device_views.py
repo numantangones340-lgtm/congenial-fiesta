@@ -52,6 +52,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.root = mock.Mock()
         recorder.recent_exports_text = FakeVar("")
+        recorder.recent_output_summary_text = FakeVar("")
         recorder.prep_summary_text = FakeVar("")
         recorder.next_step_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
@@ -67,6 +68,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.refresh_device_menus = mock.Mock()
         recorder.restart_input_meter = mock.Mock()
         recorder.backing_label = mock.Mock()
+        recorder.recent_output_summary_label = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
         recorder.backing_file = None
