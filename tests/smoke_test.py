@@ -130,6 +130,21 @@ def test_build_script_stamps_bundle_metadata() -> None:
         assert snippet in script, f"build_macos_app.sh metadata adimi eksik: {snippet}"
 
 
+def test_release_metadata_is_version_aligned() -> None:
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    tag = f"v{version}"
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    release_prep = (ROOT / "docs" / "RELEASE_PREP.md").read_text(encoding="utf-8")
+
+    assert f"## [{version}]" in changelog, "CHANGELOG.md en ust surum bolumu VERSION ile uyusmuyor"
+    assert f"`VERSION`: `{version}`" in release_prep, "RELEASE_PREP.md hedef surumu VERSION ile uyusmuyor"
+    assert f"`git tag {tag}`" in release_prep, "RELEASE_PREP.md tag ornegi VERSION ile uyusmuyor"
+    assert f"`git push origin {tag}`" in release_prep, "RELEASE_PREP.md push ornegi VERSION ile uyusmuyor"
+    assert f"git tag {tag}" in readme, "README.md release tag ornegi VERSION ile uyusmuyor"
+    assert f"git push origin {tag}" in readme, "README.md release push ornegi VERSION ile uyusmuyor"
+
+
 def test_app_helpers() -> None:
     with import_stubs():
         app = load_module("app_smoke", "app.py")
@@ -272,6 +287,7 @@ def main() -> int:
     test_release_body_generation()
     test_release_scripts_exist()
     test_build_script_stamps_bundle_metadata()
+    test_release_metadata_is_version_aligned()
     test_app_helpers()
     test_cli_settings_roundtrip()
     print("smoke tests passed")
