@@ -39,6 +39,10 @@ def ensure_on_main() -> None:
         raise RuntimeError(f"Expected branch 'main', got '{branch}'")
 
 
+def refresh_origin_state() -> None:
+    git("fetch", "--prune", "origin")
+
+
 def ensure_head_matches_origin_main() -> None:
     head = git("rev-parse", "HEAD").stdout.strip()
     origin_main = git("rev-parse", "origin/main").stdout.strip()
@@ -67,6 +71,7 @@ def main() -> int:
     tag_name = f"v{version}"
     ensure_clean_worktree()
     ensure_on_main()
+    refresh_origin_state()
     ensure_head_matches_origin_main()
     ensure_changelog_has(version)
     ensure_tag_absent(tag_name)

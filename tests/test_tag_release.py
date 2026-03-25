@@ -63,6 +63,18 @@ class TagReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "not aligned with origin/main"):
                 tag_release.ensure_head_matches_origin_main()
 
+    def test_refresh_origin_state_fetches_pruned_origin(self) -> None:
+        fetch = subprocess.CompletedProcess(
+            args=["git", "fetch", "--prune", "origin"],
+            returncode=0,
+            stdout="",
+            stderr="",
+        )
+        with mock.patch.object(tag_release, "git", return_value=fetch) as git_mock:
+            tag_release.refresh_origin_state()
+
+        git_mock.assert_called_once_with("fetch", "--prune", "origin")
+
     def test_ensure_changelog_has_rejects_missing_heading(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -114,6 +126,8 @@ class TagReleaseTests(unittest.TestCase):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
             if args == ("branch", "--show-current"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="main\n", stderr="")
+            if args == ("fetch", "--prune", "origin"):
+                return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="", stderr="")
             if args == ("rev-parse", "HEAD"):
                 return subprocess.CompletedProcess(args=list(args), returncode=0, stdout="abc123\n", stderr="")
             if args == ("rev-parse", "origin/main"):
@@ -146,6 +160,7 @@ class TagReleaseTests(unittest.TestCase):
             [
                 ("status", "--short"),
                 ("branch", "--show-current"),
+                ("fetch", "--prune", "origin"),
                 ("rev-parse", "HEAD"),
                 ("rev-parse", "origin/main"),
                 ("tag", "--list", "v1.1.3"),
