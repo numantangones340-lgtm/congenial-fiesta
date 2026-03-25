@@ -235,6 +235,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Oturum ozeti yolu panoya kopyalandi: session_summary.json")
 
+    def test_copy_last_session_brief_to_clipboard_formats_human_readable_report(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text(
+                '{"event":"record_export","timestamp":"2026-03-25 21:00:00","output_dir":"/tmp/session","preset_name":"Temiz Gitar","generated_files":["/tmp/session/take.mp3"],"recording":{"mode":"Sadece mikrofon","duration_seconds":42.0,"requested_duration_seconds":60.0,"input_peak":0.612,"processed_peak":0.701,"mix_peak":0.822,"stopped_early":true}}',
+                encoding="utf-8",
+            )
+            recorder.last_summary_path = summary_path
+
+            recorder.copy_last_session_brief_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        copied_text = recorder.root.clipboard_append.call_args[0][0]
+        self.assertIn("Olay: record_export", copied_text)
+        self.assertIn("Preset: Temiz Gitar", copied_text)
+        self.assertIn("Sure: 0:42", copied_text)
+        self.assertIn("Hedef Sure: 1:00", copied_text)
+        self.assertIn("Giris Peak: 0.612", copied_text)
+        self.assertIn("Durum: erken durduruldu", copied_text)
+        self.assertIn("- take.mp3", copied_text)
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Kisa oturum raporu panoya kopyalandi: session_summary.json")
+
     def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

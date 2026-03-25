@@ -88,6 +88,30 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(summary["export"]["output_name"], "aksam_take")
         self.assertEqual(summary["mix"]["limiter_enabled"], "Acik")
         self.assertEqual(summary["generated_files"], [str(path) for path in generated])
+        self.assertEqual(summary["recording"], {})
+
+    def test_build_session_summary_includes_recording_metrics_when_provided(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/session")
+        generated = [output_dir / "take.mp3"]
+
+        summary = recorder.build_session_summary(
+            output_dir,
+            generated,
+            "record_export",
+            {
+                "mode": "Sadece mikrofon",
+                "duration_seconds": 42.5,
+                "input_peak": 0.61,
+                "mix_peak": 0.83,
+                "stopped_early": True,
+            },
+        )
+
+        self.assertEqual(summary["recording"]["mode"], "Sadece mikrofon")
+        self.assertEqual(summary["recording"]["duration_seconds"], 42.5)
+        self.assertEqual(summary["recording"]["input_peak"], 0.61)
+        self.assertTrue(summary["recording"]["stopped_early"])
 
     def test_write_and_load_last_session_state_roundtrip(self) -> None:
         recorder = self.make_app()

@@ -50,6 +50,15 @@ def latest_audio_file_in_dir(output_dir: Path) -> Optional[Path]:
     return max(audio_files, key=lambda path: path.stat().st_mtime)
 
 
+def format_seconds_short(seconds: float) -> str:
+    total_seconds = max(0, int(round(seconds)))
+    minutes, secs = divmod(total_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
+
+
 def db_to_linear(db: float) -> float:
     return 10 ** (db / 20.0)
 
@@ -827,6 +836,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.copy_last_summary_path_button.pack(side="left", padx=(8, 0))
+        self.copy_last_brief_button = Button(
+            recent_copy_buttons,
+            text="Kisa Rapor Kopyala",
+            command=self.copy_last_session_brief_to_clipboard,
+            bg="#2d7d46",
+            fg="white",
+            state="disabled",
+        )
+        self.copy_last_brief_button.pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
             recent_box,
             textvariable=self.recent_exports_text,
@@ -1227,7 +1245,13 @@ class GuitarAmpRecorderApp:
             return base_dir / safe_name
         return base_dir
 
-    def build_session_summary(self, output_dir: Path, generated_files: list[Path], event: str) -> dict:
+    def build_session_summary(
+        self,
+        output_dir: Path,
+        generated_files: list[Path],
+        event: str,
+        recording_stats: Optional[dict] = None,
+    ) -> dict:
         return {
             "app_version": self.app_version,
             "event": event,
@@ -1271,12 +1295,19 @@ class GuitarAmpRecorderApp:
                 "output_gain": int(self.output_gain.get()),
             },
             "generated_files": [str(path) for path in generated_files],
+            "recording": recording_stats or {},
         }
 
-    def write_session_summary(self, output_dir: Path, generated_files: list[Path], event: str) -> Optional[Path]:
+    def write_session_summary(
+        self,
+        output_dir: Path,
+        generated_files: list[Path],
+        event: str,
+        recording_stats: Optional[dict] = None,
+    ) -> Optional[Path]:
         try:
             summary_path = output_dir / "session_summary.json"
-            summary = self.build_session_summary(output_dir, generated_files, event)
+            summary = self.build_session_summary(output_dir, generated_files, event, recording_stats)
             summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
             return summary_path
         except Exception:
@@ -1447,6 +1478,54 @@ class GuitarAmpRecorderApp:
             f"Oturum ozeti yolu panoya kopyalandi: {self.last_summary_path.name}",
             "Oturum ozeti yolu kopyalanamadi",
         )
+
+    def build_session_brief_text(self, summary: dict) -> str:
+        generated_files = summary.get("generated_files", [])
+        recording = summary.get("recording", {})
+        lines = [
+            f"Olay: {summary.get('event', 'bilinmiyor')}",
+            f"Tarih: {summary.get('timestamp', 'bilinmiyor')}",
+            f"Klasor: {summary.get('output_dir', 'bilinmiyor')}",
+        ]
+        if summary.get("preset_name"):
+            lines.append(f"Preset: {summary['preset_name']}")
+        if recording:
+            mode = recording.get("mode", "")
+            if mode:
+                lines.append(f"Mod: {mode}")
+            if "duration_seconds" in recording:
+                lines.append(f"Sure: {format_seconds_short(float(recording.get('duration_seconds', 0.0)))}")
+            if "requested_duration_seconds" in recording:
+                lines.append(f"Hedef Sure: {format_seconds_short(float(recording.get('requested_duration_seconds', 0.0)))}")
+            if "input_peak" in recording:
+                lines.append(f"Giris Peak: {float(recording.get('input_peak', 0.0)):.3f}")
+            if "processed_peak" in recording:
+                lines.append(f"Islenmis Peak: {float(recording.get('processed_peak', 0.0)):.3f}")
+            if "mix_peak" in recording:
+                lines.append(f"Mix Peak: {float(recording.get('mix_peak', 0.0)):.3f}")
+            if recording.get("stopped_early"):
+                lines.append("Durum: erken durduruldu")
+        if generated_files:
+            lines.append("Dosyalar:")
+            lines.extend([f"- {Path(path).name}" for path in generated_files])
+        return "\n".join(lines)
+
+    def copy_last_session_brief_to_clipboard(self) -> None:
+        if self.last_summary_path is None or not self.last_summary_path.exists():
+            self.set_status("Oturum ozeti bulunamadi.")
+            return
+        try:
+            summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
+            if not isinstance(summary, dict):
+                raise ValueError("Ozet formati gecersiz")
+            content = self.build_session_brief_text(summary)
+            self.copy_text_to_clipboard(
+                content,
+                f"Kisa oturum raporu panoya kopyalandi: {self.last_summary_path.name}",
+                "Kisa oturum raporu kopyalanamadi",
+            )
+        except Exception as exc:
+            self.set_status(f"Kisa oturum raporu kopyalanamadi: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -1775,10 +1854,12 @@ class GuitarAmpRecorderApp:
                 self.open_last_summary_button.configure(state="normal")
                 self.copy_last_summary_button.configure(state="normal")
                 self.copy_last_summary_path_button.configure(state="normal")
+                self.copy_last_brief_button.configure(state="normal")
             else:
                 self.open_last_summary_button.configure(state="disabled")
                 self.copy_last_summary_button.configure(state="disabled")
                 self.copy_last_summary_path_button.configure(state="disabled")
+                self.copy_last_brief_button.configure(state="disabled")
             if self.current_recent_exports_dir().exists():
                 self.open_last_output_dir_button.configure(state="normal")
             else:
@@ -1960,7 +2041,20 @@ class GuitarAmpRecorderApp:
             sf.write(test_path, processed, sr)
             self.last_output_dir = output_dir
             self.last_export_path = test_path
-            summary_path = self.write_session_summary(output_dir, [test_path], "device_test")
+            summary_path = self.write_session_summary(
+                output_dir,
+                [test_path],
+                "device_test",
+                {
+                    "mode": "Mikrofon/Ses Karti Testi",
+                    "duration_seconds": float(seconds),
+                    "requested_duration_seconds": float(seconds),
+                    "input_peak": float(np.max(np.abs(voice))) if len(voice) else 0.0,
+                    "processed_peak": float(np.max(np.abs(processed))) if len(processed) else 0.0,
+                    "generated_file_count": 1,
+                    "stopped_early": False,
+                },
+            )
             self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
             self.write_last_session_state(output_dir, summary_path)
             self.refresh_recent_exports()
@@ -2049,6 +2143,7 @@ class GuitarAmpRecorderApp:
                     backing = backing[:max_frames]
 
                 duration_sec = len(backing) / sr
+                requested_duration_seconds = duration_sec
                 self.begin_recording_progress("Arka plan + mikrofon", duration_sec)
                 self.set_status(
                     f"Kayıt başlıyor ({duration_sec:.1f} sn). Kulaklık önerilir. Arka plan müzik çalarken mikrofona söyleyin/çalın..."
@@ -2063,6 +2158,7 @@ class GuitarAmpRecorderApp:
                 capped_seconds = min(record_seconds, float(limit_seconds))
                 frames = max(1, int(sr * capped_seconds))
                 backing = np.zeros((frames, 2), dtype=np.float32)
+                requested_duration_seconds = capped_seconds
                 self.begin_recording_progress("Sadece mikrofon", capped_seconds)
                 self.set_status(f"Sadece mikrofon kaydı başlıyor ({capped_seconds:.1f} sn).")
                 recorded = sd.rec(frames=frames, samplerate=sr, channels=1, dtype="float32", device=input_idx)
@@ -2176,7 +2272,21 @@ class GuitarAmpRecorderApp:
                     self.last_export_path = vocal_wav_path
                 self.last_output_dir = output_dir
                 generated_files = [path for path in [mp3_path, mix_wav_path, vocal_wav_path] if path.exists()]
-                summary_path = self.write_session_summary(output_dir, generated_files, "record_export")
+                summary_path = self.write_session_summary(
+                    output_dir,
+                    generated_files,
+                    "record_export",
+                    {
+                        "mode": "Arka plan + mikrofon" if backing_file is not None else "Sadece mikrofon",
+                        "duration_seconds": len(processed_voice) / sr if len(processed_voice) else 0.0,
+                        "requested_duration_seconds": requested_duration_seconds,
+                        "input_peak": float(np.max(np.abs(voice))) if len(voice) else 0.0,
+                        "processed_peak": float(np.max(np.abs(processed_voice))) if len(processed_voice) else 0.0,
+                        "mix_peak": float(np.max(np.abs(mix))) if len(mix) else 0.0,
+                        "generated_file_count": len(generated_files),
+                        "stopped_early": bool(stop_requested),
+                    },
+                )
                 self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
                 self.write_last_session_state(output_dir, summary_path)
                 if summary_path is not None:
