@@ -88,6 +88,8 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(summary["export"]["output_name"], "aksam_take")
         self.assertEqual(summary["mix"]["limiter_enabled"], "Acik")
         self.assertEqual(summary["generated_files"], [str(path) for path in generated])
+        self.assertEqual(summary["artifacts"]["session_summary"], str(output_dir / "session_summary.json"))
+        self.assertEqual(summary["artifacts"]["take_notes"], str(output_dir / "take_notes.txt"))
         self.assertEqual(summary["recording"], {})
 
     def test_build_session_summary_includes_recording_metrics_when_provided(self) -> None:
@@ -112,6 +114,32 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(summary["recording"]["duration_seconds"], 42.5)
         self.assertEqual(summary["recording"]["input_peak"], 0.61)
         self.assertTrue(summary["recording"]["stopped_early"])
+
+    def test_build_take_notes_text_includes_clip_warning_and_files(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/session")
+        summary = recorder.build_session_summary(
+            output_dir,
+            [output_dir / "take.mp3", output_dir / "take_vocal.wav"],
+            "record_export",
+            {
+                "mode": "Sadece mikrofon",
+                "duration_seconds": 42.0,
+                "requested_duration_seconds": 60.0,
+                "input_peak": 0.991,
+                "processed_peak": 0.812,
+                "mix_peak": 0.0,
+                "clip_warning": "Giris clipping riski",
+                "stopped_early": False,
+            },
+        )
+
+        note_text = recorder.build_take_notes_text(summary)
+
+        self.assertIn("Clip Durumu: Giris clipping riski", note_text)
+        self.assertIn("Sure: 0:42", note_text)
+        self.assertIn("- take.mp3", note_text)
+        self.assertIn("- take_vocal.wav", note_text)
 
     def test_write_and_load_last_session_state_roundtrip(self) -> None:
         recorder = self.make_app()

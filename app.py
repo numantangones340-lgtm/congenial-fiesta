@@ -59,6 +59,17 @@ def format_seconds_short(seconds: float) -> str:
     return f"{minutes}:{secs:02d}"
 
 
+def describe_clip_warning(input_peak: float = 0.0, processed_peak: float = 0.0, mix_peak: float = 0.0) -> str:
+    warnings = []
+    if input_peak >= 0.98:
+        warnings.append("Giris clipping riski")
+    if processed_peak >= 0.98:
+        warnings.append("Islenmis sinyal sinira dayandi")
+    if mix_peak >= 0.98:
+        warnings.append("Mix sinira dayandi")
+    return " | ".join(warnings) if warnings else "Clip riski yok"
+
+
 def db_to_linear(db: float) -> float:
     return 10 ** (db / 20.0)
 
@@ -788,6 +799,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.open_last_export_button.pack(side="left")
+        self.play_last_export_button = Button(
+            recent_buttons,
+            text="Son Kaydi Oynat",
+            command=self.start_last_export_playback_thread,
+            bg="#16a085",
+            fg="white",
+            state="disabled",
+        )
+        self.play_last_export_button.pack(side="left", padx=(8, 0))
         self.open_last_summary_button = Button(
             recent_buttons,
             text="Oturum Ozetini Ac",
@@ -1295,6 +1315,10 @@ class GuitarAmpRecorderApp:
                 "output_gain": int(self.output_gain.get()),
             },
             "generated_files": [str(path) for path in generated_files],
+            "artifacts": {
+                "session_summary": str(output_dir / "session_summary.json"),
+                "take_notes": str(output_dir / "take_notes.txt"),
+            },
             "recording": recording_stats or {},
         }
 
@@ -1310,6 +1334,53 @@ class GuitarAmpRecorderApp:
             summary = self.build_session_summary(output_dir, generated_files, event, recording_stats)
             summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
             return summary_path
+        except Exception:
+            return None
+
+    def build_take_notes_text(self, summary: dict) -> str:
+        recording = summary.get("recording", {})
+        generated_files = summary.get("generated_files", [])
+        clip_warning = str(
+            recording.get(
+                "clip_warning",
+                describe_clip_warning(
+                    float(recording.get("input_peak", 0.0)),
+                    float(recording.get("processed_peak", 0.0)),
+                    float(recording.get("mix_peak", 0.0)),
+                ),
+            )
+        )
+        lines = [
+            f"Olay: {summary.get('event', 'bilinmiyor')}",
+            f"Tarih: {summary.get('timestamp', 'bilinmiyor')}",
+            f"Klasor: {summary.get('output_dir', 'bilinmiyor')}",
+            f"Preset: {summary.get('preset_name', 'bilinmiyor') or 'bilinmiyor'}",
+            f"Clip Durumu: {clip_warning}",
+        ]
+        if recording.get("mode"):
+            lines.append(f"Mod: {recording['mode']}")
+        if "duration_seconds" in recording:
+            lines.append(f"Sure: {format_seconds_short(float(recording.get('duration_seconds', 0.0)))}")
+        if "requested_duration_seconds" in recording:
+            lines.append(f"Hedef Sure: {format_seconds_short(float(recording.get('requested_duration_seconds', 0.0)))}")
+        if "input_peak" in recording:
+            lines.append(f"Giris Peak: {float(recording.get('input_peak', 0.0)):.3f}")
+        if "processed_peak" in recording:
+            lines.append(f"Islenmis Peak: {float(recording.get('processed_peak', 0.0)):.3f}")
+        if "mix_peak" in recording:
+            lines.append(f"Mix Peak: {float(recording.get('mix_peak', 0.0)):.3f}")
+        if recording.get("stopped_early"):
+            lines.append("Durum: erken durduruldu")
+        if generated_files:
+            lines.append("Dosyalar:")
+            lines.extend([f"- {Path(path).name}" for path in generated_files])
+        return "\n".join(lines)
+
+    def write_take_notes(self, output_dir: Path, summary: dict) -> Optional[Path]:
+        try:
+            take_notes_path = output_dir / "take_notes.txt"
+            take_notes_path.write_text(self.build_take_notes_text(summary), encoding="utf-8")
+            return take_notes_path
         except Exception:
             return None
 
@@ -1436,6 +1507,30 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Finder acilamadi: {exc}")
 
+    def start_last_export_playback_thread(self) -> None:
+        if self.last_export_path is None or not self.last_export_path.exists():
+            self.set_status("Son export dosyasi bulunamadi.")
+            return
+        worker = threading.Thread(target=self.play_last_export_audio, daemon=True)
+        worker.start()
+
+    def play_last_export_audio(self) -> None:
+        if self.last_export_path is None or not self.last_export_path.exists():
+            self.set_status("Son export dosyasi bulunamadi.")
+            return
+        try:
+            audio, sample_rate = sf.read(self.last_export_path, dtype="float32")
+            try:
+                _, output_idx = self.selected_device_pair()
+            except ValueError:
+                output_idx = None
+            self.set_status(f"Son kayit caliniyor: {self.last_export_path.name}")
+            sd.play(audio, samplerate=sample_rate, device=output_idx)
+            sd.wait()
+            self.set_status(f"Son kayit oynatildi: {self.last_export_path.name}")
+        except Exception as exc:
+            self.set_status(f"Son kayit oynatilamadi: {exc}")
+
     def open_last_session_summary_in_finder(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
             self.set_status("Oturum ozeti bulunamadi.")
@@ -1503,6 +1598,17 @@ class GuitarAmpRecorderApp:
                 lines.append(f"Islenmis Peak: {float(recording.get('processed_peak', 0.0)):.3f}")
             if "mix_peak" in recording:
                 lines.append(f"Mix Peak: {float(recording.get('mix_peak', 0.0)):.3f}")
+            clip_warning = str(
+                recording.get(
+                    "clip_warning",
+                    describe_clip_warning(
+                        float(recording.get("input_peak", 0.0)),
+                        float(recording.get("processed_peak", 0.0)),
+                        float(recording.get("mix_peak", 0.0)),
+                    ),
+                )
+            )
+            lines.append(f"Clip Durumu: {clip_warning}")
             if recording.get("stopped_early"):
                 lines.append("Durum: erken durduruldu")
         if generated_files:
@@ -1846,9 +1952,11 @@ class GuitarAmpRecorderApp:
             self.stop_recording_button.configure(state="disabled")
             if self.last_export_path is not None and self.last_export_path.exists():
                 self.open_last_export_button.configure(state="normal")
+                self.play_last_export_button.configure(state="normal")
                 self.copy_last_export_path_button.configure(state="normal")
             else:
                 self.open_last_export_button.configure(state="disabled")
+                self.play_last_export_button.configure(state="disabled")
                 self.copy_last_export_path_button.configure(state="disabled")
             if self.last_summary_path is not None and self.last_summary_path.exists():
                 self.open_last_summary_button.configure(state="normal")
@@ -2041,26 +2149,29 @@ class GuitarAmpRecorderApp:
             sf.write(test_path, processed, sr)
             self.last_output_dir = output_dir
             self.last_export_path = test_path
-            summary_path = self.write_session_summary(
-                output_dir,
-                [test_path],
-                "device_test",
-                {
-                    "mode": "Mikrofon/Ses Karti Testi",
-                    "duration_seconds": float(seconds),
-                    "requested_duration_seconds": float(seconds),
-                    "input_peak": float(np.max(np.abs(voice))) if len(voice) else 0.0,
-                    "processed_peak": float(np.max(np.abs(processed))) if len(processed) else 0.0,
-                    "generated_file_count": 1,
-                    "stopped_early": False,
-                },
-            )
+            input_peak = float(np.max(np.abs(voice))) if len(voice) else 0.0
+            processed_peak = float(np.max(np.abs(processed))) if len(processed) else 0.0
+            recording_stats = {
+                "mode": "Mikrofon/Ses Karti Testi",
+                "duration_seconds": float(seconds),
+                "requested_duration_seconds": float(seconds),
+                "input_peak": input_peak,
+                "processed_peak": processed_peak,
+                "generated_file_count": 1,
+                "clip_warning": describe_clip_warning(input_peak, processed_peak, 0.0),
+                "stopped_early": False,
+            }
+            summary = self.build_session_summary(output_dir, [test_path], "device_test", recording_stats)
+            summary_path = self.write_session_summary(output_dir, [test_path], "device_test", recording_stats)
+            take_notes_path = self.write_take_notes(output_dir, summary)
             self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
             self.write_last_session_state(output_dir, summary_path)
             self.refresh_recent_exports()
 
-            peak = float(np.max(np.abs(voice))) if len(voice) else 0.0
-            self.set_status(f"Test tamam. Peak={peak:.3f} | Dosya: {test_path}")
+            final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
+            if take_notes_path is not None:
+                final_status += f" | Notlar: {take_notes_path}"
+            self.set_status(final_status)
         except Exception as exc:
             self.set_status(f"Test hatası: {exc}")
 
@@ -2272,25 +2383,29 @@ class GuitarAmpRecorderApp:
                     self.last_export_path = vocal_wav_path
                 self.last_output_dir = output_dir
                 generated_files = [path for path in [mp3_path, mix_wav_path, vocal_wav_path] if path.exists()]
-                summary_path = self.write_session_summary(
-                    output_dir,
-                    generated_files,
-                    "record_export",
-                    {
-                        "mode": "Arka plan + mikrofon" if backing_file is not None else "Sadece mikrofon",
-                        "duration_seconds": len(processed_voice) / sr if len(processed_voice) else 0.0,
-                        "requested_duration_seconds": requested_duration_seconds,
-                        "input_peak": float(np.max(np.abs(voice))) if len(voice) else 0.0,
-                        "processed_peak": float(np.max(np.abs(processed_voice))) if len(processed_voice) else 0.0,
-                        "mix_peak": float(np.max(np.abs(mix))) if len(mix) else 0.0,
-                        "generated_file_count": len(generated_files),
-                        "stopped_early": bool(stop_requested),
-                    },
-                )
+                input_peak = float(np.max(np.abs(voice))) if len(voice) else 0.0
+                processed_peak = float(np.max(np.abs(processed_voice))) if len(processed_voice) else 0.0
+                mix_peak = float(np.max(np.abs(mix))) if len(mix) else 0.0
+                recording_stats = {
+                    "mode": "Arka plan + mikrofon" if backing_file is not None else "Sadece mikrofon",
+                    "duration_seconds": len(processed_voice) / sr if len(processed_voice) else 0.0,
+                    "requested_duration_seconds": requested_duration_seconds,
+                    "input_peak": input_peak,
+                    "processed_peak": processed_peak,
+                    "mix_peak": mix_peak,
+                    "generated_file_count": len(generated_files),
+                    "clip_warning": describe_clip_warning(input_peak, processed_peak, mix_peak),
+                    "stopped_early": bool(stop_requested),
+                }
+                summary = self.build_session_summary(output_dir, generated_files, "record_export", recording_stats)
+                summary_path = self.write_session_summary(output_dir, generated_files, "record_export", recording_stats)
+                take_notes_path = self.write_take_notes(output_dir, summary)
                 self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
                 self.write_last_session_state(output_dir, summary_path)
                 if summary_path is not None:
                     notes.append(f"Oturum Ozeti: {summary_path}")
+                if take_notes_path is not None:
+                    notes.append(f"Take Notu: {take_notes_path}")
                 final_note = " | ".join(notes)
             finally:
                 if tmp_wav_path.exists():

@@ -254,10 +254,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Sure: 0:42", copied_text)
         self.assertIn("Hedef Sure: 1:00", copied_text)
         self.assertIn("Giris Peak: 0.612", copied_text)
+        self.assertIn("Clip Durumu: Clip riski yok", copied_text)
         self.assertIn("Durum: erken durduruldu", copied_text)
         self.assertIn("- take.mp3", copied_text)
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Kisa oturum raporu panoya kopyalandi: session_summary.json")
+
+    def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
+        recorder = self.make_app()
+        recorder.output_device_id.set("7")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            with mock.patch.object(app.sf, "read", return_value=([0.1, 0.2], 44100), create=True) as read_mock, mock.patch.object(
+                app.sd, "play", create=True
+            ) as play_mock, mock.patch.object(app.sd, "wait", create=True) as wait_mock:
+                recorder.play_last_export_audio()
+
+        read_mock.assert_called_once_with(export_path, dtype="float32")
+        play_mock.assert_called_once_with([0.1, 0.2], samplerate=44100, device=7)
+        wait_mock.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Son kayit oynatildi: take.wav")
 
     def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
         recorder = self.make_app()
