@@ -615,6 +615,7 @@ class GuitarAmpRecorderApp:
         self.mic_record_seconds = StringVar(value="60")
         self.monitor_status_text = StringVar(value="Canli monitor kapali")
         self.prep_summary_text = StringVar(value="Kayit plani hazirlaniyor...")
+        self.next_step_text = StringVar(value="Hazirlik kontrol ediliyor...")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -678,6 +679,19 @@ class GuitarAmpRecorderApp:
             wraplength=620,
         ).pack(anchor="w", padx=14, pady=(0, 10))
         Button(hero, text="Hakkinda", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
+
+        next_step_box = self.create_section(title="Sonraki Adim", subtitle="Ne yapmaniz gerektigi tek satirda gorunsun.")
+        self.next_step_label = Label(
+            next_step_box,
+            textvariable=self.next_step_text,
+            bg="#1c2a1f",
+            fg="#d8f3dc",
+            justify="left",
+            wraplength=640,
+            padx=10,
+            pady=10,
+        )
+        self.next_step_label.pack(fill="x", padx=14, pady=(12, 14))
 
         setup = self.create_section(title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         Label(
@@ -792,7 +806,10 @@ class GuitarAmpRecorderApp:
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
-        Button(media, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(anchor="w", padx=14, pady=10)
+        media_buttons = Frame(media, bg="#151b22")
+        media_buttons.pack(anchor="w", padx=14, pady=10)
+        Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(side="left")
+        Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
 
         export = self.create_section(title="Çıktı", subtitle="Kayıt klasörünü seçin; MP3 ve WAV dosyaları oraya yazılır.")
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
@@ -1027,6 +1044,7 @@ class GuitarAmpRecorderApp:
         self.root.after(220, self.refresh_recent_exports)
         self.root.after(250, self.start_input_meter)
         self.update_recording_prep_summary()
+        self.update_next_step_summary()
 
     def create_section(
         self,
@@ -1052,6 +1070,7 @@ class GuitarAmpRecorderApp:
 
     def on_plan_inputs_changed(self, *_args) -> None:
         self.update_recording_prep_summary()
+        self.update_next_step_summary()
 
     def plan_take_name_hint(self) -> str:
         name = self.output_name.get().strip()
@@ -1101,6 +1120,25 @@ class GuitarAmpRecorderApp:
     def update_recording_prep_summary(self) -> None:
         try:
             self.prep_summary_text.set(self.build_recording_prep_text())
+        except Exception:
+            pass
+
+    def build_next_step_text(self) -> str:
+        input_ready = bool(self.input_device_choice.get().strip())
+        output_ready = bool(self.output_device_choice.get().strip())
+        if not input_ready:
+            return "1. Mikrofonlari yeniden tara. 2. Bir giris sec. 3. Test kaydi al."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return "Son export hata verdi. Recovery notunu inceleyin, sonra ayarlari degistirip tekrar kaydi baslatin."
+        if self.backing_file is None:
+            return "Mikrofon modu hazir. Test kaydi alin, sonra dogrudan kaydi baslatin."
+        if not output_ready:
+            return "Backing secili. Cikisi kontrol edin, kisa test yapin, sonra tam kayda gecin."
+        return "Backing ve cihazlar hazir. Test kaydi iyi ise tam kaydi baslatabilirsiniz."
+
+    def update_next_step_summary(self) -> None:
+        try:
+            self.next_step_text.set(self.build_next_step_text())
         except Exception:
             pass
 
@@ -1690,6 +1728,7 @@ class GuitarAmpRecorderApp:
         self.restore_last_session_paths(data)
         self.refresh_recent_exports()
         self.update_recording_prep_summary()
+        self.update_next_step_summary()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
     def current_recent_exports_dir(self) -> Path:
@@ -2314,6 +2353,14 @@ class GuitarAmpRecorderApp:
         self.backing_file = Path(file_path)
         self.backing_label.config(text=self.backing_file.name, fg="#2c3e50")
         self.update_recording_prep_summary()
+        self.update_next_step_summary()
+
+    def clear_backing_selection(self) -> None:
+        self.backing_file = None
+        self.backing_label.config(text="Dosya seçilmedi", fg="#9aa7b5")
+        self.update_recording_prep_summary()
+        self.update_next_step_summary()
+        self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
         input_text = self.input_device_id.get().strip()
@@ -2457,6 +2504,7 @@ class GuitarAmpRecorderApp:
             self.remember_completed_take_name(base_name)
             self.notify_success()
             self.update_recording_prep_summary()
+            self.update_next_step_summary()
 
             final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
             if take_notes_path is not None:
@@ -2724,6 +2772,7 @@ class GuitarAmpRecorderApp:
             self.remember_completed_take_name(base_name)
             self.notify_success()
             self.update_recording_prep_summary()
+            self.update_next_step_summary()
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.restore_previous_success_paths(
@@ -2736,6 +2785,7 @@ class GuitarAmpRecorderApp:
             self.last_recovery_note_path = recovery_note_path if recovery_note_path is not None and recovery_note_path.exists() else previous_last_recovery_note_path
             self.finish_recording_progress("Kayıt durumu: hata")
             self.update_recording_prep_summary()
+            self.update_next_step_summary()
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.set_status(f"Hata: {exc} | Recovery notu: {self.last_recovery_note_path}")
             else:

@@ -189,6 +189,33 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Ciktilar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn(f"Not: Son export hatasi icin recovery notu hazir ({recovery_note_path.name})", prep_text)
 
+    def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+
+            next_step = recorder.build_next_step_text()
+
+        self.assertIn("Recovery notunu inceleyin", next_step)
+
+    def test_build_next_step_text_guides_microphone_mode_when_no_backing(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        next_step = recorder.build_next_step_text()
+
+        self.assertEqual(next_step, "Mikrofon modu hazir. Test kaydi alin, sonra dogrudan kaydi baslatin.")
+
+    def test_build_next_step_text_guides_full_recording_when_backing_ready(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+
+        next_step = recorder.build_next_step_text()
+
+        self.assertEqual(next_step, "Backing ve cihazlar hazir. Test kaydi iyi ise tam kaydi baslatabilirsiniz.")
+
     def test_remember_completed_take_name_updates_output_name(self) -> None:
         recorder = self.make_app()
 

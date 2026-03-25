@@ -52,6 +52,8 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.root = mock.Mock()
         recorder.recent_exports_text = FakeVar("")
+        recorder.prep_summary_text = FakeVar("")
+        recorder.next_step_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
         recorder.output_device_choice = FakeVar("Varsayılan macOS çıkışı")
@@ -63,8 +65,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_device_menus = mock.Mock()
         recorder.restart_input_meter = mock.Mock()
+        recorder.backing_label = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
+        recorder.backing_file = None
         recorder.last_output_dir = None
         recorder.last_export_path = None
         recorder.last_summary_path = None
@@ -202,6 +206,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_take_notes_in_finder()
 
         self.assertEqual(recorder.status_messages[-1], "Take notu bulunamadi.")
+
+    def test_clear_backing_selection_returns_to_microphone_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing.wav")
+
+        recorder.clear_backing_selection()
+
+        self.assertIsNone(recorder.backing_file)
+        recorder.backing_label.config.assert_called_once_with(text="Dosya seçilmedi", fg="#9aa7b5")
+        self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
 
     def test_copy_last_session_summary_to_clipboard_reads_and_copies_content(self) -> None:
         recorder = self.make_app()
