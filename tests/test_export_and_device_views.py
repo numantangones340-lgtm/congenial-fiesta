@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         recorder.open_last_export_in_finder()
 
-        self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
+        self.assertEqual(recorder.status_messages[-1], "Son kayıt yok.")
 
     def test_open_last_session_summary_in_finder_handles_missing_summary(self) -> None:
         recorder = self.make_app()
@@ -197,7 +197,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         recorder.open_last_session_summary_in_finder()
 
-        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti bulunamadi.")
+        self.assertEqual(recorder.status_messages[-1], "Özet yok.")
 
     def test_open_last_take_notes_in_finder_handles_missing_file(self) -> None:
         recorder = self.make_app()
@@ -205,7 +205,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         recorder.open_last_take_notes_in_finder()
 
-        self.assertEqual(recorder.status_messages[-1], "Take notu bulunamadi.")
+        self.assertEqual(recorder.status_messages[-1], "Take notu yok.")
 
     def test_clear_backing_selection_returns_to_microphone_mode(self) -> None:
         recorder = self.make_app()
@@ -229,7 +229,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_clear.assert_called_once_with()
         recorder.root.clipboard_append.assert_called_once_with('{"event":"record_export"}')
         recorder.root.update.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti panoya kopyalandi: session_summary.json")
+        self.assertEqual(recorder.status_messages[-1], "Özet panoya alındı: session_summary.json")
 
     def test_copy_last_export_path_to_clipboard_copies_file_path(self) -> None:
         recorder = self.make_app()
@@ -243,7 +243,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_clear.assert_called_once_with()
         recorder.root.clipboard_append.assert_called_once_with(str(export_path))
         recorder.root.update.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Son export yolu panoya kopyalandi: take.mp3")
+        self.assertEqual(recorder.status_messages[-1], "Dosya yolu panoya alındı: take.mp3")
 
     def test_copy_last_session_summary_path_to_clipboard_copies_file_path(self) -> None:
         recorder = self.make_app()
@@ -257,7 +257,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_clear.assert_called_once_with()
         recorder.root.clipboard_append.assert_called_once_with(str(summary_path))
         recorder.root.update.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti yolu panoya kopyalandi: session_summary.json")
+        self.assertEqual(recorder.status_messages[-1], "Özet yolu panoya alındı: session_summary.json")
 
     def test_copy_last_session_brief_to_clipboard_formats_human_readable_report(self) -> None:
         recorder = self.make_app()
@@ -282,7 +282,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Durum: erken durduruldu", copied_text)
         self.assertIn("- take.mp3", copied_text)
         recorder.root.update.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Kisa oturum raporu panoya kopyalandi: session_summary.json")
+        self.assertEqual(recorder.status_messages[-1], "Kısa rapor panoya alındı: session_summary.json")
 
     def test_export_last_session_brief_file_writes_text_file(self) -> None:
         recorder = self.make_app()
@@ -300,7 +300,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertTrue(brief_path.exists())
             self.assertIn("Preset: Temiz Gitar", brief_path.read_text(encoding="utf-8"))
 
-        self.assertIn("Kisa rapor dosyaya yazildi:", recorder.status_messages[-1])
+        self.assertIn("Kısa rapor yazıldı:", recorder.status_messages[-1])
 
     def test_copy_last_recovery_note_to_clipboard_reads_and_copies_content(self) -> None:
         recorder = self.make_app()
@@ -314,7 +314,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_clear.assert_called_once_with()
         recorder.root.clipboard_append.assert_called_once_with("Export Recovery Note")
         recorder.root.update.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Recovery notu panoya kopyalandi: export_recovery_note.txt")
+        self.assertEqual(recorder.status_messages[-1], "Recovery notu panoya alındı: export_recovery_note.txt")
 
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()
@@ -332,7 +332,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         read_mock.assert_called_once_with(export_path, dtype="float32")
         play_mock.assert_called_once_with([0.1, 0.2], samplerate=44100, device=7)
         wait_mock.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Son kayit oynatildi: take.wav")
+        self.assertEqual(recorder.status_messages[-1], "Son kayıt oynatıldı: take.wav")
 
     def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
@@ -345,7 +345,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.open_last_export_in_finder()
 
         run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
-        self.assertEqual(recorder.status_messages[-1], "Son dosya Finder'da secili gosterildi: take.wav")
+        self.assertEqual(recorder.status_messages[-1], "Son kayıt Finder'da seçildi: take.wav")
 
     def test_open_last_take_notes_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
@@ -358,7 +358,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.open_last_take_notes_in_finder()
 
         run_mock.assert_called_once_with(["open", "-R", str(note_path)], check=False)
-        self.assertEqual(recorder.status_messages[-1], "Take notu Finder'da secili gosterildi: take_notes.txt")
+        self.assertEqual(recorder.status_messages[-1], "Take notu Finder'da seçildi: take_notes.txt")
 
     def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
         recorder = self.make_app()

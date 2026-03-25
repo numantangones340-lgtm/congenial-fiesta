@@ -1393,6 +1393,15 @@ class GuitarAmpRecorderApp:
         except TclError:
             pass
 
+    def missing_item_status(self, label: str) -> str:
+        return f"{label} yok."
+
+    def copied_item_status(self, label: str, filename: str) -> str:
+        return f"{label} panoya alındı: {filename}"
+
+    def finder_selected_status(self, label: str, filename: str) -> str:
+        return f"{label} Finder'da seçildi: {filename}"
+
     def show_about(self) -> None:
         self.set_status(
             f"Gitar Amfi Kaydedici {self.app_version} | Canli monitor, kompresor/limiter, oturum klasorleri, session summary ve son oturum yukleme desteklenir."
@@ -1972,28 +1981,28 @@ class GuitarAmpRecorderApp:
         try:
             subprocess.run(["open", str(output_dir)], check=False)
         except Exception as exc:
-            self.set_status(f"Klasor acilamadi: {exc}")
+            self.set_status(f"Klasör açılamadı: {exc}")
 
     def open_last_export_in_finder(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
-            self.set_status("Son export dosyasi bulunamadi.")
+            self.set_status(self.missing_item_status("Son kayıt"))
             return
         try:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
-            self.set_status(f"Son dosya Finder'da secili gosterildi: {self.last_export_path.name}")
+            self.set_status(self.finder_selected_status("Son kayıt", self.last_export_path.name))
         except Exception as exc:
-            self.set_status(f"Finder acilamadi: {exc}")
+            self.set_status(f"Finder açılamadı: {exc}")
 
     def start_last_export_playback_thread(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
-            self.set_status("Son export dosyasi bulunamadi.")
+            self.set_status(self.missing_item_status("Son kayıt"))
             return
         worker = threading.Thread(target=self.play_last_export_audio, daemon=True)
         worker.start()
 
     def play_last_export_audio(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
-            self.set_status("Son export dosyasi bulunamadi.")
+            self.set_status(self.missing_item_status("Son kayıt"))
             return
         try:
             audio, sample_rate = sf.read(self.last_export_path, dtype="float32")
@@ -2001,64 +2010,64 @@ class GuitarAmpRecorderApp:
                 _, output_idx = self.selected_device_pair()
             except ValueError:
                 output_idx = None
-            self.set_status(f"Son kayit caliniyor: {self.last_export_path.name}")
+            self.set_status(f"Son kayıt çalınıyor: {self.last_export_path.name}")
             sd.play(audio, samplerate=sample_rate, device=output_idx)
             sd.wait()
-            self.set_status(f"Son kayit oynatildi: {self.last_export_path.name}")
+            self.set_status(f"Son kayıt oynatıldı: {self.last_export_path.name}")
         except Exception as exc:
-            self.set_status(f"Son kayit oynatilamadi: {exc}")
+            self.set_status(f"Son kayıt oynatılamadı: {exc}")
 
     def open_last_session_summary_in_finder(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
-            self.set_status("Oturum ozeti bulunamadi.")
+            self.set_status(self.missing_item_status("Özet"))
             return
         try:
             subprocess.run(["open", "-R", str(self.last_summary_path)], check=False)
         except Exception as exc:
-            self.set_status(f"Oturum ozeti acilamadi: {exc}")
+            self.set_status(f"Özet açılamadı: {exc}")
 
     def open_last_take_notes_in_finder(self) -> None:
         if self.last_take_notes_path is None or not self.last_take_notes_path.exists():
-            self.set_status("Take notu bulunamadi.")
+            self.set_status(self.missing_item_status("Take notu"))
             return
         try:
             subprocess.run(["open", "-R", str(self.last_take_notes_path)], check=False)
-            self.set_status(f"Take notu Finder'da secili gosterildi: {self.last_take_notes_path.name}")
+            self.set_status(self.finder_selected_status("Take notu", self.last_take_notes_path.name))
         except Exception as exc:
-            self.set_status(f"Take notu acilamadi: {exc}")
+            self.set_status(f"Take notu açılamadı: {exc}")
 
     def copy_last_session_summary_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
-            self.set_status("Oturum ozeti bulunamadi.")
+            self.set_status(self.missing_item_status("Özet"))
             return
         try:
             content = self.last_summary_path.read_text(encoding="utf-8")
             self.copy_text_to_clipboard(
                 content,
-                f"Oturum ozeti panoya kopyalandi: {self.last_summary_path.name}",
-                "Oturum ozeti kopyalanamadi",
+                self.copied_item_status("Özet", self.last_summary_path.name),
+                "Özet kopyalanamadı",
             )
         except Exception as exc:
-            self.set_status(f"Oturum ozeti kopyalanamadi: {exc}")
+            self.set_status(f"Özet kopyalanamadı: {exc}")
 
     def copy_last_export_path_to_clipboard(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
-            self.set_status("Son export dosyasi bulunamadi.")
+            self.set_status(self.missing_item_status("Son kayıt"))
             return
         self.copy_text_to_clipboard(
             str(self.last_export_path),
-            f"Son export yolu panoya kopyalandi: {self.last_export_path.name}",
-            "Son export yolu kopyalanamadi",
+            self.copied_item_status("Dosya yolu", self.last_export_path.name),
+            "Dosya yolu kopyalanamadı",
         )
 
     def copy_last_session_summary_path_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
-            self.set_status("Oturum ozeti bulunamadi.")
+            self.set_status(self.missing_item_status("Özet"))
             return
         self.copy_text_to_clipboard(
             str(self.last_summary_path),
-            f"Oturum ozeti yolu panoya kopyalandi: {self.last_summary_path.name}",
-            "Oturum ozeti yolu kopyalanamadi",
+            self.copied_item_status("Özet yolu", self.last_summary_path.name),
+            "Özet yolu kopyalanamadı",
         )
 
     def build_session_brief_text(self, summary: dict) -> str:
@@ -2105,7 +2114,7 @@ class GuitarAmpRecorderApp:
 
     def copy_last_session_brief_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
-            self.set_status("Oturum ozeti bulunamadi.")
+            self.set_status(self.missing_item_status("Özet"))
             return
         try:
             summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
@@ -2114,15 +2123,15 @@ class GuitarAmpRecorderApp:
             content = self.build_session_brief_text(summary)
             self.copy_text_to_clipboard(
                 content,
-                f"Kisa oturum raporu panoya kopyalandi: {self.last_summary_path.name}",
-                "Kisa oturum raporu kopyalanamadi",
+                self.copied_item_status("Kısa rapor", self.last_summary_path.name),
+                "Kısa rapor kopyalanamadı",
             )
         except Exception as exc:
-            self.set_status(f"Kisa oturum raporu kopyalanamadi: {exc}")
+            self.set_status(f"Kısa rapor kopyalanamadı: {exc}")
 
     def export_last_session_brief_file(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
-            self.set_status("Oturum ozeti bulunamadi.")
+            self.set_status(self.missing_item_status("Özet"))
             return
         try:
             summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
@@ -2131,23 +2140,23 @@ class GuitarAmpRecorderApp:
             summary_dir = self.last_summary_path.parent
             brief_path = summary_dir / "session_brief.txt"
             brief_path.write_text(self.build_session_brief_text(summary), encoding="utf-8")
-            self.set_status(f"Kisa rapor dosyaya yazildi: {brief_path}")
+            self.set_status(f"Kısa rapor yazıldı: {brief_path}")
         except Exception as exc:
-            self.set_status(f"Kisa rapor dosyaya yazilamadi: {exc}")
+            self.set_status(f"Kısa rapor yazılamadı: {exc}")
 
     def copy_last_recovery_note_to_clipboard(self) -> None:
         if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
-            self.set_status("Recovery notu bulunamadi.")
+            self.set_status(self.missing_item_status("Recovery notu"))
             return
         try:
             content = self.last_recovery_note_path.read_text(encoding="utf-8")
             self.copy_text_to_clipboard(
                 content,
-                f"Recovery notu panoya kopyalandi: {self.last_recovery_note_path.name}",
-                "Recovery notu kopyalanamadi",
+                self.copied_item_status("Recovery notu", self.last_recovery_note_path.name),
+                "Recovery notu kopyalanamadı",
             )
         except Exception as exc:
-            self.set_status(f"Recovery notu kopyalanamadi: {exc}")
+            self.set_status(f"Recovery notu kopyalanamadı: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -2329,20 +2338,20 @@ class GuitarAmpRecorderApp:
                 self.meter_text.set(self.meter_error_message)
                 self.meter_error_message = ""
             elif self.meter_stream is not None or self.monitor_stream is not None:
-                self.meter_text.set(f"Canlı giriş: %{int(level * 100)} | Peak: %{int(peak_level * 100)}")
+                self.meter_text.set(f"Giriş: %{int(level * 100)} | Peak: %{int(peak_level * 100)}")
             elif not self.meter_text.get():
-                self.meter_text.set("Meter duruyor.")
+                self.meter_text.set("Seviye izleme duruyor.")
             if now < self.meter_clipping_until:
-                self.clip_text.set("UYARI: clipping algilandi, giris kazancini dusurun")
+                self.clip_text.set("Uyarı: seviye çok yüksek, gain düşürün")
                 self.clip_label.configure(fg="#ff7b72")
             elif peak_level > 0.9:
-                self.clip_text.set("Headroom: sinira yakin")
+                self.clip_text.set("Seviye: sınıra yakın")
                 self.clip_label.configure(fg="#f39c12")
             else:
-                self.clip_text.set("Headroom: guvenli")
+                self.clip_text.set("Seviye: güvenli")
                 self.clip_label.configure(fg="#7ee787")
             safety_message, safety_color = self.classify_input_level(peak_level)
-            self.safety_text.set(f"Guvenlik: {safety_message}")
+            self.safety_text.set(f"Durum: {safety_message}")
             self.safety_label.configure(fg=safety_color)
             self.root.after(120, self.update_meter_ui)
         except TclError:
@@ -2352,13 +2361,13 @@ class GuitarAmpRecorderApp:
         try:
             input_idx, _ = self.selected_device_pair()
         except ValueError:
-            self.meter_text.set("Meter başlatılamadı: aygıt kimliği sayısal olmalı.")
+            self.meter_text.set("Seviye izleme başlayamadı: aygıt kimliği sayısal olmalı.")
             return
         self.stop_live_monitor()
         self.stop_input_meter()
         input_count, _ = describe_device_state()
         if input_count == 0:
-            self.meter_text.set("Meter başlatılamadı: mikrofon girişi bulunamadı.")
+            self.meter_text.set("Seviye izleme başlayamadı: mikrofon girişi bulunamadı.")
             return
         try:
             self.meter_stream = sd.InputStream(
@@ -2370,22 +2379,22 @@ class GuitarAmpRecorderApp:
                 callback=self.meter_callback,
             )
             self.meter_stream.start()
-            self.meter_text.set("Canlı mikrofon seviyesi izleniyor. Konuşun veya gitar çalın.")
+            self.meter_text.set("Mikrofon seviyesi izleniyor. Konuşun veya çalın.")
         except Exception as exc:
             self.meter_stream = None
-            self.meter_text.set(f"Meter başlatılamadı: {exc}")
+            self.meter_text.set(f"Seviye izleme başlayamadı: {exc}")
 
     def start_live_monitor(self) -> None:
         try:
             input_idx, output_idx = self.selected_device_pair()
         except ValueError:
-            self.set_status("Monitor baslatilamadi: aygit kimligi sayisal olmali.")
+            self.set_status("Monitor açılamadı: aygıt kimliği sayısal olmalı.")
             return
         self.stop_input_meter()
         self.stop_live_monitor()
         input_count, output_count = describe_device_state()
         if input_count == 0 or output_count == 0:
-            self.set_status("Monitor baslatilamadi: giris veya cikis aygiti bulunamadi.")
+            self.set_status("Monitor açılamadı: giriş veya çıkış aygıtı bulunamadı.")
             return
         try:
             self.monitor_stream = sd.Stream(
@@ -2397,17 +2406,17 @@ class GuitarAmpRecorderApp:
                 callback=self.monitor_callback,
             )
             self.monitor_stream.start()
-            self.monitor_status_text.set("Canli monitor acik. Kulaklik kullanin.")
-            self.meter_text.set("Canli monitor acik. Gecikmeyi azaltmak icin kulaklik onerilir.")
+            self.monitor_status_text.set("Canlı monitor açık. Kulaklık önerilir.")
+            self.meter_text.set("Canlı monitor açık. Gecikme için kulaklık önerilir.")
         except Exception as exc:
             self.monitor_stream = None
-            self.monitor_status_text.set(f"Canli monitor acilamadi: {exc}")
+            self.monitor_status_text.set(f"Canlı monitor açılamadı: {exc}")
 
     def stop_live_monitor(self) -> None:
         stream = self.monitor_stream
         self.monitor_stream = None
         if stream is None:
-            self.monitor_status_text.set("Canli monitor kapali")
+            self.monitor_status_text.set("Canlı monitor kapalı")
             return
         try:
             stream.stop()
@@ -2417,7 +2426,7 @@ class GuitarAmpRecorderApp:
             stream.close()
         except Exception:
             pass
-        self.monitor_status_text.set("Canli monitor kapali")
+        self.monitor_status_text.set("Canlı monitor kapalı")
 
     def stop_input_meter(self) -> None:
         stream = self.meter_stream
@@ -2437,9 +2446,9 @@ class GuitarAmpRecorderApp:
             stream.close()
         except Exception:
             pass
-        self.meter_text.set("Meter durduruldu.")
-        self.clip_text.set("Headroom: guvenli")
-        self.safety_text.set("Guvenlik: seviye analizi bekleniyor")
+        self.meter_text.set("Seviye izleme durdu.")
+        self.clip_text.set("Seviye: güvenli")
+        self.safety_text.set("Durum: seviye analizi bekleniyor")
 
     def restart_input_meter(self) -> None:
         if self.monitor_stream is not None:
