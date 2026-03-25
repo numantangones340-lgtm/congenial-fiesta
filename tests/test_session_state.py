@@ -1,6 +1,8 @@
 import json
+import os
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -64,6 +66,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_recent_exports = mock.Mock()
         recorder.load_saved_preset = mock.Mock()
+        recorder.last_output_dir = None
+        recorder.last_export_path = None
         recorder.last_summary_path = None
         return recorder
 
@@ -101,6 +105,7 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(loaded["session_mode"], "Isimli Oturum")
         self.assertEqual(loaded["session_name"], "Aksam Kaydi")
         self.assertEqual(loaded["preset_name"], "Temiz Gitar")
+        self.assertEqual(loaded["last_export_path"], "")
         self.assertEqual(loaded["summary_path"], str(summary_path))
 
     def test_reload_last_session_for_named_session_sets_parent_dir_and_loads_preset(self) -> None:
@@ -183,6 +188,62 @@ class SessionStateTests(unittest.TestCase):
                 recorder.reload_last_session()
 
         self.assertEqual(recorder.last_summary_path, summary_path)
+        self.assertEqual(recorder.last_output_dir, output_dir)
+
+    def test_reload_last_session_restores_last_export_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "session"
+            output_dir.mkdir()
+            export_path = output_dir / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            state_path = Path(tmpdir) / ".last_session.json"
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "output_dir": str(output_dir),
+                        "session_mode": "Tek Klasor",
+                        "last_export_path": str(export_path),
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
+            with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
+                recorder.reload_last_session()
+
+        self.assertEqual(recorder.last_export_path, export_path)
+        self.assertEqual(recorder.last_output_dir, output_dir)
+
+    def test_reload_last_session_falls_back_to_latest_audio_when_export_path_missing(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "session"
+            output_dir.mkdir()
+            older = output_dir / "older_take.wav"
+            older.write_text("old", encoding="utf-8")
+            newer = output_dir / "new_take.mp3"
+            newer.write_text("new", encoding="utf-8")
+            now = time.time()
+            os.utime(older, (now - 10, now - 10))
+            os.utime(newer, (now, now))
+            state_path = Path(tmpdir) / ".last_session.json"
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "output_dir": str(output_dir),
+                        "session_mode": "Tek Klasor",
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+
+            with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
+                recorder.reload_last_session()
+
+        self.assertEqual(recorder.last_export_path, newer)
 
 
 if __name__ == "__main__":

@@ -65,6 +65,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.restart_input_meter = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
+        recorder.last_output_dir = None
         recorder.last_export_path = None
         recorder.last_summary_path = None
         return recorder
@@ -98,6 +99,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.refresh_recent_exports()
 
         self.assertEqual(recorder.recent_exports_text.get(), f"Klasor bulunamadi: {missing_dir}")
+
+    def test_refresh_recent_exports_prefers_last_output_dir(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newer = output_dir / "latest_take.wav"
+            newer.write_text("audio", encoding="utf-8")
+            recorder.last_output_dir = output_dir
+            recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/unused-output"))
+
+            recorder.refresh_recent_exports()
+
+        self.assertEqual(recorder.recent_exports_text.get(), f"- {newer.name}")
+        recorder.resolve_output_dir.assert_not_called()
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
         recorder = self.make_app()
@@ -191,6 +206,47 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_append.assert_called_once_with('{"event":"record_export"}')
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Oturum ozeti panoya kopyalandi: session_summary.json")
+
+    def test_copy_last_export_path_to_clipboard_copies_file_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            recorder.copy_last_export_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(export_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Son export yolu panoya kopyalandi: take.mp3")
+
+    def test_copy_last_session_summary_path_to_clipboard_copies_file_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.copy_last_session_summary_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(summary_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti yolu panoya kopyalandi: session_summary.json")
+
+    def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.last_output_dir = output_dir
+            recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/unused-output"))
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_output_dir_in_finder()
+
+        run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
+        recorder.resolve_output_dir.assert_not_called()
 
 
 if __name__ == "__main__":
