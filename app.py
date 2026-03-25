@@ -671,7 +671,7 @@ class GuitarAmpRecorderApp:
         ).pack(anchor="w", padx=14, pady=(14, 4))
         Label(
             hero,
-            text="Önce mikrofonu test edin, sonra kaydı alın. Aygıt kimliği bilmiyorsanız alanları boş bırakın.",
+            text="Önce testi alın, sonra kaydı başlatın. Aygıt kimliği bilmiyorsanız boş bırakın.",
             bg="#182028",
             fg="#c7d2de",
             justify="left",
@@ -679,7 +679,7 @@ class GuitarAmpRecorderApp:
         ).pack(anchor="w", padx=14, pady=(0, 14))
         Label(
             hero,
-            text=f"Surum {self.app_version} | Profesyonel kayit, export ve oturum takibi",
+            text=f"Sürüm {self.app_version} | Kayıt, export ve oturum takibi",
             bg="#182028",
             fg="#9fb0c2",
             justify="left",
@@ -709,7 +709,7 @@ class GuitarAmpRecorderApp:
         self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
         Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
 
-        next_step_box = self.create_section(title="Sonraki Adım", subtitle="Ne yapmanız gerektiği tek satırda görünsün.")
+        next_step_box = self.create_section(title="Sonraki Adım", subtitle="Sıradaki hareket burada netleşsin.")
         self.next_step_label = Label(
             next_step_box,
             textvariable=self.next_step_text,
@@ -717,7 +717,7 @@ class GuitarAmpRecorderApp:
         )
         self.next_step_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        readiness_box = self.create_section(title="Hazırlık Durumu", subtitle="Kayda başlamadan önce kritik noktaları tek bakışta kontrol edin.")
+        readiness_box = self.create_section(title="Hazırlık Durumu", subtitle="Kayda girmeden önce eksikleri görün.")
         self.readiness_label = Label(
             readiness_box,
             textvariable=self.readiness_text,
@@ -725,7 +725,7 @@ class GuitarAmpRecorderApp:
         )
         self.readiness_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitle="Kayda basmadan hemen önce kısa risk özetini burada görün.")
+        preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitle="Kayda basmadan önce kısa riski görün.")
         self.preflight_warning_label = Label(
             preflight_box,
             textvariable=self.preflight_warning_text,
@@ -842,7 +842,7 @@ class GuitarAmpRecorderApp:
         Button(meter_buttons, text="Monitor Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
-        media = self.create_section(title="Kayıt Kaynağı", subtitle="Backing track seçebilir veya sadece mikrofon kaydı alabilirsiniz.")
+        media = self.create_section(title="Kayıt Kaynağı", subtitle="İsterseniz backing ekleyin, isterseniz sadece mikrofon kullanın.")
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
@@ -851,7 +851,7 @@ class GuitarAmpRecorderApp:
         Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(side="left")
         Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
 
-        export = self.create_section(title="Çıktı", subtitle="Kayıt klasörünü seçin; MP3 ve WAV dosyaları oraya yazılır.")
+        export = self.create_section(title="Çıktı", subtitle="Klasörü seçin; MP3 ve WAV dosyaları buraya yazılır.")
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_dir, width=48).pack(anchor="w", padx=14)
         Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(8, 10))
@@ -874,7 +874,7 @@ class GuitarAmpRecorderApp:
         limit_menu = OptionMenu(export, self.record_limit_hours, "1", "2")
         limit_menu.pack(anchor="w", padx=14, pady=(0, 12))
 
-        prep_box = self.create_section(title="Kayıt Planı", subtitle="Kayda başlamadan önce neyin nereye yazılacağını burada görün.")
+        prep_box = self.create_section(title="Kayıt Planı", subtitle="Ne üretileceğini ve nereye yazılacağını görün.")
         self.prep_summary_label = Label(
             prep_box,
             textvariable=self.prep_summary_text,
@@ -882,7 +882,7 @@ class GuitarAmpRecorderApp:
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        option_box = self.create_section(title="Seçenek Özeti", subtitle="Seçili ayarların ne yapacağını sade dille okuyun.")
+        option_box = self.create_section(title="Seçenek Özeti", subtitle="Ayarların sonucunu kısa biçimde görün.")
         self.option_summary_label = Label(
             option_box,
             textvariable=self.option_summary_text,
@@ -890,7 +890,7 @@ class GuitarAmpRecorderApp:
         )
         self.option_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        tone = self.create_section(title="Ton Ayarları", subtitle="Amfi karakterini ve distorsiyonu burada ayarlayın.")
+        tone = self.create_section(title="Ton Ayarları", subtitle="Amfi tonu ve distorsiyonu buradan ayarlayın.")
         self.gain = self.make_slider(tone, "Kazanç (dB)", -12, 24, 6)
         self.boost = self.make_slider(tone, "Güçlendirme (dB)", 0, 18, 6)
         self.high_pass_hz = self.make_slider(tone, "High-Pass (Hz)", 0, 240, 70)
@@ -899,7 +899,7 @@ class GuitarAmpRecorderApp:
         self.treble = self.make_slider(tone, "Tiz (dB)", -12, 12, 2)
         self.distortion = self.make_slider(tone, "Distorsiyon (%)", 0, 100, 25)
 
-        mix = self.create_section(title="Mix ve Temizlik", subtitle="Arka plan/vokal seviyesi ve son çıkış işlemleri.")
+        mix = self.create_section(title="Mix ve Temizlik", subtitle="Seviyeleri ve temizleme ayarlarını yönetin.")
         self.backing_level = self.make_slider(mix, "Arka Plan Seviye (%)", 0, 200, 100)
         self.vocal_level = self.make_slider(mix, "Vokal Seviye (%)", 0, 200, 85)
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
@@ -914,7 +914,7 @@ class GuitarAmpRecorderApp:
         self.speed_ratio = self.make_slider(mix, "Hız (%)", 50, 150, 100)
         self.output_gain = self.make_slider(mix, "Çıkış Kazancı (dB)", -12, 12, 0)
 
-        actions = self.create_section(title="İşlem", subtitle="Önce test, sonra quick kayıt veya tam kayıt.")
+        actions = self.create_section(title="İşlem", subtitle="Önce test, sonra quick veya tam kayıt.")
         self.action_guidance_label = Label(
             actions,
             textvariable=self.action_guidance_text,
@@ -936,7 +936,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_button = Button(actions, text="Kaydı Durdur ve Kaydet", command=self.request_stop_recording, bg="#c0392b", fg="white", state="disabled")
         self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
 
-        progress_box = self.create_section(title="Kayıt Durumu", subtitle="Kayıt sırasında geçen süre ve kalan süre burada görünür.")
+        progress_box = self.create_section(title="Kayıt Durumu", subtitle="Geçen ve kalan süre burada görünür.")
         self.progress_label = Label(
             progress_box,
             textvariable=self.record_progress_text,
@@ -947,7 +947,7 @@ class GuitarAmpRecorderApp:
         )
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
 
-        recent_box = self.create_section(title="Son Çıktılar", subtitle="Son üretilen dosyayı Finder'da açabilir ve son exportları görebilirsiniz.")
+        recent_box = self.create_section(title="Son Çıktılar", subtitle="Son dosyaları açın, oynatın veya kopyalayın.")
         self.recent_output_summary_label = Label(
             recent_box,
             textvariable=self.recent_output_summary_text,
