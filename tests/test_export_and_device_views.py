@@ -104,7 +104,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         recorder.refresh_recent_exports()
 
-        self.assertEqual(recorder.recent_exports_text.get(), f"Klasor bulunamadi: {missing_dir}")
+        self.assertEqual(recorder.recent_exports_text.get(), f"Klasör bulunamadı: {missing_dir}")
 
     def test_refresh_recent_exports_prefers_last_output_dir(self) -> None:
         recorder = self.make_app()

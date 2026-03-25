@@ -184,9 +184,9 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Preset: Temiz Gitar", prep_text)
         self.assertIn("Oturum: Isimli Oturum (Canli Set)", prep_text)
         self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", prep_text)
-        self.assertIn("Take Adi: aksam_take", prep_text)
-        self.assertIn("Klasor: /tmp/out/Canli Set", prep_text)
-        self.assertIn("Ciktilar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
+        self.assertIn("Take Adı: aksam_take", prep_text)
+        self.assertIn("Klasör: /tmp/out/Canli Set", prep_text)
+        self.assertIn("Çıktılar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn(f"Not: Son export hatasi icin recovery notu hazir ({recovery_note_path.name})", prep_text)
 
     def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
@@ -206,7 +206,7 @@ class SessionStateTests(unittest.TestCase):
 
         next_step = recorder.build_next_step_text()
 
-        self.assertEqual(next_step, "Mikrofon modu hazir. Test kaydi alin, sonra dogrudan kaydi baslatin.")
+        self.assertEqual(next_step, "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın.")
 
     def test_build_next_step_text_guides_full_recording_when_backing_ready(self) -> None:
         recorder = self.make_app()
@@ -214,7 +214,7 @@ class SessionStateTests(unittest.TestCase):
 
         next_step = recorder.build_next_step_text()
 
-        self.assertEqual(next_step, "Backing ve cihazlar hazir. Test kaydi iyi ise tam kaydi baslatabilirsiniz.")
+        self.assertEqual(next_step, "Backing ve cihazlar hazır. Test kaydı iyi ise tam kaydı başlatabilirsiniz.")
 
     def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
         recorder = self.make_app()

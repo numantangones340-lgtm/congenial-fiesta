@@ -123,7 +123,7 @@ def build_export_recovery_note(output_dir: Path, base_name: str, exc: Exception)
         [
             "Export Recovery Note",
             f"Tarih: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-            f"Klasor: {output_dir}",
+            f"Klasör: {output_dir}",
             f"Take: {base_name}",
             f"Hata: {exc}",
             "Hedef Dosyalar:",
@@ -679,9 +679,9 @@ class GuitarAmpRecorderApp:
             justify="left",
             wraplength=620,
         ).pack(anchor="w", padx=14, pady=(0, 10))
-        Button(hero, text="Hakkinda", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
+        Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
 
-        next_step_box = self.create_section(title="Sonraki Adim", subtitle="Ne yapmaniz gerektigi tek satirda gorunsun.")
+        next_step_box = self.create_section(title="Sonraki Adım", subtitle="Ne yapmanız gerektiği tek satırda görünsün.")
         self.next_step_label = Label(
             next_step_box,
             textvariable=self.next_step_text,
@@ -770,9 +770,9 @@ class GuitarAmpRecorderApp:
 
         preset_row = Frame(setup, bg="#151b22")
         preset_row.pack(fill="x", padx=14, pady=(0, 12))
-        Label(preset_row, text="Preset Adi", bg="#151b22", fg="#dce6ef").grid(row=0, column=0, sticky="w")
+        Label(preset_row, text="Preset Adı", bg="#151b22", fg="#dce6ef").grid(row=0, column=0, sticky="w")
         Entry(preset_row, textvariable=self.preset_name, width=18).grid(row=1, column=0, sticky="w", pady=(2, 8))
-        Label(preset_row, text="Kayitli Presetler", bg="#151b22", fg="#dce6ef").grid(row=0, column=1, sticky="w", padx=(18, 0))
+        Label(preset_row, text="Kayıtlı Presetler", bg="#151b22", fg="#dce6ef").grid(row=0, column=1, sticky="w", padx=(18, 0))
         self.preset_menu = OptionMenu(preset_row, self.preset_name, *self.preset_names)
         self.preset_menu.configure(width=20, bg="#24303c", fg="white", highlightthickness=0)
         self.preset_menu.grid(row=1, column=1, sticky="w", padx=(18, 0), pady=(2, 8))
@@ -799,7 +799,7 @@ class GuitarAmpRecorderApp:
         meter_buttons.pack(fill="x", padx=14, pady=(0, 12))
         Button(meter_buttons, text="Meter Başlat", command=self.start_input_meter, bg="#2d7d46", fg="white").pack(side="left")
         Button(meter_buttons, text="Meter Durdur", command=self.stop_input_meter, bg="#7f8c8d", fg="white").pack(side="left", padx=(8, 0))
-        Button(meter_buttons, text="Monitor Ac", command=self.start_live_monitor, bg="#16a085", fg="white").pack(side="left", padx=(8, 0))
+        Button(meter_buttons, text="Monitor Aç", command=self.start_live_monitor, bg="#16a085", fg="white").pack(side="left", padx=(8, 0))
         Button(meter_buttons, text="Monitor Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
@@ -835,7 +835,7 @@ class GuitarAmpRecorderApp:
         limit_menu = OptionMenu(export, self.record_limit_hours, "1", "2")
         limit_menu.pack(anchor="w", padx=14, pady=(0, 12))
 
-        prep_box = self.create_section(title="Kayit Plani", subtitle="Kayda basmadan once neyin nereye yazilacagini burada gorun.")
+        prep_box = self.create_section(title="Kayıt Planı", subtitle="Kayda başlamadan önce neyin nereye yazılacağını burada görün.")
         self.prep_summary_label = Label(
             prep_box,
             textvariable=self.prep_summary_text,
@@ -848,7 +848,7 @@ class GuitarAmpRecorderApp:
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(12, 14))
 
-        option_box = self.create_section(title="Secenek Ozeti", subtitle="Secili ayarlarin ne yapacagini sade dille okuyun.")
+        option_box = self.create_section(title="Seçenek Özeti", subtitle="Seçili ayarların ne yapacağını sade dille okuyun.")
         self.option_summary_label = Label(
             option_box,
             textvariable=self.option_summary_text,
@@ -909,12 +909,12 @@ class GuitarAmpRecorderApp:
         )
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
 
-        recent_box = self.create_section(title="Son Ciktilar", subtitle="Son uretilen dosyayi Finder'da acabilir ve son exportlari gorebilirsiniz.")
+        recent_box = self.create_section(title="Son Çıktılar", subtitle="Son üretilen dosyayı Finder'da açabilir ve son exportları görebilirsiniz.")
         recent_buttons = Frame(recent_box, bg="#151b22")
         recent_buttons.pack(fill="x", padx=14, pady=(12, 8))
         self.open_last_export_button = Button(
             recent_buttons,
-            text="Son Dosyayi Secili Goster",
+            text="Son Dosyayı Seçili Göster",
             command=self.open_last_export_in_finder,
             bg="#1f6feb",
             fg="white",
@@ -932,7 +932,7 @@ class GuitarAmpRecorderApp:
         self.play_last_export_button.pack(side="left", padx=(8, 0))
         self.open_last_summary_button = Button(
             recent_buttons,
-            text="Oturum Ozetini Ac",
+            text="Oturum Özetini Aç",
             command=self.open_last_session_summary_in_finder,
             bg="#6c5ce7",
             fg="white",
@@ -941,7 +941,7 @@ class GuitarAmpRecorderApp:
         self.open_last_summary_button.pack(side="left", padx=(8, 0))
         self.open_last_take_notes_button = Button(
             recent_buttons,
-            text="Take Notunu Ac",
+            text="Take Notunu Aç",
             command=self.open_last_take_notes_in_finder,
             bg="#9b59b6",
             fg="white",
@@ -950,7 +950,7 @@ class GuitarAmpRecorderApp:
         self.open_last_take_notes_button.pack(side="left", padx=(8, 0))
         self.open_last_output_dir_button = Button(
             recent_buttons,
-            text="Son Oturum Klasorunu Ac",
+            text="Son Oturum Klasörünü Aç",
             command=self.open_output_dir_in_finder,
             bg="#34495e",
             fg="white",
@@ -971,7 +971,7 @@ class GuitarAmpRecorderApp:
         self.copy_last_export_path_button.pack(side="left")
         self.copy_last_summary_button = Button(
             recent_copy_buttons,
-            text="Ozet Icerigini Kopyala",
+            text="Özet İçeriğini Kopyala",
             command=self.copy_last_session_summary_to_clipboard,
             bg="#8e44ad",
             fg="white",
@@ -980,7 +980,7 @@ class GuitarAmpRecorderApp:
         self.copy_last_summary_button.pack(side="left", padx=(8, 0))
         self.copy_last_summary_path_button = Button(
             recent_copy_buttons,
-            text="Ozet Yolunu Kopyala",
+            text="Özet Yolunu Kopyala",
             command=self.copy_last_session_summary_path_to_clipboard,
             bg="#6c5ce7",
             fg="white",
@@ -1124,9 +1124,9 @@ class GuitarAmpRecorderApp:
             f"Preset: {self.preset_name.get()}",
             f"Oturum: {self.plan_session_hint()}",
             f"Kaynak: {source_text}",
-            f"Take Adi: {self.plan_take_name_hint()}",
-            f"Klasor: {output_dir}",
-            f"Ciktilar: {', '.join(self.planned_output_labels())}",
+            f"Take Adı: {self.plan_take_name_hint()}",
+            f"Klasör: {output_dir}",
+            f"Çıktılar: {', '.join(self.planned_output_labels())}",
             f"Giris/Cikis: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
@@ -1147,10 +1147,10 @@ class GuitarAmpRecorderApp:
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             return "Son export hata verdi. Recovery notunu inceleyin, sonra ayarlari degistirip tekrar kaydi baslatin."
         if self.backing_file is None:
-            return "Mikrofon modu hazir. Test kaydi alin, sonra dogrudan kaydi baslatin."
+            return "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın."
         if not output_ready:
             return "Backing secili. Cikisi kontrol edin, kisa test yapin, sonra tam kayda gecin."
-        return "Backing ve cihazlar hazir. Test kaydi iyi ise tam kaydi baslatabilirsiniz."
+        return "Backing ve cihazlar hazır. Test kaydı iyi ise tam kaydı başlatabilirsiniz."
 
     def update_next_step_summary(self) -> None:
         try:
@@ -1647,7 +1647,7 @@ class GuitarAmpRecorderApp:
         lines = [
             f"Olay: {summary.get('event', 'bilinmiyor')}",
             f"Tarih: {summary.get('timestamp', 'bilinmiyor')}",
-            f"Klasor: {summary.get('output_dir', 'bilinmiyor')}",
+            f"Klasör: {summary.get('output_dir', 'bilinmiyor')}",
             f"Preset: {summary.get('preset_name', 'bilinmiyor') or 'bilinmiyor'}",
             f"Clip Durumu: {clip_warning}",
         ]
@@ -1808,7 +1808,7 @@ class GuitarAmpRecorderApp:
     def refresh_recent_exports(self) -> None:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
-            self.recent_exports_text.set(f"Klasor bulunamadi: {output_dir}")
+            self.recent_exports_text.set(f"Klasör bulunamadı: {output_dir}")
             return
         recent_files = sorted(
             [path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}],
@@ -1833,7 +1833,7 @@ class GuitarAmpRecorderApp:
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
-            self.set_status(f"Klasor bulunamadi: {output_dir}")
+            self.set_status(f"Klasör bulunamadı: {output_dir}")
             return
         try:
             subprocess.run(["open", str(output_dir)], check=False)
@@ -1933,7 +1933,7 @@ class GuitarAmpRecorderApp:
         lines = [
             f"Olay: {summary.get('event', 'bilinmiyor')}",
             f"Tarih: {summary.get('timestamp', 'bilinmiyor')}",
-            f"Klasor: {summary.get('output_dir', 'bilinmiyor')}",
+            f"Klasör: {summary.get('output_dir', 'bilinmiyor')}",
         ]
         if summary.get("preset_name"):
             lines.append(f"Preset: {summary['preset_name']}")
