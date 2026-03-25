@@ -116,6 +116,20 @@ def test_release_scripts_exist() -> None:
         assert path.read_text(encoding="utf-8").startswith("#!/usr/bin/env bash")
 
 
+def test_build_script_stamps_bundle_metadata() -> None:
+    script = (ROOT / "build_macos_app.sh").read_text(encoding="utf-8")
+    expected_snippets = [
+        'APP_VERSION="$(tr -d \'\\r\\n\' < VERSION',
+        "plistlib",
+        "Info.plist",
+        'info["CFBundleShortVersionString"] = os.environ["APP_VERSION"]',
+        'info["CFBundleVersion"] = os.environ["APP_VERSION"]',
+        'info["NSMicrophoneUsageDescription"] = os.environ["MIC_USAGE_TEXT"]',
+    ]
+    for snippet in expected_snippets:
+        assert snippet in script, f"build_macos_app.sh metadata adimi eksik: {snippet}"
+
+
 def test_app_helpers() -> None:
     with import_stubs():
         app = load_module("app_smoke", "app.py")
@@ -257,6 +271,7 @@ def test_import_stubs_restore_modules() -> None:
 def main() -> int:
     test_release_body_generation()
     test_release_scripts_exist()
+    test_build_script_stamps_bundle_metadata()
     test_app_helpers()
     test_cli_settings_roundtrip()
     print("smoke tests passed")
