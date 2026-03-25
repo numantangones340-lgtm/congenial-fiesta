@@ -596,8 +596,8 @@ class GuitarAmpRecorderApp:
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
-        self.clip_text = StringVar(value="Headroom: guvenli")
-        self.safety_text = StringVar(value="Guvenlik: seviye analizi bekleniyor")
+        self.clip_text = StringVar(value="Seviye: güvenli")
+        self.safety_text = StringVar(value="Durum: seviye analizi bekleniyor")
         self.selected_route_text = StringVar(value="Aktif giriş: Varsayılan macOS girişi | Aktif çıkış: Varsayılan macOS çıkışı")
         self.output_name = StringVar(value=f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}")
         self.output_dir = StringVar(value=str(Path.home() / "Desktop"))
@@ -614,13 +614,13 @@ class GuitarAmpRecorderApp:
         self.output_device_choice = StringVar(value="Varsayılan macOS çıkışı")
         self.record_limit_hours = StringVar(value="1")
         self.mic_record_seconds = StringVar(value="60")
-        self.monitor_status_text = StringVar(value="Canli monitor kapali")
+        self.monitor_status_text = StringVar(value="Canlı monitor kapalı")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
         self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
         self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
-        self.prep_summary_text = StringVar(value="Kayit plani hazirlaniyor...")
-        self.next_step_text = StringVar(value="Hazirlik kontrol ediliyor...")
-        self.option_summary_text = StringVar(value="Secenek aciklamalari hazirlaniyor...")
+        self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
+        self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
+        self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -916,7 +916,7 @@ class GuitarAmpRecorderApp:
         self.vocal_level = self.make_slider(mix, "Vokal Seviye (%)", 0, 200, 85)
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
         self.noise_gate_threshold = self.make_slider(mix, "Noise Gate Eşigi (%)", 0, 100, 25)
-        self.monitor_level = self.make_slider(mix, "Canli Monitor Seviye (%)", 0, 200, 100)
+        self.monitor_level = self.make_slider(mix, "Canlı Monitor Seviye (%)", 0, 200, 100)
         self.compressor_amount = self.make_slider(mix, "Kompresor Miktari (%)", 0, 100, 35)
         self.compressor_threshold = self.make_slider(mix, "Kompresor Threshold (dB)", -36, -6, -18)
         self.compressor_makeup = self.make_slider(mix, "Makeup Gain (dB)", 0, 18, 4)
@@ -1221,10 +1221,10 @@ class GuitarAmpRecorderApp:
             f"Take Adı: {self.plan_take_name_hint()}",
             f"Klasör: {output_dir}",
             f"Çıktılar: {', '.join(self.planned_output_labels())}",
-            f"Giris/Cikis: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
+            f"Giriş/Çıkış: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            lines.append(f"Not: Son export hatasi icin recovery notu hazir ({self.last_recovery_note_path.name})")
+            lines.append(f"Not: Son export hatası için recovery notu hazır ({self.last_recovery_note_path.name})")
         return "\n".join(lines)
 
     def update_recording_prep_summary(self) -> None:
@@ -1237,13 +1237,13 @@ class GuitarAmpRecorderApp:
         input_ready = bool(self.input_device_choice.get().strip())
         output_ready = bool(self.output_device_choice.get().strip())
         if not input_ready:
-            return "1. Mikrofonlari yeniden tara. 2. Bir giris sec. 3. Test kaydi al."
+            return "1. Mikrofonları yeniden tara. 2. Bir giriş seç. 3. Test kaydı al."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            return "Son export hata verdi. Recovery notunu inceleyin, sonra ayarlari degistirip tekrar kaydi baslatin."
+            return "Son export hata verdi. Recovery notunu inceleyin, sonra ayarları değiştirip kaydı yeniden başlatın."
         if self.backing_file is None:
             return "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın."
         if not output_ready:
-            return "Backing secili. Cikisi kontrol edin, kisa test yapin, sonra tam kayda gecin."
+            return "Backing seçili. Çıkışı kontrol edin, kısa test yapın, sonra tam kayda geçin."
         return "Backing ve cihazlar hazır. Test kaydı iyi ise tam kaydı başlatabilirsiniz."
 
     def update_next_step_summary(self) -> None:
@@ -1348,41 +1348,41 @@ class GuitarAmpRecorderApp:
     def explain_mp3_quality(self) -> str:
         quality = self.mp3_quality.get()
         if quality == "320 kbps":
-            return "MP3 kalitesi en yuksek sabit ayarda olacak."
+            return "MP3 kalitesi en yüksek sabit ayarda olacak."
         if quality == "192 kbps":
-            return "MP3 dosyasi kalite ve boyut dengesinde olacak."
+            return "MP3 dosyası kalite ve boyut dengesinde olacak."
         if quality == "128 kbps":
-            return "MP3 dosyasi daha kucuk olacak, kalite daha dusuk olacak."
-        return "MP3 kalitesi degisken bit hizinda yuksek kalite olacak."
+            return "MP3 dosyası daha küçük olacak, kalite daha düşük olacak."
+        return "MP3 kalitesi değişken bit hızında yüksek kalite olacak."
 
     def explain_wav_export_mode(self) -> str:
         mode = self.wav_export_mode.get()
         if mode == "Mix + Vocal WAV":
-            return "Hem tam mix hem de ayri vocal WAV yazilacak."
+            return "Hem tam mix hem de ayrı vocal WAV yazılacak."
         if mode == "Sadece WAV (Mix + Vocal)":
-            return "MP3 yazilmayacak; sadece mix ve vocal WAV yazilacak."
-        return "Sadece islenmis vocal WAV yazilacak."
+            return "MP3 yazılmayacak; sadece mix ve vocal WAV yazılacak."
+        return "Sadece işlenmiş vocal WAV yazılacak."
 
     def explain_monitor_behavior(self) -> str:
         level = int(self.monitor_level.get())
         if level == 0:
-            return "Canli monitor sesi kapali sayilir."
+            return "Canlı monitor sesi kapalı sayılır."
         if level < 100:
-            return f"Canli monitor sesi dusuk tutulacak (%{level})."
+            return f"Canlı monitor sesi düşük tutulacak (%{level})."
         if level > 100:
-            return f"Canli monitor sesi yuksek tutulacak (%{level})."
-        return "Canli monitor sesi normal seviyede olacak."
+            return f"Canlı monitor sesi yüksek tutulacak (%{level})."
+        return "Canlı monitor sesi normal seviyede olacak."
 
     def explain_speed_behavior(self) -> str:
         speed = int(self.speed_ratio.get())
         if speed == 100:
-            return "Kayit hizi degismeyecek."
+            return "Kayıt hızı değişmeyecek."
         if speed < 100:
-            return f"Kayit daha yavas oynatilacak (%{speed})."
-        return f"Kayit daha hizli oynatilacak (%{speed})."
+            return f"Kayıt daha yavaş oynatılacak (%{speed})."
+        return f"Kayıt daha hızlı oynatılacak (%{speed})."
 
     def build_option_explanation_text(self) -> str:
-        limiter_text = "Limiter acik; ani tepe noktalar sinirlanacak." if self.limiter_enabled.get() == "Acik" else "Limiter kapali; tepe noktalar daha serbest kalacak."
+        limiter_text = "Limiter açık; ani tepe noktalar sınırlanacak." if self.limiter_enabled.get() == "Acik" else "Limiter kapalı; tepe noktalar daha serbest kalacak."
         lines = [
             self.explain_mp3_quality(),
             self.explain_wav_export_mode(),
@@ -1460,7 +1460,7 @@ class GuitarAmpRecorderApp:
 
     def show_about(self) -> None:
         self.set_status(
-            f"Gitar Amfi Kaydedici {self.app_version} | Canli monitor, kompresor/limiter, oturum klasorleri, session summary ve son oturum yukleme desteklenir."
+            f"Gitar Amfi Kaydedici {self.app_version} | Canlı monitor, kompresör/limiter, oturum klasörleri, session summary ve son oturum yükleme desteklenir."
         )
 
     def clear_device_selection(self) -> None:
@@ -1581,7 +1581,7 @@ class GuitarAmpRecorderApp:
                 self.session_mode.set(session_mode)
             self.restore_last_session_paths(last_session)
             self.refresh_recent_exports()
-            self.set_status(f"Son oturum hazir: {output_dir}")
+            self.set_status(f"Son oturum hazır: {output_dir}")
 
     def collect_current_preset(self) -> dict:
         return {
@@ -1662,7 +1662,7 @@ class GuitarAmpRecorderApp:
                 return
             name = raw_name or selected_name
             if name in set(builtin_preset_store().get("presets", {}).keys()):
-                self.set_status(f"Hazir preset uzerine kaydedilemez: {name}")
+                self.set_status(f"Hazır preset üzerine kaydedilemez: {name}")
                 return
             store.setdefault("presets", {})[name] = self.collect_current_preset()
             store["selected"] = name
@@ -1692,16 +1692,16 @@ class GuitarAmpRecorderApp:
         try:
             name = self.preset_name.get().strip()
             if not name:
-                self.set_status("Silinecek preset secilmedi.")
+                self.set_status("Silinecek preset seçilmedi.")
                 return
             builtin_names = set(builtin_preset_store().get("presets", {}).keys())
             if name in builtin_names:
-                self.set_status(f"Hazir preset silinemez: {name}")
+                self.set_status(f"Hazır preset silinemez: {name}")
                 return
             store = self.load_preset_store_data()
             presets = store.get("presets", {})
             if name not in presets:
-                self.set_status(f"Preset bulunamadi: {name}")
+                self.set_status(f"Preset bulunamadı: {name}")
                 return
             previous_selected = str(store.get("selected", "") or "")
             del presets[name]
@@ -2315,23 +2315,23 @@ class GuitarAmpRecorderApp:
         if peak_level >= 0.18:
             return ("Iyi: giris seviyesi kayit icin uygun", "#7ee787")
         if peak_level >= 0.05:
-            return ("Dusuk: daha guclu calin/soyleyin veya gain artirin", "#d29922")
-        return ("Cok dusuk: sinyal neredeyse yok", "#8b949e")
+            return ("Düşük: daha güçlü çalın/söyleyin veya gain artırın", "#d29922")
+        return ("Çok düşük: sinyal neredeyse yok", "#8b949e")
 
     def validate_recording_safety(self) -> tuple[bool, str]:
         if not self.output_dir.get().strip():
-            return False, "Kayit oncesi cikis klasoru secin."
+            return False, "Kayıt öncesi çıkış klasörü seçin."
         try:
             output_dir = self.resolve_output_dir()
             output_dir.mkdir(parents=True, exist_ok=True)
         except Exception as exc:
-            return False, f"Cikis klasoru hazirlanamadi: {exc}"
+            return False, f"Çıkış klasörü hazırlanamadı: {exc}"
         if self.last_input_peak >= 0.985:
-            return False, "Giris clipping yapiyor. Once kazanci dusurun veya monitor/test ile seviyeyi duzeltin."
+            return False, "Giriş clipping yapıyor. Önce kazancı düşürün veya monitor/test ile seviyeyi düzeltin."
         if self.last_input_peak < 0.01:
-            return True, "Uyari: giris seviyesi cok dusuk. Kayit alinabilir ama ses zayif olabilir."
+            return True, "Uyarı: giriş seviyesi çok düşük. Kayıt alınabilir ama ses zayıf olabilir."
         if self.last_input_peak < 0.05:
-            return True, "Uyari: giris seviyesi dusuk. Gerekirse gain artirin."
+            return True, "Uyarı: giriş seviyesi düşük. Gerekirse gain artırın."
         return True, ""
 
     def meter_callback(self, indata, _frames, _time_info, status) -> None:
@@ -2649,7 +2649,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
-        self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
+        self.set_status("Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
         input_text = self.input_device_id.get().strip()

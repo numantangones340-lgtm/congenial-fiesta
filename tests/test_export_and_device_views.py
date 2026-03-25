@@ -215,7 +215,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIsNone(recorder.backing_file)
         recorder.backing_label.config.assert_called_once_with(text="Dosya seçilmedi", fg="#9aa7b5")
-        self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi temizlendi. Sadece mikrofon moduna gecildi.")
+        self.assertEqual(recorder.status_messages[-1], "Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 
     def test_copy_last_session_summary_to_clipboard_reads_and_copies_content(self) -> None:
         recorder = self.make_app()

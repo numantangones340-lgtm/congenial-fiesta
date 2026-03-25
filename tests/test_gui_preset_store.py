@@ -154,7 +154,7 @@ class GuiPresetStoreTests(unittest.TestCase):
                 self.assertFalse(preset_path.exists())
 
         recorder.refresh_preset_menu.assert_not_called()
-        self.assertEqual(recorder.status_messages[-1], "Hazir preset uzerine kaydedilemez: Temiz Gitar")
+        self.assertEqual(recorder.status_messages[-1], "Hazır preset üzerine kaydedilemez: Temiz Gitar")
 
     def test_save_current_preset_requires_name_when_builtin_is_selected_and_entry_blank(self) -> None:
         recorder = self.make_app()
@@ -203,7 +203,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(raw["selected"], "Temiz Gitar")
         self.assertIn("Kullanici", raw["presets"])
         recorder.refresh_preset_menu.assert_not_called()
-        self.assertEqual(recorder.status_messages[-1], "Hazir preset silinemez: Temiz Gitar")
+        self.assertEqual(recorder.status_messages[-1], "Hazır preset silinemez: Temiz Gitar")
 
     def test_delete_selected_preset_keeps_existing_selection_when_deleting_other_preset(self) -> None:
         recorder = self.make_app()
