@@ -1323,6 +1323,10 @@ class GuitarAmpRecorderApp:
     def build_action_guidance_text(self) -> str:
         input_name = self.input_device_choice.get().strip()
         output_name = self.output_device_choice.get().strip()
+        if self.recording_active:
+            if self.stop_recording_requested:
+                return "Önerilen sıra: Durdurma istendi. Kayıt bölümü hazırlanırken yeni işlem başlatmayın."
+            return "Önerilen sıra: Kayıt sürüyor. Şu anda yalnız durdur butonunu kullanın."
         if not input_name:
             return "Önerilen sıra: 1. Mikrofonları tara. 2. Girişi seç. 3. Sonra 5 saniyelik testi çalıştır."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
@@ -2525,6 +2529,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         try:
             self.set_recording_action_button_states(recording_active=True)
+            self.update_action_guidance_summary()
         except TclError:
             pass
 
@@ -2537,6 +2542,7 @@ class GuitarAmpRecorderApp:
         self.record_progress_text.set(final_text)
         try:
             self.set_recording_action_button_states(recording_active=False)
+            self.update_action_guidance_summary()
             if self.last_export_path is not None and self.last_export_path.exists():
                 self.open_last_export_button.configure(state="normal")
                 self.play_last_export_button.configure(state="normal")
@@ -2596,6 +2602,7 @@ class GuitarAmpRecorderApp:
         self.record_progress_text.set("Kayıt durduruluyor, elde edilen bölüm hazırlanıyor...")
         try:
             self.stop_recording_button.configure(state="disabled")
+            self.update_action_guidance_summary()
         except TclError:
             pass
         try:

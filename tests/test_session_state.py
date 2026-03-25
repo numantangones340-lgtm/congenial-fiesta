@@ -65,6 +65,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.speed_ratio = FakeVar(100)
         recorder.output_gain = FakeVar(-3)
         recorder.output_dir = FakeVar("/tmp/out")
+        recorder.recording_active = False
+        recorder.stop_recording_requested = False
         recorder.status_messages = []
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_recent_exports = mock.Mock()
@@ -349,6 +351,26 @@ class SessionStateTests(unittest.TestCase):
             guidance_text = recorder.build_action_guidance_text()
 
         self.assertIn("Önce recovery notunu inceleyin.", guidance_text)
+
+    def test_build_action_guidance_text_during_active_recording_uses_stop_only_message(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        guidance_text = recorder.build_action_guidance_text()
+
+        self.assertEqual(guidance_text, "Önerilen sıra: Kayıt sürüyor. Şu anda yalnız durdur butonunu kullanın.")
+
+    def test_build_action_guidance_text_after_stop_request_waits_for_processing(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.stop_recording_requested = True
+
+        guidance_text = recorder.build_action_guidance_text()
+
+        self.assertEqual(
+            guidance_text,
+            "Önerilen sıra: Durdurma istendi. Kayıt bölümü hazırlanırken yeni işlem başlatmayın.",
+        )
 
     def test_build_preflight_warning_text_requires_output_dir_first(self) -> None:
         recorder = self.make_app()
