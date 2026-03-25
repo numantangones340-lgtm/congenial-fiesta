@@ -217,6 +217,27 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Take: otomatik", compact_text)
         self.assertIn("Hedef: klasör seçilmedi", compact_text)
 
+    def test_build_completion_status_text_summarizes_primary_file_and_output_dir(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/out/Canli Set")
+        primary_path = output_dir / "take.mp3"
+        generated_files = [primary_path, output_dir / "take_vocal.wav"]
+
+        status_text = recorder.build_completion_status_text("Kayıt", output_dir, primary_path, generated_files)
+
+        self.assertEqual(
+            status_text,
+            "Kayıt hazır | Ana dosya: take.mp3 | Dosya sayısı: 2 | Klasör: /tmp/out/Canli Set",
+        )
+
+    def test_build_completion_status_text_handles_missing_primary_file(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/out/Test")
+
+        status_text = recorder.build_completion_status_text("Test", output_dir, None, [])
+
+        self.assertEqual(status_text, "Test hazır | Klasör: /tmp/out/Test")
+
     def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -1195,6 +1195,15 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
 
+    def build_completion_status_text(self, label: str, output_dir: Path, primary_path: Optional[Path], generated_files: list[Path]) -> str:
+        parts = [f"{label} hazır"]
+        if primary_path is not None:
+            parts.append(f"Ana dosya: {primary_path.name}")
+        if generated_files:
+            parts.append(f"Dosya sayısı: {len(generated_files)}")
+        parts.append(f"Klasör: {output_dir}")
+        return " | ".join(parts)
+
     def build_recording_prep_text(self) -> str:
         output_dir = self.resolve_output_dir()
         source_text = (
@@ -2772,10 +2781,7 @@ class GuitarAmpRecorderApp:
             self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
 
-            final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
-            if take_notes_path is not None:
-                final_status += f" | Notlar: {take_notes_path}"
-            self.set_status(final_status)
+            self.set_status(self.build_completion_status_text("Test", output_dir, test_path, [test_path]))
         except Exception as exc:
             self.set_status(f"Test hatası: {exc}")
 
@@ -2971,7 +2977,6 @@ class GuitarAmpRecorderApp:
                     sf.write(mix_wav_path, mix, sr)
                 sf.write(vocal_wav_path, processed_voice, sr)
 
-                notes: list[str] = []
                 if self.should_export_mp3() and ffmpeg_bin:
                     cmd = [
                         ffmpeg_bin,
@@ -2982,17 +2987,9 @@ class GuitarAmpRecorderApp:
                         str(mp3_path),
                     ]
                     subprocess.run(cmd, check=True, capture_output=True)
-                    notes.append(f"MP3: {mp3_path}")
                 elif self.should_export_mp3():
                     if not self.should_export_mix_wav():
                         sf.write(mix_wav_path, mix, sr)
-                    notes.append(f"ffmpeg yok, MP3 yerine WAV mix kaydedildi: {mix_wav_path}")
-                else:
-                    notes.append("MP3 export kapali")
-
-                if self.should_export_mix_wav():
-                    notes.append(f"Mix WAV: {mix_wav_path}")
-                notes.append(f"Vocal WAV: {vocal_wav_path}")
                 if self.should_export_mp3() and ffmpeg_bin and mp3_path.exists():
                     self.last_export_path = mp3_path
                 elif self.should_export_mix_wav() and mix_wav_path.exists():
@@ -3022,18 +3019,11 @@ class GuitarAmpRecorderApp:
                 self.last_take_notes_path = take_notes_path if take_notes_path is not None and take_notes_path.exists() else None
                 self.last_recovery_note_path = None
                 self.write_last_session_state(output_dir, summary_path)
-                if summary_path is not None:
-                    notes.append(f"Oturum Ozeti: {summary_path}")
-                if take_notes_path is not None:
-                    notes.append(f"Take Notu: {take_notes_path}")
-                final_note = " | ".join(notes)
             finally:
                 if tmp_wav_path.exists():
                     tmp_wav_path.unlink()
 
-            self.set_status(
-                f"Tamamlandı. {final_note}"
-            )
+            self.set_status(self.build_completion_status_text("Kayıt", output_dir, self.last_export_path, generated_files))
             self.refresh_recent_exports()
             self.remember_completed_take_name(base_name)
             self.notify_success()
@@ -3043,7 +3033,7 @@ class GuitarAmpRecorderApp:
             self.update_readiness_summary()
             self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
-            self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
+            self.finish_recording_progress(f"Hazır | Dosyalar hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.restore_previous_success_paths(
                 previous_last_output_dir,
