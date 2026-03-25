@@ -2,6 +2,19 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.8] - 2026-03-25
+
+### Degisti
+
+- release workflow her platform zip asset'i icin `.sha256` checksum dosyasi uretir hale getirildi
+- macOS yerel paketleme akisi `GuitarAmpRecorder-macOS.zip.sha256` dosyasini da olusturur hale getirildi
+- release asset publish adimi zip ile birlikte checksum dosyasini da GitHub Release'e ekler hale getirildi
+
+### Guvenlik ve Kararlilik
+
+- indirilen release paketlerinin butunluk dogrulamasi icin standart SHA256 ciktilari eklendi
+- checksum varligi smoke test ile korunarak release pipeline regresyon riski azaltildi
+
 ## [1.1.7] - 2026-03-25
 
 ### Degisti

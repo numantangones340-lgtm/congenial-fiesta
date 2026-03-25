@@ -7,8 +7,23 @@ cd "$ROOT_DIR"
 APP_PATH="$ROOT_DIR/dist/GuitarAmpRecorder.app"
 ZIP_PATH="$ROOT_DIR/dist/GuitarAmpRecorder-macOS.zip"
 DESKTOP_ZIP="$HOME/Desktop/GuitarAmpRecorder-macOS.zip"
+EXPECTED_VERSION="$(tr -d '\r\n' < "$ROOT_DIR/VERSION" 2>/dev/null || printf '')"
+CURRENT_APP_VERSION="$(
+  python3 - <<'PY'
+from pathlib import Path
+import plistlib
 
-if [ ! -d "$APP_PATH" ]; then
+info_path = Path("dist/GuitarAmpRecorder.app/Contents/Info.plist")
+if not info_path.exists():
+    print("")
+else:
+    with info_path.open("rb") as fh:
+        info = plistlib.load(fh)
+    print(info.get("CFBundleShortVersionString", ""))
+PY
+)"
+
+if [ ! -d "$APP_PATH" ] || [ "$CURRENT_APP_VERSION" != "$EXPECTED_VERSION" ]; then
   echo "Uygulama paketi bulunamadi, once build aliniyor..."
   ./build_macos_app.sh
 fi

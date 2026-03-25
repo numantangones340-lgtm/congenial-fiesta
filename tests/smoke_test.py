@@ -148,6 +148,18 @@ def test_build_script_stamps_bundle_metadata() -> None:
     assert 'rm -rf build dist "${APP_NAME}.spec"' not in script, "build script tracked spec dosyasini silmemeli"
 
 
+def test_package_script_rebuilds_when_bundle_version_mismatches() -> None:
+    script = (ROOT / "package_macos_release.sh").read_text(encoding="utf-8")
+    expected_snippets = [
+        'EXPECTED_VERSION="$(tr -d \'\\r\\n\' < "$ROOT_DIR/VERSION"',
+        'CURRENT_APP_VERSION="$(',
+        'Path("dist/GuitarAmpRecorder.app/Contents/Info.plist")',
+        '[ "$CURRENT_APP_VERSION" != "$EXPECTED_VERSION" ]',
+    ]
+    for snippet in expected_snippets:
+        assert snippet in script, f"package_macos_release.sh surum uyum kontrolu eksik: {snippet}"
+
+
 def test_release_metadata_is_version_aligned() -> None:
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     tag = f"v{version}"
@@ -305,6 +317,7 @@ def main() -> int:
     test_release_body_generation()
     test_release_scripts_exist()
     test_build_script_stamps_bundle_metadata()
+    test_package_script_rebuilds_when_bundle_version_mismatches()
     test_release_metadata_is_version_aligned()
     test_app_helpers()
     test_cli_settings_roundtrip()
