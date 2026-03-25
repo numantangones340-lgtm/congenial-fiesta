@@ -544,7 +544,7 @@ class SessionStateTests(unittest.TestCase):
         guidance_text = recorder.build_action_guidance_text()
 
         self.assertIn("Önce 5 saniyelik test yapın.", guidance_text)
-        self.assertIn("Quick Kayıt hızlı yol", guidance_text)
+        self.assertIn("Hızlı Kayıt hızlı yol", guidance_text)
 
     def test_build_action_guidance_text_requires_input_selection_first(self) -> None:
         recorder = self.make_app()
@@ -632,7 +632,7 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertIn("MP3: en yüksek sabit kalite", option_text)
         self.assertIn("WAV: mix + vocal ayrı yazılacak", option_text)
-        self.assertIn("Monitor: yüksek (%140)", option_text)
+        self.assertIn("İzleme: yüksek (%140)", option_text)
         self.assertIn("Hız: daha yavaş (%85)", option_text)
         self.assertIn("Limiter: açık, tepeler sınırlanacak", option_text)
 

@@ -838,8 +838,8 @@ class GuitarAmpRecorderApp:
         meter_buttons.pack(fill="x", padx=14, pady=(0, 12))
         Button(meter_buttons, text="Meter Başlat", command=self.start_input_meter, bg="#2d7d46", fg="white").pack(side="left")
         Button(meter_buttons, text="Meter Durdur", command=self.stop_input_meter, bg="#7f8c8d", fg="white").pack(side="left", padx=(8, 0))
-        Button(meter_buttons, text="Monitor Aç", command=self.start_live_monitor, bg="#16a085", fg="white").pack(side="left", padx=(8, 0))
-        Button(meter_buttons, text="Monitor Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
+        Button(meter_buttons, text="İzleme Aç", command=self.start_live_monitor, bg="#16a085", fg="white").pack(side="left", padx=(8, 0))
+        Button(meter_buttons, text="İzleme Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
         media = self.create_section(title="Kayıt Kaynağı", subtitle="İsterseniz backing ekleyin, isterseniz sadece mikrofon kullanın.")
@@ -865,7 +865,7 @@ class GuitarAmpRecorderApp:
         Label(export, text="MP3 Kalitesi", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
         mp3_quality_menu = OptionMenu(export, self.mp3_quality, "Yuksek VBR", "320 kbps", "192 kbps", "128 kbps")
         mp3_quality_menu.pack(anchor="w", padx=14)
-        Label(export, text="WAV Export", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
+        Label(export, text="WAV Çıkışı", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
         wav_export_menu = OptionMenu(export, self.wav_export_mode, "Sadece Vocal WAV", "Mix + Vocal WAV", "Sadece WAV (Mix + Vocal)")
         wav_export_menu.pack(anchor="w", padx=14)
         Label(export, text="Sadece Mikrofon Süresi (sn)", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
@@ -925,7 +925,7 @@ class GuitarAmpRecorderApp:
         self.start_test_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        self.start_quick_record_button = Button(actions, text="Quick Kayıt (Preset, Sorusuz)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
+        self.start_quick_record_button = Button(actions, text="Hızlı Kayıt (Presetle)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
         self.start_quick_record_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
@@ -1033,7 +1033,7 @@ class GuitarAmpRecorderApp:
         self.copy_last_summary_path_button.pack(side="left", padx=(8, 0))
         self.copy_last_brief_button = Button(
             recent_copy_buttons,
-            text="Kisa Rapor Kopyala",
+            text="Kısa Rapor Kopyala",
             command=self.copy_last_session_brief_to_clipboard,
             bg="#2d7d46",
             fg="white",
@@ -1051,7 +1051,7 @@ class GuitarAmpRecorderApp:
         self.export_last_brief_button.pack(side="left", padx=(8, 0))
         self.copy_last_recovery_note_button = Button(
             recent_copy_buttons,
-            text="Recovery Notunu Kopyala",
+            text="Kurtarma Notunu Kopyala",
             command=self.copy_last_recovery_note_to_clipboard,
             bg="#c0392b",
             fg="white",
@@ -1363,11 +1363,11 @@ class GuitarAmpRecorderApp:
             return "Önerilen sıra: Önce recovery notunu inceleyin. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın."
         if self.backing_file is None:
             if not output_name:
-                return "Önerilen sıra: Çıkışı seçin. Ardından 5 saniyelik test yapın. Sorunsuzsa Quick Kayıt ile hızlıca kayıt alın."
-            return "Önerilen sıra: Önce 5 saniyelik test yapın. Ses temizse Quick Kayıt hızlı yol, tam kayıt ise kontrollü yol olarak hazır."
+                return "Önerilen sıra: Çıkışı seçin. Ardından 5 saniyelik test yapın. Sorunsuzsa Hızlı Kayıt ile hızlıca kayıt alın."
+            return "Önerilen sıra: Önce 5 saniyelik test yapın. Ses temizse Hızlı Kayıt hızlı yol, tam kayıt ise kontrollü yol olarak hazır."
         if not output_name:
             return "Önerilen sıra: Backing hazır. Önce çıkışı seçin, sonra 5 saniyelik test yapın. Son adımda tam kaydı başlatın."
-        return "Önerilen sıra: 5 saniyelik test ile dengeyi kontrol edin. Kısa deneme istiyorsanız Quick Kayıt, final take için tam kayıt kullanın."
+        return "Önerilen sıra: 5 saniyelik test ile dengeyi kontrol edin. Kısa deneme istiyorsanız Hızlı Kayıt, final take için tam kayıt kullanın."
 
     def update_action_guidance_summary(self) -> None:
         try:
@@ -1396,12 +1396,12 @@ class GuitarAmpRecorderApp:
     def explain_monitor_behavior(self) -> str:
         level = int(self.monitor_level.get())
         if level == 0:
-            return "Monitor: kapalı"
+            return "İzleme: kapalı"
         if level < 100:
-            return f"Monitor: düşük (%{level})"
+            return f"İzleme: düşük (%{level})"
         if level > 100:
-            return f"Monitor: yüksek (%{level})"
-        return "Monitor: normal"
+            return f"İzleme: yüksek (%{level})"
+        return "İzleme: normal"
 
     def explain_speed_behavior(self) -> str:
         speed = int(self.speed_ratio.get())
@@ -1552,7 +1552,7 @@ class GuitarAmpRecorderApp:
 
     def show_about(self) -> None:
         self.set_status(
-            f"Gitar Amfi Kaydedici {self.app_version} | Canlı monitor, kompresör/limiter, oturum klasörleri, session summary ve son oturum yükleme desteklenir."
+            f"Gitar Amfi Kaydedici {self.app_version} | Canlı izleme, kompresör/limiter, oturum klasörleri, oturum özeti ve son oturum yükleme desteklenir."
         )
 
     def clear_device_selection(self) -> None:
@@ -2290,7 +2290,7 @@ class GuitarAmpRecorderApp:
         try:
             summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
             if not isinstance(summary, dict):
-                raise ValueError("Ozet formati gecersiz")
+                raise ValueError("Özet biçimi geçersiz")
             content = self.build_session_brief_text(summary)
             self.copy_text_to_clipboard(
                 content,
@@ -2307,7 +2307,7 @@ class GuitarAmpRecorderApp:
         try:
             summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
             if not isinstance(summary, dict):
-                raise ValueError("Ozet formati gecersiz")
+                raise ValueError("Özet biçimi geçersiz")
             summary_dir = self.last_summary_path.parent
             brief_path = summary_dir / "session_brief.txt"
             brief_path.write_text(self.build_session_brief_text(summary), encoding="utf-8")
