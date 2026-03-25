@@ -2,6 +2,20 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.5] - 2026-03-25
+
+### Degisti
+
+- GUI preset kaydetme akisi, bos adla kaydetme denemesinde mevcut kullanici preset'ini guncelleyecek sekilde netlestirildi
+- yerlesik preset adlari ile cakisan kullanici verileri filtrelenerek hazir presetlerin bozulmasi engellendi
+- eski tekli GUI preset dosyalari coklu preset deposuna daha guvenli bicimde tasinacak sekilde ele alindi
+
+### Guvenlik ve Kararlilik
+
+- yerlesik GUI presetler uzerine kaydetme ve silme islemleri acik hata mesajlariyla bloklandi
+- preset silme sonrasi secili preset baglami korunarak beklenmedik hedef degisimi riski azaltildi
+- GUI preset store davranislari yeni unittest kapsami ile dogrulandi
+
 ## [1.1.3] - 2026-03-21
 
 ### Eklendi
