@@ -1069,7 +1069,12 @@ class GuitarAmpRecorderApp:
     def save_current_preset(self) -> None:
         try:
             store = self.load_preset_store_data()
-            name = self.preset_name.get().strip() or str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            raw_name = self.preset_name.get().strip()
+            selected_name = str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            if not raw_name and selected_name in set(builtin_preset_store().get("presets", {}).keys()):
+                self.set_status("Yeni bir preset adı girin.")
+                return
+            name = raw_name or selected_name
             if name in set(builtin_preset_store().get("presets", {}).keys()):
                 self.set_status(f"Hazir preset uzerine kaydedilemez: {name}")
                 return
