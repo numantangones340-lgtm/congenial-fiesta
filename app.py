@@ -616,6 +616,7 @@ class GuitarAmpRecorderApp:
         self.monitor_status_text = StringVar(value="Canli monitor kapali")
         self.prep_summary_text = StringVar(value="Kayit plani hazirlaniyor...")
         self.next_step_text = StringVar(value="Hazirlik kontrol ediliyor...")
+        self.option_summary_text = StringVar(value="Secenek aciklamalari hazirlaniyor...")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -847,6 +848,19 @@ class GuitarAmpRecorderApp:
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(12, 14))
 
+        option_box = self.create_section(title="Secenek Ozeti", subtitle="Secili ayarlarin ne yapacagini sade dille okuyun.")
+        self.option_summary_label = Label(
+            option_box,
+            textvariable=self.option_summary_text,
+            bg="#2a2014",
+            fg="#f6e7cb",
+            justify="left",
+            wraplength=640,
+            padx=10,
+            pady=10,
+        )
+        self.option_summary_label.pack(fill="x", padx=14, pady=(12, 14))
+
         tone = self.create_section(title="Ton Ayarları", subtitle="Amfi karakterini ve distorsiyonu burada ayarlayın.")
         self.gain = self.make_slider(tone, "Kazanç (dB)", -12, 24, 6)
         self.boost = self.make_slider(tone, "Güçlendirme (dB)", 0, 18, 6)
@@ -1045,6 +1059,7 @@ class GuitarAmpRecorderApp:
         self.root.after(250, self.start_input_meter)
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_option_explanation_summary()
 
     def create_section(
         self,
@@ -1071,6 +1086,7 @@ class GuitarAmpRecorderApp:
     def on_plan_inputs_changed(self, *_args) -> None:
         self.update_recording_prep_summary()
         self.update_next_step_summary()
+        self.update_option_explanation_summary()
 
     def plan_take_name_hint(self) -> str:
         name = self.output_name.get().strip()
@@ -1139,6 +1155,59 @@ class GuitarAmpRecorderApp:
     def update_next_step_summary(self) -> None:
         try:
             self.next_step_text.set(self.build_next_step_text())
+        except Exception:
+            pass
+
+    def explain_mp3_quality(self) -> str:
+        quality = self.mp3_quality.get()
+        if quality == "320 kbps":
+            return "MP3 kalitesi en yuksek sabit ayarda olacak."
+        if quality == "192 kbps":
+            return "MP3 dosyasi kalite ve boyut dengesinde olacak."
+        if quality == "128 kbps":
+            return "MP3 dosyasi daha kucuk olacak, kalite daha dusuk olacak."
+        return "MP3 kalitesi degisken bit hizinda yuksek kalite olacak."
+
+    def explain_wav_export_mode(self) -> str:
+        mode = self.wav_export_mode.get()
+        if mode == "Mix + Vocal WAV":
+            return "Hem tam mix hem de ayri vocal WAV yazilacak."
+        if mode == "Sadece WAV (Mix + Vocal)":
+            return "MP3 yazilmayacak; sadece mix ve vocal WAV yazilacak."
+        return "Sadece islenmis vocal WAV yazilacak."
+
+    def explain_monitor_behavior(self) -> str:
+        level = int(self.monitor_level.get())
+        if level == 0:
+            return "Canli monitor sesi kapali sayilir."
+        if level < 100:
+            return f"Canli monitor sesi dusuk tutulacak (%{level})."
+        if level > 100:
+            return f"Canli monitor sesi yuksek tutulacak (%{level})."
+        return "Canli monitor sesi normal seviyede olacak."
+
+    def explain_speed_behavior(self) -> str:
+        speed = int(self.speed_ratio.get())
+        if speed == 100:
+            return "Kayit hizi degismeyecek."
+        if speed < 100:
+            return f"Kayit daha yavas oynatilacak (%{speed})."
+        return f"Kayit daha hizli oynatilacak (%{speed})."
+
+    def build_option_explanation_text(self) -> str:
+        limiter_text = "Limiter acik; ani tepe noktalar sinirlanacak." if self.limiter_enabled.get() == "Acik" else "Limiter kapali; tepe noktalar daha serbest kalacak."
+        lines = [
+            self.explain_mp3_quality(),
+            self.explain_wav_export_mode(),
+            self.explain_monitor_behavior(),
+            self.explain_speed_behavior(),
+            limiter_text,
+        ]
+        return "\n".join(lines)
+
+    def update_option_explanation_summary(self) -> None:
+        try:
+            self.option_summary_text.set(self.build_option_explanation_text())
         except Exception:
             pass
 

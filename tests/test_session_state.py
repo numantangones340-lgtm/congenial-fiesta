@@ -216,6 +216,22 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(next_step, "Backing ve cihazlar hazir. Test kaydi iyi ise tam kaydi baslatabilirsiniz.")
 
+    def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
+        recorder = self.make_app()
+        recorder.mp3_quality.set("320 kbps")
+        recorder.wav_export_mode.set("Mix + Vocal WAV")
+        recorder.monitor_level.set(140)
+        recorder.speed_ratio.set(85)
+        recorder.limiter_enabled.set("Acik")
+
+        option_text = recorder.build_option_explanation_text()
+
+        self.assertIn("MP3 kalitesi en yuksek sabit ayarda olacak.", option_text)
+        self.assertIn("Hem tam mix hem de ayri vocal WAV yazilacak.", option_text)
+        self.assertIn("Canli monitor sesi yuksek tutulacak (%140).", option_text)
+        self.assertIn("Kayit daha yavas oynatilacak (%85).", option_text)
+        self.assertIn("Limiter acik; ani tepe noktalar sinirlanacak.", option_text)
+
     def test_remember_completed_take_name_updates_output_name(self) -> None:
         recorder = self.make_app()
 
