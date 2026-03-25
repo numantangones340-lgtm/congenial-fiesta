@@ -30,6 +30,7 @@ class SessionStateTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.app_version = "1.1.3"
+        recorder.operation_state_text = FakeVar("")
         recorder.compact_status_text = FakeVar("")
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("Isimli Oturum")
@@ -67,6 +68,9 @@ class SessionStateTests(unittest.TestCase):
         recorder.output_dir = FakeVar("/tmp/out")
         recorder.recording_active = False
         recorder.stop_recording_requested = False
+        recorder.recording_mode = ""
+        recorder.meter_stream = None
+        recorder.monitor_stream = None
         recorder.status_messages = []
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_recent_exports = mock.Mock()
@@ -254,6 +258,47 @@ class SessionStateTests(unittest.TestCase):
         status_text = recorder.build_completion_status_text("Test", output_dir, None, [])
 
         self.assertEqual(status_text, "Test hazır | Klasör: /tmp/out/Test")
+
+    def test_build_operation_state_text_reports_idle_state(self) -> None:
+        recorder = self.make_app()
+
+        state_text = recorder.build_operation_state_text()
+
+        self.assertEqual(state_text, "Durum: hazır")
+
+    def test_build_operation_state_text_reports_meter_state(self) -> None:
+        recorder = self.make_app()
+        recorder.meter_stream = object()
+
+        state_text = recorder.build_operation_state_text()
+
+        self.assertEqual(state_text, "Durum: mikrofon seviyesi izleniyor")
+
+    def test_build_operation_state_text_reports_monitor_state(self) -> None:
+        recorder = self.make_app()
+        recorder.monitor_stream = object()
+
+        state_text = recorder.build_operation_state_text()
+
+        self.assertEqual(state_text, "Durum: canlı monitor açık")
+
+    def test_build_operation_state_text_reports_recording_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.recording_mode = "Sadece mikrofon"
+
+        state_text = recorder.build_operation_state_text()
+
+        self.assertEqual(state_text, "Durum: kayıt sürüyor (Sadece mikrofon)")
+
+    def test_build_operation_state_text_reports_stop_request_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.stop_recording_requested = True
+
+        state_text = recorder.build_operation_state_text()
+
+        self.assertEqual(state_text, "Durum: kayıt durduruluyor")
 
     def test_set_recording_action_button_states_disables_start_buttons_during_recording(self) -> None:
         recorder = self.make_app()

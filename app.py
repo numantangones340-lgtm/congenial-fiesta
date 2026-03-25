@@ -592,6 +592,7 @@ class GuitarAmpRecorderApp:
         self.backing_file: Optional[Path] = None
 
         self.status_text = StringVar(value="Hazır")
+        self.operation_state_text = StringVar(value="Durum: hazır")
         self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
@@ -694,6 +695,15 @@ class GuitarAmpRecorderApp:
             pady=8,
         )
         self.compact_status_label.pack(fill="x", padx=14, pady=(0, 10))
+        self.operation_state_label = Label(
+            hero,
+            textvariable=self.operation_state_text,
+            bg="#182028",
+            fg="#9fb0c2",
+            justify="left",
+            wraplength=620,
+        )
+        self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
         Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
 
         next_step_box = self.create_section(title="Sonraki Adım", subtitle="Ne yapmanız gerektiği tek satırda görünsün.")
@@ -1112,6 +1122,7 @@ class GuitarAmpRecorderApp:
         self.root.after(200, self.update_recording_progress_ui)
         self.root.after(220, self.refresh_recent_exports)
         self.root.after(250, self.start_input_meter)
+        self.update_operation_state_summary()
         self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
@@ -1143,6 +1154,7 @@ class GuitarAmpRecorderApp:
         return section
 
     def on_plan_inputs_changed(self, *_args) -> None:
+        self.update_operation_state_summary()
         self.update_compact_status_summary()
         self.update_recording_prep_summary()
         self.update_next_step_summary()
@@ -1195,6 +1207,23 @@ class GuitarAmpRecorderApp:
     def update_compact_status_summary(self) -> None:
         try:
             self.compact_status_text.set(self.build_compact_status_text())
+        except Exception:
+            pass
+
+    def build_operation_state_text(self) -> str:
+        if self.recording_active:
+            if self.stop_recording_requested:
+                return "Durum: kayıt durduruluyor"
+            return f"Durum: kayıt sürüyor ({self.recording_mode})"
+        if self.monitor_stream is not None:
+            return "Durum: canlı monitor açık"
+        if self.meter_stream is not None:
+            return "Durum: mikrofon seviyesi izleniyor"
+        return "Durum: hazır"
+
+    def update_operation_state_summary(self) -> None:
+        try:
+            self.operation_state_text.set(self.build_operation_state_text())
         except Exception:
             pass
 
@@ -2452,6 +2481,7 @@ class GuitarAmpRecorderApp:
         input_count, _ = describe_device_state()
         if input_count == 0:
             self.meter_text.set("Seviye izleme başlayamadı: mikrofon girişi bulunamadı.")
+            self.update_operation_state_summary()
             return
         try:
             self.meter_stream = sd.InputStream(
@@ -2464,9 +2494,11 @@ class GuitarAmpRecorderApp:
             )
             self.meter_stream.start()
             self.meter_text.set("Mikrofon seviyesi izleniyor. Konuşun veya çalın.")
+            self.update_operation_state_summary()
         except Exception as exc:
             self.meter_stream = None
             self.meter_text.set(f"Seviye izleme başlayamadı: {exc}")
+            self.update_operation_state_summary()
 
     def start_live_monitor(self) -> None:
         try:
@@ -2492,15 +2524,18 @@ class GuitarAmpRecorderApp:
             self.monitor_stream.start()
             self.monitor_status_text.set("Canlı monitor açık. Kulaklık önerilir.")
             self.meter_text.set("Canlı monitor açık. Gecikme için kulaklık önerilir.")
+            self.update_operation_state_summary()
         except Exception as exc:
             self.monitor_stream = None
             self.monitor_status_text.set(f"Canlı monitor açılamadı: {exc}")
+            self.update_operation_state_summary()
 
     def stop_live_monitor(self) -> None:
         stream = self.monitor_stream
         self.monitor_stream = None
         if stream is None:
             self.monitor_status_text.set("Canlı monitor kapalı")
+            self.update_operation_state_summary()
             return
         try:
             stream.stop()
@@ -2511,6 +2546,7 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
         self.monitor_status_text.set("Canlı monitor kapalı")
+        self.update_operation_state_summary()
 
     def stop_input_meter(self) -> None:
         stream = self.meter_stream
@@ -2533,6 +2569,7 @@ class GuitarAmpRecorderApp:
         self.meter_text.set("Seviye izleme durdu.")
         self.clip_text.set("Seviye: güvenli")
         self.safety_text.set("Durum: seviye analizi bekleniyor")
+        self.update_operation_state_summary()
 
     def restart_input_meter(self) -> None:
         if self.monitor_stream is not None:
@@ -2571,6 +2608,7 @@ class GuitarAmpRecorderApp:
             self.set_recording_action_button_states(recording_active=True)
             self.set_recent_output_button_states(enabled=False)
             self.update_action_guidance_summary()
+            self.update_operation_state_summary()
         except TclError:
             pass
 
@@ -2584,6 +2622,7 @@ class GuitarAmpRecorderApp:
         try:
             self.set_recording_action_button_states(recording_active=False)
             self.update_action_guidance_summary()
+            self.update_operation_state_summary()
             if self.last_export_path is not None and self.last_export_path.exists():
                 self.open_last_export_button.configure(state="normal")
                 self.play_last_export_button.configure(state="normal")
@@ -2644,6 +2683,7 @@ class GuitarAmpRecorderApp:
         try:
             self.stop_recording_button.configure(state="disabled")
             self.update_action_guidance_summary()
+            self.update_operation_state_summary()
         except TclError:
             pass
         try:
