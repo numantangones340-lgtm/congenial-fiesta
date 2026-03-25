@@ -1458,12 +1458,20 @@ class GuitarAmpRecorderApp:
     def finder_selected_status(self, label: str, filename: str) -> str:
         return f"{label} Finder'da seçildi: {filename}"
 
+    def block_changes_during_recording(self, action_label: str) -> bool:
+        if not getattr(self, "recording_active", False):
+            return False
+        self.set_status(f"Kayıt sürerken {action_label} değiştirilemez. Önce kaydı durdurun.")
+        return True
+
     def show_about(self) -> None:
         self.set_status(
             f"Gitar Amfi Kaydedici {self.app_version} | Canlı monitor, kompresör/limiter, oturum klasörleri, session summary ve son oturum yükleme desteklenir."
         )
 
     def clear_device_selection(self) -> None:
+        if self.block_changes_during_recording("cihaz ayarları"):
+            return
         self.input_device_choice.set("Varsayılan macOS girişi")
         self.output_device_choice.set("Varsayılan macOS çıkışı")
         self.input_device_id.set("")
@@ -1472,6 +1480,8 @@ class GuitarAmpRecorderApp:
         self.set_status("Aygıt kimlikleri temizlendi. Varsayılan mikrofon ve çıkış kullanılacak.")
 
     def apply_clean_macbook_preset(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
         input_options = [item for item in self.input_device_options if "MacBook Air Mikrofonu" in item]
         output_options = [item for item in self.output_device_options if "MacBook Air Hoparlörü" in item]
         self.input_device_choice.set(input_options[0] if input_options else "Varsayılan macOS girişi")
@@ -1494,6 +1504,8 @@ class GuitarAmpRecorderApp:
         self.set_status("Temiz MacBook preset uygulandı. Test edip kayda geçebilirsiniz.")
 
     def apply_external_mic_preset(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
         input_options = [item for item in self.input_device_options if "USB PnP Sound Device" in item]
         output_options = [item for item in self.output_device_options if "MacBook Air Hoparlörü" in item]
         self.input_device_choice.set(input_options[0] if input_options else "Varsayılan macOS girişi")
@@ -1653,6 +1665,8 @@ class GuitarAmpRecorderApp:
         self.restart_input_meter()
 
     def save_current_preset(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
         try:
             store = self.load_preset_store_data()
             raw_name = self.preset_name.get().strip()
@@ -1673,6 +1687,8 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset kaydetme hatası: {exc}")
 
     def load_saved_preset(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
         try:
             store = self.load_preset_store_data()
             name = self.preset_name.get().strip() or store.get("selected", "Temiz Gitar")
@@ -1689,6 +1705,8 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset okuma hatası: {exc}")
 
     def delete_selected_preset(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
         try:
             name = self.preset_name.get().strip()
             if not name:
@@ -1720,6 +1738,8 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset silme hatası: {exc}")
 
     def fill_recommended_devices(self) -> None:
+        if self.block_changes_during_recording("cihaz ayarları"):
+            return
         inputs = list_input_devices()
         outputs = list_output_devices()
         if inputs:
@@ -1737,6 +1757,8 @@ class GuitarAmpRecorderApp:
         self.set_status(f"Önerilen aygıtlar dolduruldu. Giriş: {input_text} | Çıkış: {output_text}")
 
     def select_output_dir(self) -> None:
+        if self.block_changes_during_recording("çıkış klasörü"):
+            return
         selected_dir = filedialog.askdirectory(title="Çıkış klasörünü seç")
         if not selected_dir:
             return
@@ -1970,6 +1992,8 @@ class GuitarAmpRecorderApp:
             self.last_recovery_note_path = None
 
     def reload_last_session(self) -> None:
+        if self.block_changes_during_recording("oturum bilgisi"):
+            return
         data = self.load_last_session_state()
         if not data:
             self.set_status("Son oturum bilgisi bulunamadi.")
@@ -2225,6 +2249,8 @@ class GuitarAmpRecorderApp:
         return f"Giriş Aygıtları ({len(inputs)}):\n{input_text}\n\nÇıkış Aygıtları ({len(outputs)}):\n{output_text}"
 
     def inspect_devices(self, initial: bool = False) -> None:
+        if not initial and self.block_changes_during_recording("cihaz listesi"):
+            return
         inputs = list_input_devices()
         outputs = list_output_devices()
         input_count = len(inputs)
@@ -2635,6 +2661,8 @@ class GuitarAmpRecorderApp:
         self.root.destroy()
 
     def select_backing(self) -> None:
+        if self.block_changes_during_recording("kayıt kaynağı"):
+            return
         file_path = filedialog.askopenfilename(
             title="Arka plan müzik seç",
             filetypes=[
@@ -2656,6 +2684,8 @@ class GuitarAmpRecorderApp:
         self.update_action_guidance_summary()
 
     def clear_backing_selection(self) -> None:
+        if self.block_changes_during_recording("kayıt kaynağı"):
+            return
         self.backing_file = None
         self.backing_label.config(text="Dosya seçilmedi", fg="#9aa7b5")
         self.update_compact_status_summary()

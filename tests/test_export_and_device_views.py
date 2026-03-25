@@ -61,6 +61,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.output_device_id = FakeVar("")
         recorder.device_summary_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
+        recorder.recording_active = False
         recorder.status_messages = []
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_device_menus = mock.Mock()
@@ -216,6 +217,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIsNone(recorder.backing_file)
         recorder.backing_label.config.assert_called_once_with(text="Dosya seçilmedi", fg="#9aa7b5")
         self.assertEqual(recorder.status_messages[-1], "Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
+
+    def test_clear_backing_selection_is_blocked_during_active_recording(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.backing_file = Path("/tmp/backing.wav")
+
+        recorder.clear_backing_selection()
+
+        self.assertEqual(recorder.backing_file, Path("/tmp/backing.wav"))
+        recorder.backing_label.config.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Kayıt sürerken kayıt kaynağı değiştirilemez. Önce kaydı durdurun.")
+
+    def test_select_output_dir_is_blocked_during_active_recording(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        recorder.select_output_dir()
+        self.assertEqual(recorder.status_messages[-1], "Kayıt sürerken çıkış klasörü değiştirilemez. Önce kaydı durdurun.")
 
     def test_copy_last_session_summary_to_clipboard_reads_and_copies_content(self) -> None:
         recorder = self.make_app()
