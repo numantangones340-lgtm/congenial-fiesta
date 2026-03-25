@@ -32,7 +32,9 @@ class SessionStateTests(unittest.TestCase):
         recorder.app_version = "1.1.3"
         recorder.operation_state_text = FakeVar("")
         recorder.compact_status_text = FakeVar("")
+        recorder.readiness_text = FakeVar("")
         recorder.operation_state_label = mock.Mock()
+        recorder.readiness_label = mock.Mock()
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("Isimli Oturum")
         recorder.session_name = FakeVar("Aksam Kaydi")
@@ -418,15 +420,12 @@ class SessionStateTests(unittest.TestCase):
     def test_build_readiness_text_summarizes_ready_state(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing_track.wav")
-        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
-            readiness_text = recorder.build_readiness_text()
+        readiness_text = recorder.build_readiness_text()
 
         self.assertIn("Genel durum: Kayda hazır", readiness_text)
-        self.assertIn("Giriş: hazır (Built-in Mic)", readiness_text)
-        self.assertIn("Çıkış: hazır (Built-in Output)", readiness_text)
-        self.assertIn("Kaynak: hazır (Arka plan + mikrofon, backing_track.wav)", readiness_text)
-        self.assertIn("Klasör: hazır (/tmp/out/Canli Set)", readiness_text)
-        self.assertIn("Take adı: hazır (aksam_take)", readiness_text)
+        self.assertIn("Hazır olanlar: giriş, çıkış, klasör, kaynak", readiness_text)
+        self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", readiness_text)
+        self.assertIn("Take adı: aksam_take", readiness_text)
 
     def test_build_readiness_text_flags_missing_items_and_auto_take_name(self) -> None:
         recorder = self.make_app()
@@ -435,15 +434,36 @@ class SessionStateTests(unittest.TestCase):
         recorder.output_dir.set("")
         recorder.output_name.set("")
         recorder.backing_file = None
-        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path(".")):
-            readiness_text = recorder.build_readiness_text()
+        readiness_text = recorder.build_readiness_text()
 
-        self.assertIn("Genel durum: Birkaç eksik nokta var", readiness_text)
-        self.assertIn("Giriş: seçilmedi, önce mikrofon seçin", readiness_text)
-        self.assertIn("Çıkış: seçilmedi, önce çıkış seçin", readiness_text)
-        self.assertIn("Kaynak: hazır (Sadece mikrofon, 90 sn)", readiness_text)
-        self.assertIn("Klasör: seçilmedi, önce kayıt klasörü belirleyin", readiness_text)
-        self.assertIn("Take adı: boş bırakıldı, kayıt sırasında otomatik oluşturulacak", readiness_text)
+        self.assertIn("Genel durum: Eksik seçimler var", readiness_text)
+        self.assertIn("Eksikler: giriş, çıkış, klasör", readiness_text)
+        self.assertIn("Kaynak: Sadece mikrofon (90 sn)", readiness_text)
+        self.assertIn("Take adı: otomatik oluşturulacak", readiness_text)
+
+    def test_build_readiness_palette_reports_ready_colors(self) -> None:
+        recorder = self.make_app()
+
+        palette = recorder.build_readiness_palette()
+
+        self.assertEqual(palette, {"bg": "#1f2b22", "fg": "#d8f3dc"})
+
+    def test_build_readiness_palette_reports_attention_colors_when_items_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        palette = recorder.build_readiness_palette()
+
+        self.assertEqual(palette, {"bg": "#2c2418", "fg": "#ffe7b3"})
+
+    def test_update_readiness_summary_updates_text_and_label_style(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        recorder.update_readiness_summary()
+
+        self.assertIn("Eksikler: klasör", recorder.readiness_text.get())
+        recorder.readiness_label.configure.assert_called_once_with(bg="#2c2418", fg="#ffe7b3")
 
     def test_build_action_guidance_text_prefers_test_then_quick_for_mic_mode(self) -> None:
         recorder = self.make_app()

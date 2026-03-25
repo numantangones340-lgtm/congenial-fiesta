@@ -1297,47 +1297,56 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
 
+    def missing_readiness_items(self) -> list[str]:
+        missing: list[str] = []
+        if not self.input_device_choice.get().strip():
+            missing.append("giriş")
+        if not self.output_device_choice.get().strip():
+            missing.append("çıkış")
+        if not self.output_dir.get().strip():
+            missing.append("klasör")
+        return missing
+
     def build_readiness_text(self) -> str:
-        input_name = self.input_device_choice.get().strip()
-        output_name = self.output_device_choice.get().strip()
-        output_dir_value = self.output_dir.get().strip()
         take_name = self.output_name.get().strip()
-        resolved_output_dir = self.resolve_output_dir()
-        input_line = (
-            f"Giriş: hazır ({input_name})"
-            if input_name
-            else "Giriş: seçilmedi, önce mikrofon seçin"
-        )
-        output_line = (
-            f"Çıkış: hazır ({output_name})"
-            if output_name
-            else "Çıkış: seçilmedi, önce çıkış seçin"
-        )
+        missing_items = self.missing_readiness_items()
         source_line = (
-            f"Kaynak: hazır (Arka plan + mikrofon, {self.backing_file.name})"
+            f"Kaynak: Arka plan + mikrofon ({self.backing_file.name})"
             if self.backing_file is not None
-            else f"Kaynak: hazır (Sadece mikrofon, {self.mic_record_seconds.get().strip() or '60'} sn)"
+            else f"Kaynak: Sadece mikrofon ({self.mic_record_seconds.get().strip() or '60'} sn)"
         )
-        folder_line = (
-            f"Klasör: hazır ({resolved_output_dir})"
-            if output_dir_value
-            else "Klasör: seçilmedi, önce kayıt klasörü belirleyin"
-        )
-        take_line = (
-            f"Take adı: hazır ({take_name})"
-            if take_name
-            else "Take adı: boş bırakıldı, kayıt sırasında otomatik oluşturulacak"
-        )
-        overall_ready = bool(input_name and output_name and output_dir_value)
-        overall_line = "Genel durum: Kayda hazır" if overall_ready else "Genel durum: Birkaç eksik nokta var"
-        lines = [overall_line, input_line, output_line, source_line, folder_line, take_line]
+        take_line = f"Take adı: {take_name}" if take_name else "Take adı: otomatik oluşturulacak"
+        if missing_items:
+            lines = [
+                "Genel durum: Eksik seçimler var",
+                f"Eksikler: {', '.join(missing_items)}",
+                source_line,
+                take_line,
+            ]
+        else:
+            lines = [
+                "Genel durum: Kayda hazır",
+                "Hazır olanlar: giriş, çıkış, klasör, kaynak",
+                source_line,
+                take_line,
+            ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            lines.append(f"Uyarı: Son export için recovery notu var ({self.last_recovery_note_path.name})")
+            lines.append(f"Recovery: {self.last_recovery_note_path.name} incelenebilir")
         return "\n".join(lines)
+
+    def build_readiness_palette(self) -> dict[str, str]:
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return {"bg": "#2c2418", "fg": "#ffe7b3"}
+        if self.missing_readiness_items():
+            return {"bg": "#2c2418", "fg": "#ffe7b3"}
+        return {"bg": "#1f2b22", "fg": "#d8f3dc"}
 
     def update_readiness_summary(self) -> None:
         try:
             self.readiness_text.set(self.build_readiness_text())
+            label = getattr(self, "readiness_label", None)
+            if label is not None:
+                label.configure(**self.build_readiness_palette())
         except Exception:
             pass
 
