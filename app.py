@@ -1260,16 +1260,14 @@ class GuitarAmpRecorderApp:
             else f"Sadece mikrofon ({self.mic_record_seconds.get().strip() or '60'} sn)"
         )
         lines = [
-            f"Preset: {self.preset_name.get()}",
-            f"Oturum: {self.plan_session_hint()}",
+            f"Preset/Oturum: {self.preset_name.get()} | {self.plan_session_hint()}",
             f"Kaynak: {source_text}",
-            f"Take Adı: {self.plan_take_name_hint()}",
-            f"Klasör: {output_dir}",
-            f"Çıktılar: {', '.join(self.planned_output_labels())}",
-            f"Giriş/Çıkış: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
+            f"Take/Hedef: {self.plan_take_name_hint()} | {output_dir}",
+            f"Dosyalar: {', '.join(self.planned_output_labels())}",
+            f"Cihazlar: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            lines.append(f"Not: Son export hatası için recovery notu hazır ({self.last_recovery_note_path.name})")
+            lines.append(f"Recovery: {self.last_recovery_note_path.name} hazır")
         return "\n".join(lines)
 
     def update_recording_prep_summary(self) -> None:
@@ -1402,41 +1400,41 @@ class GuitarAmpRecorderApp:
     def explain_mp3_quality(self) -> str:
         quality = self.mp3_quality.get()
         if quality == "320 kbps":
-            return "MP3 kalitesi en yüksek sabit ayarda olacak."
+            return "MP3: en yüksek sabit kalite"
         if quality == "192 kbps":
-            return "MP3 dosyası kalite ve boyut dengesinde olacak."
+            return "MP3: kalite ve boyut dengeli"
         if quality == "128 kbps":
-            return "MP3 dosyası daha küçük olacak, kalite daha düşük olacak."
-        return "MP3 kalitesi değişken bit hızında yüksek kalite olacak."
+            return "MP3: daha küçük dosya, daha düşük kalite"
+        return "MP3: yüksek kalite VBR"
 
     def explain_wav_export_mode(self) -> str:
         mode = self.wav_export_mode.get()
         if mode == "Mix + Vocal WAV":
-            return "Hem tam mix hem de ayrı vocal WAV yazılacak."
+            return "WAV: mix + vocal ayrı yazılacak"
         if mode == "Sadece WAV (Mix + Vocal)":
-            return "MP3 yazılmayacak; sadece mix ve vocal WAV yazılacak."
-        return "Sadece işlenmiş vocal WAV yazılacak."
+            return "WAV: sadece mix + vocal yazılacak"
+        return "WAV: sadece işlenmiş vocal yazılacak"
 
     def explain_monitor_behavior(self) -> str:
         level = int(self.monitor_level.get())
         if level == 0:
-            return "Canlı monitor sesi kapalı sayılır."
+            return "Monitor: kapalı"
         if level < 100:
-            return f"Canlı monitor sesi düşük tutulacak (%{level})."
+            return f"Monitor: düşük (%{level})"
         if level > 100:
-            return f"Canlı monitor sesi yüksek tutulacak (%{level})."
-        return "Canlı monitor sesi normal seviyede olacak."
+            return f"Monitor: yüksek (%{level})"
+        return "Monitor: normal"
 
     def explain_speed_behavior(self) -> str:
         speed = int(self.speed_ratio.get())
         if speed == 100:
-            return "Kayıt hızı değişmeyecek."
+            return "Hız: normal"
         if speed < 100:
-            return f"Kayıt daha yavaş oynatılacak (%{speed})."
-        return f"Kayıt daha hızlı oynatılacak (%{speed})."
+            return f"Hız: daha yavaş (%{speed})"
+        return f"Hız: daha hızlı (%{speed})"
 
     def build_option_explanation_text(self) -> str:
-        limiter_text = "Limiter açık; ani tepe noktalar sınırlanacak." if self.limiter_enabled.get() == "Acik" else "Limiter kapalı; tepe noktalar daha serbest kalacak."
+        limiter_text = "Limiter: açık, tepeler sınırlanacak" if self.limiter_enabled.get() == "Acik" else "Limiter: kapalı, tepeler serbest kalacak"
         lines = [
             self.explain_mp3_quality(),
             self.explain_wav_export_mode(),

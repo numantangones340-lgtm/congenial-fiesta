@@ -209,13 +209,12 @@ class SessionStateTests(unittest.TestCase):
             with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
                 prep_text = recorder.build_recording_prep_text()
 
-        self.assertIn("Preset: Temiz Gitar", prep_text)
-        self.assertIn("Oturum: Isimli Oturum (Canli Set)", prep_text)
+        self.assertIn("Preset/Oturum: Temiz Gitar | Isimli Oturum (Canli Set)", prep_text)
         self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", prep_text)
-        self.assertIn("Take Adı: aksam_take", prep_text)
-        self.assertIn("Klasör: /tmp/out/Canli Set", prep_text)
-        self.assertIn("Çıktılar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
-        self.assertIn(f"Not: Son export hatası için recovery notu hazır ({recovery_note_path.name})", prep_text)
+        self.assertIn("Take/Hedef: aksam_take | /tmp/out/Canli Set", prep_text)
+        self.assertIn("Dosyalar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
+        self.assertIn("Cihazlar: Built-in Mic -> Built-in Output", prep_text)
+        self.assertIn(f"Recovery: {recovery_note_path.name} hazır", prep_text)
 
     def test_build_compact_status_text_summarizes_core_state_on_one_line(self) -> None:
         recorder = self.make_app()
@@ -558,11 +557,11 @@ class SessionStateTests(unittest.TestCase):
 
         option_text = recorder.build_option_explanation_text()
 
-        self.assertIn("MP3 kalitesi en yüksek sabit ayarda olacak.", option_text)
-        self.assertIn("Hem tam mix hem de ayrı vocal WAV yazılacak.", option_text)
-        self.assertIn("Canlı monitor sesi yüksek tutulacak (%140).", option_text)
-        self.assertIn("Kayıt daha yavaş oynatılacak (%85).", option_text)
-        self.assertIn("Limiter açık; ani tepe noktalar sınırlanacak.", option_text)
+        self.assertIn("MP3: en yüksek sabit kalite", option_text)
+        self.assertIn("WAV: mix + vocal ayrı yazılacak", option_text)
+        self.assertIn("Monitor: yüksek (%140)", option_text)
+        self.assertIn("Hız: daha yavaş (%85)", option_text)
+        self.assertIn("Limiter: açık, tepeler sınırlanacak", option_text)
 
     def test_remember_completed_take_name_updates_output_name(self) -> None:
         recorder = self.make_app()
