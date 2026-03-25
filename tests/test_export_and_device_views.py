@@ -68,6 +68,8 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_output_dir = None
         recorder.last_export_path = None
         recorder.last_summary_path = None
+        recorder.last_take_notes_path = None
+        recorder.last_recovery_note_path = None
         return recorder
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
@@ -193,6 +195,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Oturum ozeti bulunamadi.")
 
+    def test_open_last_take_notes_in_finder_handles_missing_file(self) -> None:
+        recorder = self.make_app()
+        recorder.last_take_notes_path = None
+
+        recorder.open_last_take_notes_in_finder()
+
+        self.assertEqual(recorder.status_messages[-1], "Take notu bulunamadi.")
+
     def test_copy_last_session_summary_to_clipboard_reads_and_copies_content(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -278,6 +288,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIn("Kisa rapor dosyaya yazildi:", recorder.status_messages[-1])
 
+    def test_copy_last_recovery_note_to_clipboard_reads_and_copies_content(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_path.write_text("Export Recovery Note", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_path
+
+            recorder.copy_last_recovery_note_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("Export Recovery Note")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Recovery notu panoya kopyalandi: export_recovery_note.txt")
+
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()
         recorder.output_device_id.set("7")
@@ -308,6 +332,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], "Son dosya Finder'da secili gosterildi: take.wav")
+
+    def test_open_last_take_notes_in_finder_selects_file_and_updates_status(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            note_path = Path(tmpdir) / "take_notes.txt"
+            note_path.write_text("note", encoding="utf-8")
+            recorder.last_take_notes_path = note_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_take_notes_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(note_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Take notu Finder'da secili gosterildi: take_notes.txt")
 
     def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
         recorder = self.make_app()

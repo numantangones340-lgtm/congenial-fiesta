@@ -630,6 +630,8 @@ class GuitarAmpRecorderApp:
         self.last_output_dir: Optional[Path] = None
         self.last_export_path: Optional[Path] = None
         self.last_summary_path: Optional[Path] = None
+        self.last_take_notes_path: Optional[Path] = None
+        self.last_recovery_note_path: Optional[Path] = None
         self.recent_exports_text = StringVar(value="Henuz export yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
@@ -892,6 +894,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.open_last_summary_button.pack(side="left", padx=(8, 0))
+        self.open_last_take_notes_button = Button(
+            recent_buttons,
+            text="Take Notunu Ac",
+            command=self.open_last_take_notes_in_finder,
+            bg="#9b59b6",
+            fg="white",
+            state="disabled",
+        )
+        self.open_last_take_notes_button.pack(side="left", padx=(8, 0))
         self.open_last_output_dir_button = Button(
             recent_buttons,
             text="Son Oturum Klasorunu Ac",
@@ -949,6 +960,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.export_last_brief_button.pack(side="left", padx=(8, 0))
+        self.copy_last_recovery_note_button = Button(
+            recent_copy_buttons,
+            text="Recovery Notunu Kopyala",
+            command=self.copy_last_recovery_note_to_clipboard,
+            bg="#c0392b",
+            fg="white",
+            state="disabled",
+        )
+        self.copy_last_recovery_note_button.pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
             recent_box,
             textvariable=self.recent_exports_text,
@@ -1480,6 +1500,18 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
 
+    def restore_previous_success_paths(
+        self,
+        output_dir: Optional[Path],
+        export_path: Optional[Path],
+        summary_path: Optional[Path],
+        take_notes_path: Optional[Path],
+    ) -> None:
+        self.last_output_dir = output_dir
+        self.last_export_path = export_path
+        self.last_summary_path = summary_path
+        self.last_take_notes_path = take_notes_path
+
     def write_last_session_state(self, output_dir: Path, summary_path: Optional[Path] = None) -> None:
         try:
             data = {
@@ -1490,6 +1522,8 @@ class GuitarAmpRecorderApp:
                 "session_name": self.session_name.get(),
                 "preset_name": self.preset_name.get(),
                 "last_export_path": str(self.last_export_path) if self.last_export_path else "",
+                "take_notes_path": str(self.last_take_notes_path) if self.last_take_notes_path else "",
+                "recovery_note_path": str(self.last_recovery_note_path) if self.last_recovery_note_path else "",
                 "summary_path": str(summary_path) if summary_path else "",
             }
             LAST_SESSION_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1528,6 +1562,26 @@ class GuitarAmpRecorderApp:
             self.last_summary_path = fallback_summary_path if fallback_summary_path.exists() else None
         else:
             self.last_summary_path = None
+
+        take_notes_path = str(data.get("take_notes_path", "")).strip()
+        if take_notes_path:
+            path = Path(take_notes_path)
+            self.last_take_notes_path = path if path.exists() else None
+        elif self.last_output_dir is not None:
+            fallback_take_notes_path = self.last_output_dir / "take_notes.txt"
+            self.last_take_notes_path = fallback_take_notes_path if fallback_take_notes_path.exists() else None
+        else:
+            self.last_take_notes_path = None
+
+        recovery_note_path = str(data.get("recovery_note_path", "")).strip()
+        if recovery_note_path:
+            path = Path(recovery_note_path)
+            self.last_recovery_note_path = path if path.exists() else None
+        elif self.last_output_dir is not None:
+            fallback_recovery_note_path = self.last_output_dir / "export_recovery_note.txt"
+            self.last_recovery_note_path = fallback_recovery_note_path if fallback_recovery_note_path.exists() else None
+        else:
+            self.last_recovery_note_path = None
 
     def reload_last_session(self) -> None:
         data = self.load_last_session_state()
@@ -1637,6 +1691,16 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Oturum ozeti acilamadi: {exc}")
 
+    def open_last_take_notes_in_finder(self) -> None:
+        if self.last_take_notes_path is None or not self.last_take_notes_path.exists():
+            self.set_status("Take notu bulunamadi.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(self.last_take_notes_path)], check=False)
+            self.set_status(f"Take notu Finder'da secili gosterildi: {self.last_take_notes_path.name}")
+        except Exception as exc:
+            self.set_status(f"Take notu acilamadi: {exc}")
+
     def copy_last_session_summary_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
             self.set_status("Oturum ozeti bulunamadi.")
@@ -1744,6 +1808,20 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Kisa rapor dosyaya yazildi: {brief_path}")
         except Exception as exc:
             self.set_status(f"Kisa rapor dosyaya yazilamadi: {exc}")
+
+    def copy_last_recovery_note_to_clipboard(self) -> None:
+        if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
+            self.set_status("Recovery notu bulunamadi.")
+            return
+        try:
+            content = self.last_recovery_note_path.read_text(encoding="utf-8")
+            self.copy_text_to_clipboard(
+                content,
+                f"Recovery notu panoya kopyalandi: {self.last_recovery_note_path.name}",
+                "Recovery notu kopyalanamadi",
+            )
+        except Exception as exc:
+            self.set_status(f"Recovery notu kopyalanamadi: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -2082,6 +2160,14 @@ class GuitarAmpRecorderApp:
                 self.copy_last_summary_path_button.configure(state="disabled")
                 self.copy_last_brief_button.configure(state="disabled")
                 self.export_last_brief_button.configure(state="disabled")
+            if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
+                self.open_last_take_notes_button.configure(state="normal")
+            else:
+                self.open_last_take_notes_button.configure(state="disabled")
+            if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+                self.copy_last_recovery_note_button.configure(state="normal")
+            else:
+                self.copy_last_recovery_note_button.configure(state="disabled")
             if self.current_recent_exports_dir().exists():
                 self.open_last_output_dir_button.configure(state="normal")
             else:
@@ -2279,6 +2365,8 @@ class GuitarAmpRecorderApp:
             summary_path = self.write_session_summary(output_dir, [test_path], "device_test", recording_stats)
             take_notes_path = self.write_take_notes(output_dir, summary)
             self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
+            self.last_take_notes_path = take_notes_path if take_notes_path is not None and take_notes_path.exists() else None
+            self.last_recovery_note_path = None
             self.write_last_session_state(output_dir, summary_path)
             self.refresh_recent_exports()
             self.remember_completed_take_name(base_name)
@@ -2353,7 +2441,11 @@ class GuitarAmpRecorderApp:
         base_name: str,
         reserved_take_name: Optional[str] = None,
     ) -> None:
-        recovery_note_path: Optional[Path] = None
+        previous_last_output_dir = self.last_output_dir
+        previous_last_export_path = self.last_export_path
+        previous_last_summary_path = self.last_summary_path
+        previous_last_take_notes_path = self.last_take_notes_path
+        previous_last_recovery_note_path = self.last_recovery_note_path
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
             target_sr = 44100
@@ -2527,6 +2619,8 @@ class GuitarAmpRecorderApp:
                 summary_path = self.write_session_summary(output_dir, generated_files, "record_export", recording_stats)
                 take_notes_path = self.write_take_notes(output_dir, summary)
                 self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
+                self.last_take_notes_path = take_notes_path if take_notes_path is not None and take_notes_path.exists() else None
+                self.last_recovery_note_path = None
                 self.write_last_session_state(output_dir, summary_path)
                 if summary_path is not None:
                     notes.append(f"Oturum Ozeti: {summary_path}")
@@ -2545,10 +2639,17 @@ class GuitarAmpRecorderApp:
             self.notify_success()
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
-            self.finish_recording_progress("Kayıt durumu: hata")
+            self.restore_previous_success_paths(
+                previous_last_output_dir,
+                previous_last_export_path,
+                previous_last_summary_path,
+                previous_last_take_notes_path,
+            )
             recovery_note_path = write_export_recovery_note(output_dir, base_name, exc)
-            if recovery_note_path is not None:
-                self.set_status(f"Hata: {exc} | Recovery notu: {recovery_note_path}")
+            self.last_recovery_note_path = recovery_note_path if recovery_note_path is not None and recovery_note_path.exists() else previous_last_recovery_note_path
+            self.finish_recording_progress("Kayıt durumu: hata")
+            if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+                self.set_status(f"Hata: {exc} | Recovery notu: {self.last_recovery_note_path}")
             else:
                 self.set_status(f"Hata: {exc}")
         finally:
