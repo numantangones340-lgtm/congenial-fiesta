@@ -940,6 +940,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.copy_last_brief_button.pack(side="left", padx=(8, 0))
+        self.export_last_brief_button = Button(
+            recent_copy_buttons,
+            text="Raporu Dosyaya Yaz",
+            command=self.export_last_session_brief_file,
+            bg="#f39c12",
+            fg="white",
+            state="disabled",
+        )
+        self.export_last_brief_button.pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
             recent_box,
             textvariable=self.recent_exports_text,
@@ -1459,6 +1468,18 @@ class GuitarAmpRecorderApp:
         except Exception:
             return None
 
+    def remember_completed_take_name(self, base_name: str) -> None:
+        try:
+            self.output_name.set(base_name)
+        except Exception:
+            pass
+
+    def notify_success(self) -> None:
+        try:
+            self.root.bell()
+        except Exception:
+            pass
+
     def write_last_session_state(self, output_dir: Path, summary_path: Optional[Path] = None) -> None:
         try:
             data = {
@@ -1708,6 +1729,21 @@ class GuitarAmpRecorderApp:
             )
         except Exception as exc:
             self.set_status(f"Kisa oturum raporu kopyalanamadi: {exc}")
+
+    def export_last_session_brief_file(self) -> None:
+        if self.last_summary_path is None or not self.last_summary_path.exists():
+            self.set_status("Oturum ozeti bulunamadi.")
+            return
+        try:
+            summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
+            if not isinstance(summary, dict):
+                raise ValueError("Ozet formati gecersiz")
+            summary_dir = self.last_summary_path.parent
+            brief_path = summary_dir / "session_brief.txt"
+            brief_path.write_text(self.build_session_brief_text(summary), encoding="utf-8")
+            self.set_status(f"Kisa rapor dosyaya yazildi: {brief_path}")
+        except Exception as exc:
+            self.set_status(f"Kisa rapor dosyaya yazilamadi: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -2039,11 +2075,13 @@ class GuitarAmpRecorderApp:
                 self.copy_last_summary_button.configure(state="normal")
                 self.copy_last_summary_path_button.configure(state="normal")
                 self.copy_last_brief_button.configure(state="normal")
+                self.export_last_brief_button.configure(state="normal")
             else:
                 self.open_last_summary_button.configure(state="disabled")
                 self.copy_last_summary_button.configure(state="disabled")
                 self.copy_last_summary_path_button.configure(state="disabled")
                 self.copy_last_brief_button.configure(state="disabled")
+                self.export_last_brief_button.configure(state="disabled")
             if self.current_recent_exports_dir().exists():
                 self.open_last_output_dir_button.configure(state="normal")
             else:
@@ -2243,6 +2281,8 @@ class GuitarAmpRecorderApp:
             self.last_summary_path = summary_path if summary_path is not None and summary_path.exists() else None
             self.write_last_session_state(output_dir, summary_path)
             self.refresh_recent_exports()
+            self.remember_completed_take_name(base_name)
+            self.notify_success()
 
             final_status = f"Test tamam. Peak={input_peak:.3f} | Dosya: {test_path}"
             if take_notes_path is not None:
@@ -2501,6 +2541,8 @@ class GuitarAmpRecorderApp:
                 f"Tamamlandı. {final_note}"
             )
             self.refresh_recent_exports()
+            self.remember_completed_take_name(base_name)
+            self.notify_success()
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.finish_recording_progress("Kayıt durumu: hata")

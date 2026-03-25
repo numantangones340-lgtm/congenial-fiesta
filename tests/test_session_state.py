@@ -167,6 +167,13 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("- take_007_mix.wav", note_text)
         self.assertIn("- take_007_vocal.wav", note_text)
 
+    def test_remember_completed_take_name_updates_output_name(self) -> None:
+        recorder = self.make_app()
+
+        recorder.remember_completed_take_name("quick_take_004")
+
+        self.assertEqual(recorder.output_name.get(), "quick_take_004")
+
     def test_write_and_load_last_session_state_roundtrip(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

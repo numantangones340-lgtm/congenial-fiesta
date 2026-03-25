@@ -260,6 +260,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Kisa oturum raporu panoya kopyalandi: session_summary.json")
 
+    def test_export_last_session_brief_file_writes_text_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text(
+                '{"event":"record_export","timestamp":"2026-03-25 21:00:00","output_dir":"/tmp/session","preset_name":"Temiz Gitar","generated_files":["/tmp/session/take.mp3"],"recording":{"mode":"Sadece mikrofon","duration_seconds":42.0,"requested_duration_seconds":60.0,"input_peak":0.612,"processed_peak":0.701,"mix_peak":0.822,"stopped_early":false}}',
+                encoding="utf-8",
+            )
+            recorder.last_summary_path = summary_path
+
+            recorder.export_last_session_brief_file()
+
+            brief_path = Path(tmpdir) / "session_brief.txt"
+            self.assertTrue(brief_path.exists())
+            self.assertIn("Preset: Temiz Gitar", brief_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Kisa rapor dosyaya yazildi:", recorder.status_messages[-1])
+
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()
         recorder.output_device_id.set("7")
@@ -303,6 +321,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
         recorder.resolve_output_dir.assert_not_called()
+
+    def test_notify_success_uses_root_bell(self) -> None:
+        recorder = self.make_app()
+
+        recorder.notify_success()
+
+        recorder.root.bell.assert_called_once_with()
 
 
 if __name__ == "__main__":
