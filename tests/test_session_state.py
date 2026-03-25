@@ -141,6 +141,32 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("- take.mp3", note_text)
         self.assertIn("- take_vocal.wav", note_text)
 
+    def test_take_name_helpers_reserve_skip_conflicts_and_release_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            (output_dir / "quick_take_001_vocal.wav").write_text("audio", encoding="utf-8")
+            reserved = app.reserve_take_name_for_dir(output_dir, "quick_take")
+
+            self.assertEqual(reserved, "quick_take_002")
+            self.assertTrue(app.take_lock_path(output_dir, reserved).exists())
+            self.assertEqual(app.next_take_name_for_dir(output_dir, "quick_take"), "quick_take_003")
+
+            app.release_take_name_lock(output_dir, reserved)
+
+            self.assertFalse(app.take_lock_path(output_dir, reserved).exists())
+
+    def test_build_export_recovery_note_lists_expected_targets(self) -> None:
+        output_dir = Path("/tmp/session")
+
+        note_text = app.build_export_recovery_note(output_dir, "take_007", RuntimeError("ffmpeg failed"))
+
+        self.assertIn("Export Recovery Note", note_text)
+        self.assertIn("Take: take_007", note_text)
+        self.assertIn("Hata: ffmpeg failed", note_text)
+        self.assertIn("- take_007.mp3", note_text)
+        self.assertIn("- take_007_mix.wav", note_text)
+        self.assertIn("- take_007_vocal.wav", note_text)
+
     def test_write_and_load_last_session_state_roundtrip(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

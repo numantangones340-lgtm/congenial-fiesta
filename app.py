@@ -70,6 +70,81 @@ def describe_clip_warning(input_peak: float = 0.0, processed_peak: float = 0.0, 
     return " | ".join(warnings) if warnings else "Clip riski yok"
 
 
+def take_lock_dir(directory: Path) -> Path:
+    return directory / ".take_locks"
+
+
+def take_lock_path(directory: Path, name: str) -> Path:
+    return take_lock_dir(directory) / f"{name}.lock"
+
+
+def take_name_conflicts(directory: Path, name: str) -> bool:
+    candidates = [
+        directory / f"{name}.mp3",
+        directory / f"{name}_mix.wav",
+        directory / f"{name}_vocal.wav",
+        directory / f"{name}_device_test.wav",
+        take_lock_path(directory, name),
+    ]
+    return any(path.exists() for path in candidates)
+
+
+def reserve_take_name_for_dir(directory: Path, prefix: str = "quick_take") -> str:
+    directory.mkdir(parents=True, exist_ok=True)
+    take_lock_dir(directory).mkdir(parents=True, exist_ok=True)
+    for i in range(1, 10000):
+        name = f"{prefix}_{i:03d}"
+        if take_name_conflicts(directory, name):
+            continue
+        lock_path = take_lock_path(directory, name)
+        try:
+            with lock_path.open("x", encoding="utf-8") as handle:
+                handle.write("")
+            return name
+        except Exception:
+            continue
+    fallback = f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
+    with take_lock_path(directory, fallback).open("w", encoding="utf-8") as handle:
+        handle.write("")
+    return fallback
+
+
+def release_take_name_lock(directory: Path, name: str) -> None:
+    lock_path = take_lock_path(directory, name)
+    try:
+        if lock_path.exists():
+            lock_path.unlink()
+    except Exception:
+        pass
+
+
+def build_export_recovery_note(output_dir: Path, base_name: str, exc: Exception) -> str:
+    return "\n".join(
+        [
+            "Export Recovery Note",
+            f"Tarih: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+            f"Klasor: {output_dir}",
+            f"Take: {base_name}",
+            f"Hata: {exc}",
+            "Hedef Dosyalar:",
+            f"- {base_name}.mp3",
+            f"- {base_name}_mix.wav",
+            f"- {base_name}_vocal.wav",
+            "Not: Gecici dosyalar temizlenmis olabilir; take_notes.txt ve session_summary.json olusmadiysa kaydi yeniden deneyin.",
+        ]
+    )
+
+
+def write_export_recovery_note(output_dir: Path, base_name: str, exc: Exception) -> Optional[Path]:
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        note_path = output_dir / "export_recovery_note.txt"
+        note_path.write_text(build_export_recovery_note(output_dir, base_name, exc), encoding="utf-8")
+        return note_path
+    except Exception:
+        return None
+
+
 def db_to_linear(db: float) -> float:
     return 10 ** (db / 20.0)
 
@@ -229,7 +304,7 @@ def next_take_name(prefix: str = "quick_take") -> str:
 def next_take_name_for_dir(directory: Path, prefix: str = "quick_take") -> str:
     for i in range(1, 10000):
         name = f"{prefix}_{i:03d}"
-        if not (directory / f"{name}.mp3").exists() and not (directory / f"{name}_mix.wav").exists():
+        if not take_name_conflicts(directory, name):
             return name
     return f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
 
@@ -792,7 +867,7 @@ class GuitarAmpRecorderApp:
         recent_buttons.pack(fill="x", padx=14, pady=(12, 8))
         self.open_last_export_button = Button(
             recent_buttons,
-            text="Son Dosyayi Finder'da Goster",
+            text="Son Dosyayi Secili Goster",
             command=self.open_last_export_in_finder,
             bg="#1f6feb",
             fg="white",
@@ -1504,6 +1579,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
+            self.set_status(f"Son dosya Finder'da secili gosterildi: {self.last_export_path.name}")
         except Exception as exc:
             self.set_status(f"Finder acilamadi: {exc}")
 
@@ -2189,10 +2265,17 @@ class GuitarAmpRecorderApp:
             self.set_status("Aygıt kimliği alanlarına sadece sayı girin (veya boş bırakın).")
             return
         settings = self.current_amp_settings()
-        base_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
+        output_dir = self.resolve_output_dir()
+        requested_name = self.output_name.get().strip()
+        reserved_take_name = None
+        if requested_name:
+            base_name = requested_name
+        else:
+            base_name = reserve_take_name_for_dir(output_dir, "take")
+            reserved_take_name = base_name
         worker = threading.Thread(
             target=self.record_and_export,
-            args=(self.backing_file, input_idx, output_idx, settings, base_name),
+            args=(output_dir, self.backing_file, input_idx, output_idx, settings, base_name, reserved_take_name),
             daemon=True,
         )
         worker.start()
@@ -2211,24 +2294,27 @@ class GuitarAmpRecorderApp:
             self.set_status("Aygıt kimliği alanlarına sadece sayı girin (veya boş bırakın).")
             return
         settings = self.current_amp_settings()
-        base_name = next_take_name_for_dir(self.resolve_output_dir(), "quick_take")
+        output_dir = self.resolve_output_dir()
+        base_name = reserve_take_name_for_dir(output_dir, "quick_take")
         worker = threading.Thread(
             target=self.record_and_export,
-            args=(None, input_idx, output_idx, settings, base_name),
+            args=(output_dir, None, input_idx, output_idx, settings, base_name, base_name),
             daemon=True,
         )
         worker.start()
 
     def record_and_export(
         self,
+        output_dir: Path,
         backing_file: Optional[Path],
         input_idx: Optional[int],
         output_idx: Optional[int],
         settings: Tuple[float, float, float, float, float, float, float],
         base_name: str,
+        reserved_take_name: Optional[str] = None,
     ) -> None:
+        recovery_note_path: Optional[Path] = None
         try:
-            output_dir = self.resolve_output_dir()
             output_dir.mkdir(parents=True, exist_ok=True)
             target_sr = 44100
             sr = target_sr
@@ -2418,7 +2504,14 @@ class GuitarAmpRecorderApp:
             self.finish_recording_progress(f"Hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.finish_recording_progress("Kayıt durumu: hata")
-            self.set_status(f"Hata: {exc}")
+            recovery_note_path = write_export_recovery_note(output_dir, base_name, exc)
+            if recovery_note_path is not None:
+                self.set_status(f"Hata: {exc} | Recovery notu: {recovery_note_path}")
+            else:
+                self.set_status(f"Hata: {exc}")
+        finally:
+            if reserved_take_name:
+                release_take_name_lock(output_dir, reserved_take_name)
 
 
 def main() -> None:

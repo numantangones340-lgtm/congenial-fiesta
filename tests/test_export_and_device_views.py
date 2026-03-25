@@ -278,6 +278,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         wait_mock.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Son kayit oynatildi: take.wav")
 
+    def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_export_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Son dosya Finder'da secili gosterildi: take.wav")
+
     def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
