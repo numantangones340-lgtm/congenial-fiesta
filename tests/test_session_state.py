@@ -70,6 +70,10 @@ class SessionStateTests(unittest.TestCase):
         recorder.refresh_recent_exports = mock.Mock()
         recorder.load_saved_preset = mock.Mock()
         recorder.preflight_warning_label = mock.Mock()
+        recorder.start_test_button = mock.Mock()
+        recorder.start_quick_record_button = mock.Mock()
+        recorder.start_recording_button = mock.Mock()
+        recorder.stop_recording_button = mock.Mock()
         recorder.last_output_dir = None
         recorder.last_export_path = None
         recorder.last_summary_path = None
@@ -237,6 +241,26 @@ class SessionStateTests(unittest.TestCase):
         status_text = recorder.build_completion_status_text("Test", output_dir, None, [])
 
         self.assertEqual(status_text, "Test hazır | Klasör: /tmp/out/Test")
+
+    def test_set_recording_action_button_states_disables_start_buttons_during_recording(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recording_action_button_states(recording_active=True)
+
+        recorder.start_test_button.configure.assert_called_once_with(state="disabled")
+        recorder.start_quick_record_button.configure.assert_called_once_with(state="disabled")
+        recorder.start_recording_button.configure.assert_called_once_with(state="disabled")
+        recorder.stop_recording_button.configure.assert_called_once_with(state="normal")
+
+    def test_set_recording_action_button_states_restores_start_buttons_after_recording(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recording_action_button_states(recording_active=False)
+
+        recorder.start_test_button.configure.assert_called_once_with(state="normal")
+        recorder.start_quick_record_button.configure.assert_called_once_with(state="normal")
+        recorder.start_recording_button.configure.assert_called_once_with(state="normal")
+        recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
 
     def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
         recorder = self.make_app()

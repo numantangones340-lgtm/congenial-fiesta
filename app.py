@@ -938,13 +938,16 @@ class GuitarAmpRecorderApp:
             pady=10,
         )
         self.action_guidance_label.pack(fill="x", padx=14, pady=(12, 6))
-        Button(actions, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white").pack(
+        self.start_test_button = Button(actions, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white")
+        self.start_test_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        Button(actions, text="Quick Kayıt (Preset, Sorusuz)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white").pack(
+        self.start_quick_record_button = Button(actions, text="Quick Kayıt (Preset, Sorusuz)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
+        self.start_quick_record_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        Button(actions, text="Kaydı Başlat ve MP3 Çıkar", command=self.start_recording_thread, bg="#27ae60", fg="white").pack(
+        self.start_recording_button = Button(actions, text="Kaydı Başlat ve MP3 Çıkar", command=self.start_recording_thread, bg="#27ae60", fg="white")
+        self.start_recording_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
         self.stop_recording_button = Button(actions, text="Kaydı Durdur ve Kaydet", command=self.request_stop_recording, bg="#c0392b", fg="white", state="disabled")
@@ -2506,6 +2509,14 @@ class GuitarAmpRecorderApp:
             return
         self.root.after(50, self.start_input_meter)
 
+    def set_recording_action_button_states(self, recording_active: bool) -> None:
+        start_state = "disabled" if recording_active else "normal"
+        stop_state = "normal" if recording_active else "disabled"
+        self.start_test_button.configure(state=start_state)
+        self.start_quick_record_button.configure(state=start_state)
+        self.start_recording_button.configure(state=start_state)
+        self.stop_recording_button.configure(state=stop_state)
+
     def begin_recording_progress(self, mode: str, total_seconds: float) -> None:
         self.recording_active = True
         self.recording_started_at = time.time()
@@ -2513,7 +2524,7 @@ class GuitarAmpRecorderApp:
         self.recording_mode = mode
         self.stop_recording_requested = False
         try:
-            self.stop_recording_button.configure(state="normal")
+            self.set_recording_action_button_states(recording_active=True)
         except TclError:
             pass
 
@@ -2525,7 +2536,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         self.record_progress_text.set(final_text)
         try:
-            self.stop_recording_button.configure(state="disabled")
+            self.set_recording_action_button_states(recording_active=False)
             if self.last_export_path is not None and self.last_export_path.exists():
                 self.open_last_export_button.configure(state="normal")
                 self.play_last_export_button.configure(state="normal")
