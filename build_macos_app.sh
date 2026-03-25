@@ -4,6 +4,8 @@ set -euo pipefail
 APP_NAME="GuitarAmpRecorder"
 ENTRY="app.py"
 STAMP_FILE=".venv/.build-deps-stamp"
+APP_VERSION="$(tr -d '\r\n' < VERSION 2>/dev/null || printf '0.1.0-dev')"
+MIC_USAGE_TEXT="Ses kaydi almak ve mikrofon testini calistirmak icin mikrofon erisimi gerekir."
 
 pick_python() {
   for candidate in /opt/homebrew/bin/python3.11 python3.11 python3; do
@@ -41,6 +43,9 @@ fi
 source .venv/bin/activate
 export PIP_DISABLE_PIP_VERSION_CHECK=1
 export PYINSTALLER_CONFIG_DIR="${PWD}/.pyinstaller-cache"
+export APP_NAME
+export APP_VERSION
+export MIC_USAGE_TEXT
 mkdir -p "${PYINSTALLER_CONFIG_DIR}"
 
 CURRENT_STAMP="$(
@@ -134,6 +139,23 @@ PYI_ARGS+=("${ENTRY}")
 
 rm -rf build dist "${APP_NAME}.spec"
 .venv/bin/pyinstaller "${PYI_ARGS[@]}"
+
+python - <<'PY'
+from pathlib import Path
+import os
+import plistlib
+
+info_path = Path("dist") / f"{os.environ['APP_NAME']}.app" / "Contents" / "Info.plist"
+with info_path.open("rb") as fh:
+    info = plistlib.load(fh)
+
+info["CFBundleShortVersionString"] = os.environ["APP_VERSION"]
+info["CFBundleVersion"] = os.environ["APP_VERSION"]
+info["NSMicrophoneUsageDescription"] = os.environ["MIC_USAGE_TEXT"]
+
+with info_path.open("wb") as fh:
+    plistlib.dump(info, fh, sort_keys=True)
+PY
 
 ditto -c -k --sequesterRsrc --keepParent "dist/${APP_NAME}.app" "dist/${APP_NAME}-macOS.zip"
 
