@@ -2,6 +2,18 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.6] - 2026-03-25
+
+### Degisti
+
+- macOS build paketi sonrasinda `.app` bundle `Info.plist` icine surum alanlari dogrudan yazilir hale getirildi
+- bundle metadata akisi PyInstaller varsayilanlarina bagli kalmayacak sekilde build script icinde netlestirildi
+
+### Guvenlik ve Kararlilik
+
+- `CFBundleShortVersionString` ve `CFBundleVersion` alanlari `VERSION` dosyasi ile birebir esitlenir hale getirildi
+- mikrofon izin aciklamasi her build'de bundle icine garanti sekilde yazilir hale getirildi
+
 ## [1.1.5] - 2026-03-25
 
 ### Degisti
