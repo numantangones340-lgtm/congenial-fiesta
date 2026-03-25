@@ -702,6 +702,8 @@ class GuitarAmpRecorderApp:
             fg="#9fb0c2",
             justify="left",
             wraplength=620,
+            padx=10,
+            pady=6,
         )
         self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
         Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
@@ -1221,9 +1223,23 @@ class GuitarAmpRecorderApp:
             return "Durum: mikrofon seviyesi izleniyor"
         return "Durum: hazır"
 
+    def build_operation_state_palette(self) -> dict[str, str]:
+        if self.recording_active:
+            if self.stop_recording_requested:
+                return {"bg": "#3a2316", "fg": "#ffd7a8"}
+            return {"bg": "#1f3527", "fg": "#d8f3dc"}
+        if self.monitor_stream is not None:
+            return {"bg": "#33261a", "fg": "#ffe0a8"}
+        if self.meter_stream is not None:
+            return {"bg": "#10283a", "fg": "#d7eefb"}
+        return {"bg": "#182028", "fg": "#9fb0c2"}
+
     def update_operation_state_summary(self) -> None:
         try:
             self.operation_state_text.set(self.build_operation_state_text())
+            label = getattr(self, "operation_state_label", None)
+            if label is not None:
+                label.configure(**self.build_operation_state_palette())
         except Exception:
             pass
 

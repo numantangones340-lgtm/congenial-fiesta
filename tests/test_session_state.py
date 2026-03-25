@@ -32,6 +32,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.app_version = "1.1.3"
         recorder.operation_state_text = FakeVar("")
         recorder.compact_status_text = FakeVar("")
+        recorder.operation_state_label = mock.Mock()
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("Isimli Oturum")
         recorder.session_name = FakeVar("Aksam Kaydi")
@@ -299,6 +300,56 @@ class SessionStateTests(unittest.TestCase):
         state_text = recorder.build_operation_state_text()
 
         self.assertEqual(state_text, "Durum: kayıt durduruluyor")
+
+    def test_build_operation_state_palette_reports_idle_colors(self) -> None:
+        recorder = self.make_app()
+
+        palette = recorder.build_operation_state_palette()
+
+        self.assertEqual(palette, {"bg": "#182028", "fg": "#9fb0c2"})
+
+    def test_build_operation_state_palette_reports_meter_colors(self) -> None:
+        recorder = self.make_app()
+        recorder.meter_stream = object()
+
+        palette = recorder.build_operation_state_palette()
+
+        self.assertEqual(palette, {"bg": "#10283a", "fg": "#d7eefb"})
+
+    def test_build_operation_state_palette_reports_monitor_colors(self) -> None:
+        recorder = self.make_app()
+        recorder.monitor_stream = object()
+
+        palette = recorder.build_operation_state_palette()
+
+        self.assertEqual(palette, {"bg": "#33261a", "fg": "#ffe0a8"})
+
+    def test_build_operation_state_palette_reports_recording_colors(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.recording_mode = "Sadece mikrofon"
+
+        palette = recorder.build_operation_state_palette()
+
+        self.assertEqual(palette, {"bg": "#1f3527", "fg": "#d8f3dc"})
+
+    def test_build_operation_state_palette_reports_stop_request_colors(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.stop_recording_requested = True
+
+        palette = recorder.build_operation_state_palette()
+
+        self.assertEqual(palette, {"bg": "#3a2316", "fg": "#ffd7a8"})
+
+    def test_update_operation_state_summary_updates_text_and_label_style(self) -> None:
+        recorder = self.make_app()
+        recorder.monitor_stream = object()
+
+        recorder.update_operation_state_summary()
+
+        self.assertEqual(recorder.operation_state_text.get(), "Durum: canlı monitor açık")
+        recorder.operation_state_label.configure.assert_called_once_with(bg="#33261a", fg="#ffe0a8")
 
     def test_set_recording_action_button_states_disables_start_buttons_during_recording(self) -> None:
         recorder = self.make_app()
