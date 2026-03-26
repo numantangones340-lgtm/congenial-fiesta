@@ -383,11 +383,22 @@ class SessionStateTests(unittest.TestCase):
 
     def test_set_recording_action_button_states_restores_start_buttons_after_recording(self) -> None:
         recorder = self.make_app()
+        recorder.backing_file = None
 
         recorder.set_recording_action_button_states(recording_active=False)
 
         recorder.start_test_button.configure.assert_called_once_with(state="normal")
         recorder.start_quick_record_button.configure.assert_called_once_with(state="normal")
+        recorder.start_recording_button.configure.assert_called_once_with(state="normal")
+        recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
+
+    def test_set_recording_action_button_states_disables_quick_record_when_backing_selected(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recording_action_button_states(recording_active=False)
+
+        recorder.start_test_button.configure.assert_called_once_with(state="normal")
+        recorder.start_quick_record_button.configure.assert_called_once_with(state="disabled")
         recorder.start_recording_button.configure.assert_called_once_with(state="normal")
         recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
 
@@ -546,6 +557,36 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Önce 5 saniyelik test yapın.", guidance_text)
         self.assertIn("Hızlı Kayıt hızlı yol", guidance_text)
 
+    def test_build_quick_record_button_text_reports_mic_only_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        button_text = recorder.build_quick_record_button_text()
+
+        self.assertEqual(button_text, "Hızlı Kayıt (Sadece Mikrofon)")
+
+    def test_build_quick_record_button_text_reports_backing_requires_full_record(self) -> None:
+        recorder = self.make_app()
+
+        button_text = recorder.build_quick_record_button_text()
+
+        self.assertEqual(button_text, "Hızlı Kayıt (Sadece Mikrofon Modunda)")
+
+    def test_build_main_record_button_text_reports_backing_mode(self) -> None:
+        recorder = self.make_app()
+
+        button_text = recorder.build_main_record_button_text()
+
+        self.assertEqual(button_text, "Tam Kayıt (Arka Plan + Mikrofon)")
+
+    def test_update_action_button_copy_updates_visible_button_labels(self) -> None:
+        recorder = self.make_app()
+
+        recorder.update_action_button_copy()
+
+        recorder.start_quick_record_button.configure.assert_called_once_with(text="Hızlı Kayıt (Sadece Mikrofon Modunda)")
+        recorder.start_recording_button.configure.assert_called_once_with(text="Tam Kayıt (Arka Plan + Mikrofon)")
+
     def test_build_action_guidance_text_requires_input_selection_first(self) -> None:
         recorder = self.make_app()
         recorder.input_device_choice.set("")
@@ -586,6 +627,18 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(
             guidance_text,
             "Önerilen sıra: Durdurma istendi. Kayıt bölümü hazırlanırken yeni işlem başlatmayın.",
+        )
+
+    def test_start_quick_record_thread_blocks_when_backing_is_selected(self) -> None:
+        recorder = self.make_app()
+        recorder.stop_live_monitor = mock.Mock()
+
+        recorder.start_quick_record_thread()
+
+        recorder.stop_live_monitor.assert_called_once_with()
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Hızlı Kayıt sadece mikrofon modunda kullanılabilir. Arka planı temizleyin veya tam kaydı başlatın.",
         )
 
     def test_build_preflight_warning_text_requires_output_dir_first(self) -> None:

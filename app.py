@@ -960,11 +960,11 @@ class GuitarAmpRecorderApp:
         self.start_test_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        self.start_quick_record_button = Button(actions, text="Hızlı Kayıt (Presetle)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
+        self.start_quick_record_button = Button(actions, text="Hızlı Kayıt (Sadece Mikrofon)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
         self.start_quick_record_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        self.start_recording_button = Button(actions, text="Kaydı Başlat ve MP3 Çıkar", command=self.start_recording_thread, bg="#27ae60", fg="white")
+        self.start_recording_button = Button(actions, text="Tam Kayıt (Mikrofon)", command=self.start_recording_thread, bg="#27ae60", fg="white")
         self.start_recording_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
@@ -1143,6 +1143,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_button_copy()
         self.update_option_explanation_summary()
         self.update_recent_output_summary()
 
@@ -1176,6 +1177,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_button_copy()
         self.update_option_explanation_summary()
 
     def session_mode_value(self) -> str:
@@ -1419,6 +1421,23 @@ class GuitarAmpRecorderApp:
     def update_action_guidance_summary(self) -> None:
         try:
             self.action_guidance_text.set(self.build_action_guidance_text())
+        except Exception:
+            pass
+
+    def build_quick_record_button_text(self) -> str:
+        if self.backing_file is not None:
+            return "Hızlı Kayıt (Sadece Mikrofon Modunda)"
+        return "Hızlı Kayıt (Sadece Mikrofon)"
+
+    def build_main_record_button_text(self) -> str:
+        if self.backing_file is not None:
+            return "Tam Kayıt (Arka Plan + Mikrofon)"
+        return "Tam Kayıt (Mikrofon)"
+
+    def update_action_button_copy(self) -> None:
+        try:
+            self.start_quick_record_button.configure(text=self.build_quick_record_button_text())
+            self.start_recording_button.configure(text=self.build_main_record_button_text())
         except Exception:
             pass
 
@@ -2691,8 +2710,9 @@ class GuitarAmpRecorderApp:
     def set_recording_action_button_states(self, recording_active: bool) -> None:
         start_state = "disabled" if recording_active else "normal"
         stop_state = "normal" if recording_active else "disabled"
+        quick_state = "disabled" if recording_active or self.backing_file is not None else "normal"
         self.start_test_button.configure(state=start_state)
-        self.start_quick_record_button.configure(state=start_state)
+        self.start_quick_record_button.configure(state=quick_state)
         self.start_recording_button.configure(state=start_state)
         self.stop_recording_button.configure(state=stop_state)
 
@@ -2836,6 +2856,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_button_copy()
 
     def clear_backing_selection(self) -> None:
         if self.block_changes_during_recording("kayıt kaynağı"):
@@ -2848,6 +2869,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_button_copy()
         self.set_status("Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
@@ -3033,6 +3055,9 @@ class GuitarAmpRecorderApp:
 
     def start_quick_record_thread(self) -> None:
         self.stop_live_monitor()
+        if self.backing_file is not None:
+            self.set_status("Hızlı Kayıt sadece mikrofon modunda kullanılabilir. Arka planı temizleyin veya tam kaydı başlatın.")
+            return
         ok, warning = self.validate_recording_safety()
         if not ok:
             self.set_status(warning)
