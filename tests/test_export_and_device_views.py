@@ -78,6 +78,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_take_notes_path = None
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
+        recorder.open_last_preparation_button = mock.Mock()
         return recorder
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:

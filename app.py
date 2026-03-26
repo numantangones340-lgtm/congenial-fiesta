@@ -1058,6 +1058,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.open_last_output_dir_button.pack(side="left", padx=(8, 0))
+        self.open_last_preparation_button = Button(
+            recent_buttons,
+            text="Hazırlık Dosyasını Aç",
+            command=self.open_preparation_summary_in_finder,
+            bg="#1f6feb",
+            fg="white",
+            state="disabled",
+        )
+        self.open_last_preparation_button.pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
         recent_copy_buttons = Frame(recent_box, bg="#151b22")
         recent_copy_buttons.pack(fill="x", padx=14, pady=(0, 8))
@@ -1801,11 +1810,15 @@ class GuitarAmpRecorderApp:
                 ready_items.append("özet")
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
                 ready_items.append("take notu")
+            if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
+                ready_items.append("hazırlık dosyası")
             return f"Hazır: {', '.join(ready_items)}. Önce son kaydı açın veya oynatın."
         if self.last_summary_path is not None and self.last_summary_path.exists():
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
                 return "Hazır: özet ve take notu. Önce özeti açın, sonra kısa raporu kopyalayın."
             return "Hazır: oturum özeti. Önce özeti açın veya kısa raporu kopyalayın."
+        if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
+            return "Hazır: hazırlık dosyası. Önce dosyayı açın veya klasörü açın."
         if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
             return "Hazır: take notu. Önce take notunu açın veya klasörü açın."
         if self.current_recent_exports_dir().exists():
@@ -1821,6 +1834,7 @@ class GuitarAmpRecorderApp:
             (self.last_export_path is not None and self.last_export_path.exists())
             or (self.last_summary_path is not None and self.last_summary_path.exists())
             or (self.last_take_notes_path is not None and self.last_take_notes_path.exists())
+            or (self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists())
         ):
             return {"bg": "#1f2b22", "fg": "#d8f3dc"}
         return {"bg": "#1b2029", "fg": "#dce6ef"}
@@ -1834,6 +1848,8 @@ class GuitarAmpRecorderApp:
             return "Son kayıt hazır. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."
         if self.last_summary_path is not None and self.last_summary_path.exists():
             return "Özet hazır. Oturum bilgisini açabilir veya kopyalayabilirsiniz."
+        if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
+            return "Hazırlık dosyası hazır. Dosyayı açabilir veya oturum klasörüne geçebilirsiniz."
         if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
             return "Take notu hazır. Notu açabilir veya oturum klasörüne geçebilirsiniz."
         return "İlk test veya kayıttan sonra son dosyalar burada görünür."
@@ -3062,6 +3078,7 @@ class GuitarAmpRecorderApp:
         self.open_last_take_notes_button.configure(state=state)
         self.copy_last_recovery_note_button.configure(state=state)
         self.open_last_output_dir_button.configure(state=state)
+        self.open_last_preparation_button.configure(state=state)
 
     def begin_recording_progress(self, mode: str, total_seconds: float) -> None:
         self.recording_active = True
@@ -3125,6 +3142,10 @@ class GuitarAmpRecorderApp:
                 self.open_last_output_dir_button.configure(state="normal")
             else:
                 self.open_last_output_dir_button.configure(state="disabled")
+            if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
+                self.open_last_preparation_button.configure(state="normal")
+            else:
+                self.open_last_preparation_button.configure(state="disabled")
             self.update_recent_output_summary()
         except TclError:
             pass
