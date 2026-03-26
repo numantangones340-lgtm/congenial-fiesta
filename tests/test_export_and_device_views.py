@@ -163,6 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 line = app.recent_audio_highlight_line(audio_path)
 
         self.assertIn("2:05", line)
+        self.assertIn(Path(tmpdir).name, line)
         self.assertIn("take.wav", line)
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:

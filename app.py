@@ -130,9 +130,11 @@ def recent_audio_duration_text(path: Path) -> str:
 def recent_audio_highlight_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
     duration = recent_audio_duration_text(path)
+    output_dir_name = path.parent.name or str(path.parent)
+    location = f" | {output_dir_name}" if output_dir_name else ""
     if duration:
-        return f"Son kayıt [{timestamp} | {duration}]: {path.name}"
-    return f"Son kayıt [{timestamp}]: {path.name}"
+        return f"Son kayıt [{timestamp} | {duration}{location}]: {path.name}"
+    return f"Son kayıt [{timestamp}{location}]: {path.name}"
 
 
 def format_seconds_short(seconds: float) -> str:
