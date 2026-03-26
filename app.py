@@ -111,6 +111,11 @@ def recent_output_file_label(path: Path) -> str:
     }.get(path.name, "Çıktı")
 
 
+def recent_output_file_line(path: Path) -> str:
+    timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
+    return f"- {recent_output_file_label(path)} [{timestamp}]: {path.name}"
+
+
 def format_seconds_short(seconds: float) -> str:
     total_seconds = max(0, int(round(seconds)))
     minutes, secs = divmod(total_seconds, 60)
@@ -2580,7 +2585,7 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set("Henüz çıktı yok.")
             self.update_recent_output_summary()
             return
-        lines = [f"- {recent_output_file_label(path)}: {path.name}" for path in recent_files]
+        lines = [recent_output_file_line(path) for path in recent_files]
         self.recent_exports_text.set("\n".join(lines))
         self.update_recent_output_summary()
 

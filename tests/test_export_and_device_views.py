@@ -106,10 +106,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.refresh_recent_exports()
-            expected = [
-                f"- {app.recent_output_file_label(path)}: {path.name}"
-                for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:8]
-            ]
+            expected = [app.recent_output_file_line(path) for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:8]]
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -132,8 +129,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/unused-output"))
 
             recorder.refresh_recent_exports()
+            expected = app.recent_output_file_line(newer)
 
-        self.assertEqual(recorder.recent_exports_text.get(), f"- Ses: {newer.name}")
+        self.assertEqual(recorder.recent_exports_text.get(), expected)
         recorder.resolve_output_dir.assert_not_called()
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
