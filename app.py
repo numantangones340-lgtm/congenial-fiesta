@@ -1401,7 +1401,13 @@ class GuitarAmpRecorderApp:
             output_dir.mkdir(parents=True, exist_ok=True)
             prep_path = output_dir / "preparation_summary.txt"
             prep_path.write_text(self.build_current_preparation_brief_text(), encoding="utf-8")
+            self.last_output_dir = output_dir
             self.last_preparation_summary_path = prep_path
+            self.write_last_session_state(output_dir, self.last_summary_path)
+            self.update_recent_output_summary()
+            if not self.recording_active:
+                self.open_last_output_dir_button.configure(state="normal")
+                self.open_last_preparation_button.configure(state="normal")
             self.set_status(f"Hazırlık özeti yazıldı: {prep_path}")
         except Exception as exc:
             self.set_status(f"Hazırlık özeti yazılamadı: {exc}")

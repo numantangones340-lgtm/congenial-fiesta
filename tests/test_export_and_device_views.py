@@ -79,6 +79,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
         recorder.open_last_preparation_button = mock.Mock()
+        recorder.open_last_output_dir_button = mock.Mock()
+        recorder.write_last_session_state = mock.Mock()
+        recorder.update_recent_output_summary = mock.Mock()
         return recorder
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
@@ -364,9 +367,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             prep_path = target_dir / "preparation_summary.txt"
             self.assertTrue(prep_path.exists())
             self.assertEqual(prep_path.read_text(encoding="utf-8"), "Hazırlık Özeti\nKayıt Planı")
+            self.assertEqual(recorder.last_output_dir, target_dir)
             self.assertEqual(recorder.last_preparation_summary_path, prep_path)
             recorder.resolve_output_dir.assert_called_once_with()
             recorder.build_current_preparation_brief_text.assert_called_once_with()
+            recorder.write_last_session_state.assert_called_once_with(target_dir, recorder.last_summary_path)
+            recorder.update_recent_output_summary.assert_called_once_with()
+            recorder.open_last_output_dir_button.configure.assert_called_once_with(state="normal")
+            recorder.open_last_preparation_button.configure.assert_called_once_with(state="normal")
             self.assertEqual(recorder.status_messages[-1], f"Hazırlık özeti yazıldı: {prep_path}")
 
     def test_export_current_preparation_file_requires_output_dir(self) -> None:
