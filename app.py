@@ -1406,7 +1406,10 @@ class GuitarAmpRecorderApp:
             f"Cihazlar: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            lines.append(f"Kurtarma: {self.last_recovery_note_path.name} hazır")
+            if self.last_export_path is not None and self.last_export_path.exists():
+                lines.append(f"Kurtarma: {self.last_recovery_note_path.name} hazır | Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}")
+            else:
+                lines.append(f"Kurtarma: {self.last_recovery_note_path.name} hazır")
         return "\n".join(lines)
 
     def update_recording_prep_summary(self) -> None:
@@ -1424,6 +1427,8 @@ class GuitarAmpRecorderApp:
         subtitle = f"{file_count} çıktı hazırlanacak. Hedef: {output_dir}"
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             subtitle += " | kurtarma notu var"
+            if self.last_export_path is not None and self.last_export_path.exists():
+                subtitle += f" | son iyi kayıt: {recent_audio_status_text(self.last_export_path)}"
         return subtitle
 
     def update_recording_prep_subtitle(self) -> None:

@@ -220,18 +220,22 @@ class SessionStateTests(unittest.TestCase):
         recorder.session_mode.set("İsimli Oturum")
         recorder.session_name.set("Canlı Set")
         with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
             recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
             recorder.last_recovery_note_path = recovery_note_path
             with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canlı Set")):
                 prep_text = recorder.build_recording_prep_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
         self.assertIn("Preset/Oturum: Temiz Gitar | İsimli Oturum (Canlı Set)", prep_text)
         self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", prep_text)
         self.assertIn("Take/Hedef: aksam_take | /tmp/out/Canlı Set", prep_text)
         self.assertIn("Dosyalar: Mix WAV, Vokal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn("Cihazlar: Built-in Mic -> Built-in Output", prep_text)
-        self.assertIn(f"Kurtarma: {recovery_note_path.name} hazır", prep_text)
+        self.assertIn(f"Kurtarma: {recovery_note_path.name} hazır | Son iyi kayıt: {latest_audio}", prep_text)
 
     def test_build_recording_prep_subtitle_text_requires_output_dir(self) -> None:
         recorder = self.make_app()
@@ -252,13 +256,20 @@ class SessionStateTests(unittest.TestCase):
     def test_build_recording_prep_subtitle_text_marks_recovery_note(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
             recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
             recorder.last_recovery_note_path = recovery_note_path
 
             subtitle_text = recorder.build_recording_prep_subtitle_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertEqual(subtitle_text, "4 çıktı hazırlanacak. Hedef: /tmp/out/Akşam Kaydı | kurtarma notu var")
+        self.assertEqual(
+            subtitle_text,
+            f"4 çıktı hazırlanacak. Hedef: /tmp/out/Akşam Kaydı | kurtarma notu var | son iyi kayıt: {latest_audio}",
+        )
 
     def test_update_recording_prep_summary_updates_subtitle(self) -> None:
         recorder = self.make_app()
