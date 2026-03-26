@@ -314,7 +314,7 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(
             status_text,
-            "Kayıt hazır | Ana dosya: take.mp3 | Dosya sayısı: 2 | Klasör: /tmp/out/Canlı Set",
+            "Kayıt hazır | Ana dosya: take.mp3 (MP3 | Canlı Set) | Dosya sayısı: 2 | Klasör: /tmp/out/Canlı Set",
         )
 
     def test_build_completion_status_text_handles_missing_primary_file(self) -> None:

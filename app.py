@@ -127,15 +127,25 @@ def recent_audio_duration_text(path: Path) -> str:
     return format_seconds_short(duration)
 
 
+def recent_audio_hint_text(path: Path) -> str:
+    audio_type = path.suffix.lower().removeprefix(".").upper() or "SES"
+    parts = [audio_type]
+    duration = recent_audio_duration_text(path)
+    if duration:
+        parts.append(duration)
+    output_dir_name = path.parent.name or str(path.parent)
+    if output_dir_name:
+        parts.append(output_dir_name)
+    return " | ".join(parts)
+
+
+def recent_audio_status_text(path: Path) -> str:
+    return f"{path.name} ({recent_audio_hint_text(path)})"
+
+
 def recent_audio_highlight_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
-    duration = recent_audio_duration_text(path)
-    audio_type = path.suffix.lower().removeprefix(".").upper() or "SES"
-    output_dir_name = path.parent.name or str(path.parent)
-    location = f" | {output_dir_name}" if output_dir_name else ""
-    if duration:
-        return f"Son kayıt [{timestamp} | {audio_type} | {duration}{location}]: {path.name}"
-    return f"Son kayıt [{timestamp} | {audio_type}{location}]: {path.name}"
+    return f"Son kayıt [{timestamp} | {recent_audio_hint_text(path)}]: {path.name}"
 
 
 def format_seconds_short(seconds: float) -> str:
@@ -1369,7 +1379,7 @@ class GuitarAmpRecorderApp:
     def build_completion_status_text(self, label: str, output_dir: Path, primary_path: Optional[Path], generated_files: list[Path]) -> str:
         parts = [f"{label} hazır"]
         if primary_path is not None:
-            parts.append(f"Ana dosya: {primary_path.name}")
+            parts.append(f"Ana dosya: {recent_audio_status_text(primary_path)}")
         if generated_files:
             parts.append(f"Dosya sayısı: {len(generated_files)}")
         parts.append(f"Klasör: {output_dir}")
@@ -2641,7 +2651,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
-            self.set_status(self.finder_selected_status("Son kayıt", self.last_export_path.name))
+            self.set_status(f"Son kayıt Finder'da seçildi: {recent_audio_status_text(self.last_export_path)}")
         except Exception as exc:
             self.set_status(f"Finder açılamadı: {exc}")
 
@@ -2665,7 +2675,7 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Son kayıt çalınıyor: {self.last_export_path.name}")
             sd.play(audio, samplerate=sample_rate, device=output_idx)
             sd.wait()
-            self.set_status(f"Son kayıt oynatıldı: {self.last_export_path.name}")
+            self.set_status(f"Son kayıt oynatıldı: {recent_audio_status_text(self.last_export_path)}")
         except Exception as exc:
             self.set_status(f"Son kayıt oynatılamadı: {exc}")
 

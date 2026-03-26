@@ -461,7 +461,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         read_mock.assert_called_once_with(export_path, dtype="float32")
         play_mock.assert_called_once_with([0.1, 0.2], samplerate=44100, device=7)
         wait_mock.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Son kayıt oynatıldı: take.wav")
+        self.assertEqual(recorder.status_messages[-1], f"Son kayıt oynatıldı: {app.recent_audio_status_text(export_path)}")
 
     def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
@@ -474,7 +474,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.open_last_export_in_finder()
 
         run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
-        self.assertEqual(recorder.status_messages[-1], "Son kayıt Finder'da seçildi: take.wav")
+        self.assertEqual(recorder.status_messages[-1], f"Son kayıt Finder'da seçildi: {app.recent_audio_status_text(export_path)}")
 
     def test_open_last_take_notes_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
