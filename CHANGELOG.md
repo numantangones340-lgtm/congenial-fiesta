@@ -2,6 +2,20 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.9] - 2026-03-26
+
+### Degisti
+
+- ilk kurulum akisi, `Kurulum` ozeti ve tek satirlik `Siradaki adim` yardimi ile daha net hale getirildi
+- test, hizli kayit ve tam kayit akislari temel kurulum tamamlanmadan baslamayacak sekilde netlestirildi
+- arka plan muzik + mikrofon modu icin ayri `Birlestirme Kanali` karti eklendi; dosya, denge, hiz ve gercek ciktilar tek yerde gorunur hale geldi
+
+### Guvenlik ve Kararlilik
+
+- kurulum eksiginde kayit butonlari pasif kalacak sekilde state yonetimi guclendirildi
+- `ffmpeg` eksigi ve WAV fallback davranisi kurulum, plan, cikti ve birlestirme kartlarinda tutarli hale getirildi
+- arka planli kayitta once test sonra tam kayit akisi daha acik hale getirilerek yanlis mod secimi riski azaltildi
+
 ## [1.1.8] - 2026-03-25
 
 ### Degisti
