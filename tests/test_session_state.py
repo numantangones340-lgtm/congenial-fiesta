@@ -33,6 +33,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.operation_state_text = FakeVar("")
         recorder.compact_status_text = FakeVar("")
         recorder.readiness_text = FakeVar("")
+        recorder.readiness_subtitle_text = FakeVar("")
         recorder.recent_output_summary_text = FakeVar("")
         recorder.recent_output_subtitle_text = FakeVar("")
         recorder.operation_state_label = mock.Mock()
@@ -461,6 +462,13 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", readiness_text)
         self.assertIn("Take adı: aksam_take", readiness_text)
 
+    def test_build_readiness_subtitle_text_reports_ready_state(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_readiness_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Giriş, çıkış, klasör ve kaynak hazır görünüyor.")
+
     def test_build_source_subtitle_text_reports_mic_only_mode(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = None
@@ -546,6 +554,25 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Kaynak: Sadece mikrofon (90 sn)", readiness_text)
         self.assertIn("Take adı: otomatik oluşturulacak", readiness_text)
 
+    def test_build_readiness_subtitle_text_reports_missing_items(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        subtitle_text = recorder.build_readiness_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Eksik seçimler: klasör")
+
+    def test_build_readiness_subtitle_text_prioritizes_recovery_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+
+            subtitle_text = recorder.build_readiness_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Hazırlık tamamlanmadan önce kurtarma notunu kontrol edin.")
+
     def test_build_readiness_palette_reports_ready_colors(self) -> None:
         recorder = self.make_app()
 
@@ -567,6 +594,7 @@ class SessionStateTests(unittest.TestCase):
 
         recorder.update_readiness_summary()
 
+        self.assertEqual(recorder.readiness_subtitle_text.get(), "Eksik seçimler: klasör")
         self.assertIn("Eksikler: klasör", recorder.readiness_text.get())
         recorder.readiness_label.configure.assert_called_once_with(bg="#2c2418", fg="#ffe7b3")
 

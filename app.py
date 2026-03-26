@@ -655,6 +655,7 @@ class GuitarAmpRecorderApp:
         self.mic_record_seconds = StringVar(value="60")
         self.monitor_status_text = StringVar(value="Canlı monitor kapalı")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
+        self.readiness_subtitle_text = StringVar(value="Hazırlık özeti hazırlanıyor...")
         self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
         self.action_subtitle_text = StringVar(value="İşlem akışı hazırlanıyor...")
         self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
@@ -757,7 +758,7 @@ class GuitarAmpRecorderApp:
         )
         self.next_step_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        readiness_box = self.create_section(title="Hazırlık Durumu", subtitle="Kayda girmeden önce eksikleri görün.")
+        readiness_box = self.create_section(title="Hazırlık Durumu", subtitlevariable=self.readiness_subtitle_text)
         self.readiness_label = Label(
             readiness_box,
             textvariable=self.readiness_text,
@@ -1408,8 +1409,23 @@ class GuitarAmpRecorderApp:
             return {"bg": "#2c2418", "fg": "#ffe7b3"}
         return {"bg": "#1f2b22", "fg": "#d8f3dc"}
 
+    def build_readiness_subtitle_text(self) -> str:
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return "Hazırlık tamamlanmadan önce kurtarma notunu kontrol edin."
+        missing_items = self.missing_readiness_items()
+        if missing_items:
+            return f"Eksik seçimler: {', '.join(missing_items)}"
+        return "Giriş, çıkış, klasör ve kaynak hazır görünüyor."
+
+    def update_readiness_subtitle(self) -> None:
+        try:
+            self.readiness_subtitle_text.set(self.build_readiness_subtitle_text())
+        except Exception:
+            pass
+
     def update_readiness_summary(self) -> None:
         try:
+            self.update_readiness_subtitle()
             self.readiness_text.set(self.build_readiness_text())
             label = getattr(self, "readiness_label", None)
             if label is not None:
