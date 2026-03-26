@@ -162,6 +162,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             with mock.patch.object(app.sf, "info", return_value=mock.Mock(duration=125.4), create=True):
                 line = app.recent_audio_highlight_line(audio_path)
 
+        self.assertIn("WAV", line)
         self.assertIn("2:05", line)
         self.assertIn(Path(tmpdir).name, line)
         self.assertIn("take.wav", line)
