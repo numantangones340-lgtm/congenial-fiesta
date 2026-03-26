@@ -664,6 +664,7 @@ class GuitarAmpRecorderApp:
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
+        self.option_subtitle_text = StringVar(value="Seçenek özeti hazırlanıyor...")
         self.source_subtitle_text = StringVar(value="Kayıt kaynağı hazırlanıyor...")
         self.output_subtitle_text = StringVar(value="Çıktı hedefi hazırlanıyor...")
         self.meter_level = 0.0
@@ -925,7 +926,7 @@ class GuitarAmpRecorderApp:
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        option_box = self.create_section(title="Seçenek Özeti", subtitle="Ayarların sonucunu kısa biçimde görün.")
+        option_box = self.create_section(title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
         self.option_summary_label = Label(
             option_box,
             textvariable=self.option_summary_text,
@@ -1624,7 +1625,31 @@ class GuitarAmpRecorderApp:
 
     def update_option_explanation_summary(self) -> None:
         try:
+            self.update_option_subtitle()
             self.option_summary_text.set(self.build_option_explanation_text())
+        except Exception:
+            pass
+
+    def build_option_subtitle_text(self) -> str:
+        wav_mode = self.wav_export_mode_value()
+        mp3_enabled = self.should_export_mp3()
+        limiter_enabled = self.limiter_enabled_value() == "Açık"
+        parts = []
+        parts.append("MP3 açık" if mp3_enabled else "MP3 kapalı")
+        if wav_mode == "Mix + Vokal WAV":
+            parts.append("mix + vokal WAV")
+        elif wav_mode == "Sadece WAV (Mix + Vokal)":
+            parts.append("yalnız WAV çıkışı")
+        elif wav_mode == "Tüm WAV Dosyaları":
+            parts.append("tüm WAV dosyaları")
+        else:
+            parts.append("yalnız vokal WAV")
+        parts.append("limiter açık" if limiter_enabled else "limiter kapalı")
+        return " | ".join(parts)
+
+    def update_option_subtitle(self) -> None:
+        try:
+            self.option_subtitle_text.set(self.build_option_subtitle_text())
         except Exception:
             pass
 

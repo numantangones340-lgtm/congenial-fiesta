@@ -52,6 +52,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.preflight_subtitle_text = FakeVar("")
         recorder.source_subtitle_text = FakeVar("")
         recorder.output_subtitle_text = FakeVar("")
+        recorder.option_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
@@ -980,6 +981,30 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("İzleme: yüksek (%140)", option_text)
         self.assertIn("Hız: daha yavaş (%85)", option_text)
         self.assertIn("Limiter: açık, tepeler sınırlanacak", option_text)
+
+    def test_build_option_subtitle_text_reports_default_selection(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_option_subtitle_text()
+
+        self.assertEqual(subtitle_text, "MP3 kapalı | tüm WAV dosyaları | limiter açık")
+
+    def test_build_option_subtitle_text_reports_mp3_and_mix_vocal_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Mix + Vokal WAV")
+        recorder.limiter_enabled.set("Kapalı")
+
+        subtitle_text = recorder.build_option_subtitle_text()
+
+        self.assertEqual(subtitle_text, "MP3 açık | mix + vokal WAV | limiter kapalı")
+
+    def test_update_option_explanation_summary_updates_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        recorder.update_option_explanation_summary()
+
+        self.assertEqual(recorder.option_subtitle_text.get(), "MP3 açık | yalnız vokal WAV | limiter açık")
 
     def test_remember_completed_take_name_updates_output_name(self) -> None:
         recorder = self.make_app()
