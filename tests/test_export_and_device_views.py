@@ -155,6 +155,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_text.get(), expected)
 
+    def test_recent_audio_highlight_line_includes_duration_when_available(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "take.wav"
+            audio_path.write_text("audio", encoding="utf-8")
+            with mock.patch.object(app.sf, "info", return_value=mock.Mock(duration=125.4), create=True):
+                line = app.recent_audio_highlight_line(audio_path)
+
+        self.assertIn("2:05", line)
+        self.assertIn("take.wav", line)
+
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
         recorder = self.make_app()
         inputs = [(index, f"Input {index}") for index in range(6)]

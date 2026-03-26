@@ -116,8 +116,22 @@ def recent_output_file_line(path: Path) -> str:
     return f"- {recent_output_file_label(path)} [{timestamp}]: {path.name}"
 
 
+def recent_audio_duration_text(path: Path) -> str:
+    try:
+        info = sf.info(str(path))
+    except Exception:
+        return ""
+    duration = float(getattr(info, "duration", 0.0) or 0.0)
+    if duration <= 0:
+        return ""
+    return format_seconds_short(duration)
+
+
 def recent_audio_highlight_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
+    duration = recent_audio_duration_text(path)
+    if duration:
+        return f"Son kayıt [{timestamp} | {duration}]: {path.name}"
     return f"Son kayıt [{timestamp}]: {path.name}"
 
 
