@@ -499,24 +499,38 @@ class SessionStateTests(unittest.TestCase):
     def test_build_next_step_text_prefers_recovery_guidance_when_note_exists(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
             recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
             recorder.last_recovery_note_path = recovery_note_path
 
             next_step = recorder.build_next_step_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertIn("Kurtarma notunu inceleyin", next_step)
+        self.assertEqual(
+            next_step,
+            f"Son çıktı alma denemesi hata verdi. Kurtarma notunu inceleyin. Son iyi kayıt: {latest_audio}. Sonra ayarları değiştirip kaydı yeniden başlatın.",
+        )
 
     def test_build_next_step_subtitle_text_prefers_recovery_state(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
             recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
             recorder.last_recovery_note_path = recovery_note_path
 
             subtitle_text = recorder.build_next_step_subtitle_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertEqual(subtitle_text, "Yeniden denemeden önce kurtarma notu kontrol edilmeli.")
+        self.assertEqual(
+            subtitle_text,
+            f"Yeniden denemeden önce kurtarma notu kontrol edilmeli. Son iyi kayıt: {latest_audio}.",
+        )
 
     def test_build_next_step_text_guides_microphone_mode_when_no_backing(self) -> None:
         recorder = self.make_app()

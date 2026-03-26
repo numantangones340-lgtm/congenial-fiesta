@@ -1532,6 +1532,8 @@ class GuitarAmpRecorderApp:
         if not input_ready:
             return "1. Mikrofonları yeniden tara. 2. Bir giriş seç. 3. Test kaydı al."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Son çıktı alma denemesi hata verdi. Kurtarma notunu inceleyin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}. Sonra ayarları değiştirip kaydı yeniden başlatın."
             return "Son çıktı alma denemesi hata verdi. Kurtarma notunu inceleyin, sonra ayarları değiştirip kaydı yeniden başlatın."
         if self.backing_file is None:
             return "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın."
@@ -1556,6 +1558,8 @@ class GuitarAmpRecorderApp:
         if not input_ready:
             return "Önce mikrofon seçimi tamamlanmalı."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Yeniden denemeden önce kurtarma notu kontrol edilmeli. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return "Yeniden denemeden önce kurtarma notu kontrol edilmeli."
         if self.backing_file is None:
             return "Sadece mikrofon akışı hazır."
