@@ -688,6 +688,7 @@ class GuitarAmpRecorderApp:
         self.last_summary_path: Optional[Path] = None
         self.last_take_notes_path: Optional[Path] = None
         self.last_recovery_note_path: Optional[Path] = None
+        self.last_preparation_summary_path: Optional[Path] = None
         self.recent_exports_text = StringVar(value="Henüz çıktı yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
@@ -932,6 +933,9 @@ class GuitarAmpRecorderApp:
         prep_buttons.pack(anchor="w", padx=14, pady=(0, 12))
         Button(prep_buttons, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white").pack(side="left")
         Button(prep_buttons, text="Hazırlığı Dosyaya Yaz", command=self.export_current_preparation_file, bg="#2d7d46", fg="white").pack(
+            side="left", padx=(8, 0)
+        )
+        Button(prep_buttons, text="Hazırlık Dosyasını Aç", command=self.open_preparation_summary_in_finder, bg="#1f6feb", fg="white").pack(
             side="left", padx=(8, 0)
         )
 
@@ -1388,9 +1392,26 @@ class GuitarAmpRecorderApp:
             output_dir.mkdir(parents=True, exist_ok=True)
             prep_path = output_dir / "preparation_summary.txt"
             prep_path.write_text(self.build_current_preparation_brief_text(), encoding="utf-8")
+            self.last_preparation_summary_path = prep_path
             self.set_status(f"Hazırlık özeti yazıldı: {prep_path}")
         except Exception as exc:
             self.set_status(f"Hazırlık özeti yazılamadı: {exc}")
+
+    def current_preparation_summary_path(self) -> Path:
+        if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
+            return self.last_preparation_summary_path
+        return self.resolve_output_dir() / "preparation_summary.txt"
+
+    def open_preparation_summary_in_finder(self) -> None:
+        prep_path = self.current_preparation_summary_path()
+        if not prep_path.exists():
+            self.set_status("Hazırlık dosyası yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(prep_path)], check=False)
+            self.set_status(self.finder_selected_status("Hazırlık dosyası", prep_path.name))
+        except Exception as exc:
+            self.set_status(f"Hazırlık dosyası açılamadı: {exc}")
 
     def build_output_subtitle_text(self) -> str:
         base_dir = self.output_dir.get().strip()
@@ -2387,6 +2408,7 @@ class GuitarAmpRecorderApp:
                 "last_export_path": str(self.last_export_path) if self.last_export_path else "",
                 "take_notes_path": str(self.last_take_notes_path) if self.last_take_notes_path else "",
                 "recovery_note_path": str(self.last_recovery_note_path) if self.last_recovery_note_path else "",
+                "preparation_summary_path": str(self.last_preparation_summary_path) if self.last_preparation_summary_path else "",
                 "summary_path": str(summary_path) if summary_path else "",
             }
             LAST_SESSION_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -2445,6 +2467,16 @@ class GuitarAmpRecorderApp:
             self.last_recovery_note_path = fallback_recovery_note_path if fallback_recovery_note_path.exists() else None
         else:
             self.last_recovery_note_path = None
+
+        preparation_summary_path = str(data.get("preparation_summary_path", "")).strip()
+        if preparation_summary_path:
+            path = Path(preparation_summary_path)
+            self.last_preparation_summary_path = path if path.exists() else None
+        elif self.last_output_dir is not None:
+            fallback_prep_path = self.last_output_dir / "preparation_summary.txt"
+            self.last_preparation_summary_path = fallback_prep_path if fallback_prep_path.exists() else None
+        else:
+            self.last_preparation_summary_path = None
 
     def reload_last_session(self) -> None:
         if self.block_changes_during_recording("oturum bilgisi"):

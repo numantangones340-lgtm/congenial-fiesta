@@ -77,6 +77,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_summary_path = None
         recorder.last_take_notes_path = None
         recorder.last_recovery_note_path = None
+        recorder.last_preparation_summary_path = None
         return recorder
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
@@ -362,6 +363,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             prep_path = target_dir / "preparation_summary.txt"
             self.assertTrue(prep_path.exists())
             self.assertEqual(prep_path.read_text(encoding="utf-8"), "Hazırlık Özeti\nKayıt Planı")
+            self.assertEqual(recorder.last_preparation_summary_path, prep_path)
             recorder.resolve_output_dir.assert_called_once_with()
             recorder.build_current_preparation_brief_text.assert_called_once_with()
             self.assertEqual(recorder.status_messages[-1], f"Hazırlık özeti yazıldı: {prep_path}")
@@ -373,6 +375,27 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.export_current_preparation_file()
 
         self.assertEqual(recorder.status_messages[-1], "Hazırlık özeti için önce kayıt klasörünü seçin.")
+
+    def test_open_preparation_summary_in_finder_handles_missing_file(self) -> None:
+        recorder = self.make_app()
+        recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/out/Session"))
+
+        recorder.open_preparation_summary_in_finder()
+
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık dosyası yok.")
+
+    def test_open_preparation_summary_in_finder_selects_file_and_updates_status(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prep_path = Path(tmpdir) / "preparation_summary.txt"
+            prep_path.write_text("Hazırlık Özeti", encoding="utf-8")
+            recorder.last_preparation_summary_path = prep_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_preparation_summary_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(prep_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık dosyası Finder'da seçildi: preparation_summary.txt")
 
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()

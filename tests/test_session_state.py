@@ -113,6 +113,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.last_summary_path = None
         recorder.last_take_notes_path = None
         recorder.last_recovery_note_path = None
+        recorder.last_preparation_summary_path = None
         return recorder
 
     def test_build_session_summary_contains_export_and_generated_files(self) -> None:
@@ -1147,6 +1148,7 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(loaded["last_export_path"], "")
         self.assertEqual(loaded["take_notes_path"], "")
         self.assertEqual(loaded["recovery_note_path"], "")
+        self.assertEqual(loaded["preparation_summary_path"], "")
         self.assertEqual(loaded["summary_path"], str(summary_path))
 
     def test_reload_last_session_for_named_session_sets_parent_dir_and_loads_preset(self) -> None:
@@ -1240,6 +1242,8 @@ class SessionStateTests(unittest.TestCase):
             take_notes_path.write_text("note", encoding="utf-8")
             recovery_note_path = output_dir / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
+            preparation_path = output_dir / "preparation_summary.txt"
+            preparation_path.write_text("prep", encoding="utf-8")
             state_path = Path(tmpdir) / ".last_session.json"
             state_path.write_text(
                 json.dumps(
@@ -1248,6 +1252,7 @@ class SessionStateTests(unittest.TestCase):
                         "session_mode": "Tek Klasör",
                         "take_notes_path": str(take_notes_path),
                         "recovery_note_path": str(recovery_note_path),
+                        "preparation_summary_path": str(preparation_path),
                     },
                     ensure_ascii=False,
                 ),
@@ -1259,6 +1264,7 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(recorder.last_take_notes_path, take_notes_path)
         self.assertEqual(recorder.last_recovery_note_path, recovery_note_path)
+        self.assertEqual(recorder.last_preparation_summary_path, preparation_path)
 
     def test_reload_last_session_restores_last_export_path(self) -> None:
         recorder = self.make_app()
