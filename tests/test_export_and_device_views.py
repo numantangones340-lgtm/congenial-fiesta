@@ -58,11 +58,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.selected_route_text = FakeVar("")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
         recorder.output_device_choice = FakeVar("Varsayılan macOS çıkışı")
+        recorder.wav_export_mode = FakeVar("Sadece Vokal WAV")
         recorder.input_device_id = FakeVar("")
         recorder.output_device_id = FakeVar("")
         recorder.device_summary_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
         recorder.recording_active = False
+        recorder.current_input_device_count = 0
+        recorder.current_output_device_count = 0
         recorder.status_messages = []
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_device_menus = mock.Mock()
@@ -198,6 +201,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.device_summary_text.get(), "summary")
         self.assertIn("Mikrofon içinde izin verin", recorder.setup_hint_text.get())
         self.assertEqual(recorder.status_messages[-1], "No devices help")
+
+    def test_build_setup_hint_text_warns_when_ffmpeg_missing_for_mp3(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            hint = recorder.build_setup_hint_text(1, 1)
+
+        self.assertIn("MP3 için ffmpeg bulunamadı", hint)
+
+    def test_build_setup_hint_text_requests_output_dir_before_recording(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("")
+
+        with mock.patch.object(app.shutil, "which", return_value="/opt/homebrew/bin/ffmpeg"):
+            hint = recorder.build_setup_hint_text(1, 1)
+
+        self.assertEqual(hint, "Kurulum tamamlanmak üzere. Son adım olarak kayıt klasörünü seçin.")
 
     def test_refresh_device_menus_resets_unknown_choices_and_updates_route(self) -> None:
         recorder = self.make_app()

@@ -99,6 +99,18 @@ CALISTIR.bat gui
 CALISTIR.bat cli
 ```
 
+## İlk Açılışta En Güvenli Sıra
+
+1. `Mikrofonları Yeniden Tara` ile giriş ve çıkışı doğrulayın.
+2. `Çıkış Klasörü` seçin.
+3. MP3 istiyorsanız `ffmpeg` kurulu olduğundan emin olun.
+4. Önce `5 sn test`, sonra gerçek kayda geçin.
+
+Notlar:
+- Mikrofon görünmüyorsa macOS içinde `Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon` iznini açın.
+- Aygıt kimliklerini boş bırakmak en güvenli başlangıçtır; sorun olursa uygulamadaki `Önerilen Aygıtları Doldur` yolunu deneyin.
+- `ffmpeg` yoksa MP3 yerine WAV ile devam edebilirsiniz.
+
 CLI sürümünde son kullandığınız ayarlar proje klasöründeki `.last_preset.json` dosyasına kaydedilir.
 Bir sonraki açılışta `Kayıtlı ayarlar yüklensin mi? [E/h]:` sorusuna `E` diyerek tek adımda devam edebilirsiniz.
 `./CALISTIR.command quick` komutu ise kayıtlı ayarlar ile soru sormadan doğrudan kayıt alır.

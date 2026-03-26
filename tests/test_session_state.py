@@ -40,6 +40,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.operation_state_label = mock.Mock()
         recorder.readiness_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
+        recorder.setup_hint_text = FakeVar("")
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("İsimli Oturum")
         recorder.session_name = FakeVar("Akşam Kaydı")
@@ -87,6 +88,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.recording_active = False
         recorder.stop_recording_requested = False
         recorder.recording_mode = ""
+        recorder.current_input_device_count = 1
+        recorder.current_output_device_count = 1
         recorder.meter_stream = None
         recorder.monitor_stream = None
         recorder.status_messages = []

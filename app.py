@@ -746,6 +746,8 @@ class GuitarAmpRecorderApp:
         self.recording_target_seconds = 0.0
         self.recording_mode = ""
         self.stop_recording_requested = False
+        self.current_input_device_count = 0
+        self.current_output_device_count = 0
         self.last_output_dir: Optional[Path] = None
         self.last_export_path: Optional[Path] = None
         self.last_summary_path: Optional[Path] = None
@@ -1285,6 +1287,7 @@ class GuitarAmpRecorderApp:
         self.update_tone_subtitle()
         self.update_mix_subtitle()
         self.update_option_explanation_summary()
+        self.update_setup_hint_summary()
 
     def session_mode_value(self) -> str:
         return normalize_choice(self.session_mode.get(), SESSION_MODE_ALIASES, "Tek Klasör")
@@ -2858,6 +2861,29 @@ class GuitarAmpRecorderApp:
         output_text = "\n".join(output_lines) if output_lines else "• Çıkış aygıtı bulunamadı."
         return f"Giriş Aygıtları ({len(inputs)}):\n{input_text}\n\nÇıkış Aygıtları ({len(outputs)}):\n{output_text}"
 
+    def build_setup_hint_text(self, input_count: int, output_count: int) -> str:
+        if input_count == 0:
+            return (
+                "1. Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon içinde izin verin. "
+                "2. Harici kart takılıysa çıkarıp yeniden takın. "
+                "3. Sonra 'Mikrofonları Yeniden Tara'ya basın."
+            )
+        if self.should_export_mp3() and shutil.which("ffmpeg") is None:
+            return "Kurulum eksiği: MP3 için ffmpeg bulunamadı. Şimdilik WAV ile devam edebilirsiniz veya `brew install ffmpeg` kurun."
+        if not self.output_dir.get().strip():
+            return "Kurulum tamamlanmak üzere. Son adım olarak kayıt klasörünü seçin."
+        if self.input_device_id.get().strip() or self.output_device_id.get().strip():
+            return "Özel aygıt kimliği kullanıyorsunuz. Test başarısız olursa 'Varsayılana Dön' ile boş bırakıp tekrar deneyin."
+        if output_count == 0:
+            return "Çıkış aygıtı görünmüyor. Hoparlör veya kulaklığı kontrol edip sonra tekrar tarayın."
+        return "Kurulum hazır görünüyor. En güvenli akış: önce 5 saniyelik test, sonra kayıt."
+
+    def update_setup_hint_summary(self) -> None:
+        try:
+            self.setup_hint_text.set(self.build_setup_hint_text(self.current_input_device_count, self.current_output_device_count))
+        except Exception:
+            pass
+
     def inspect_devices(self, initial: bool = False) -> None:
         if not initial and self.block_changes_during_recording("cihaz listesi"):
             return
@@ -2865,22 +2891,14 @@ class GuitarAmpRecorderApp:
         outputs = list_output_devices()
         input_count = len(inputs)
         output_count = len(outputs)
+        self.current_input_device_count = input_count
+        self.current_output_device_count = output_count
         self.refresh_device_menus(inputs, outputs)
         self.device_summary_text.set(self.build_device_summary())
+        self.update_setup_hint_summary()
         if input_count == 0:
-            self.setup_hint_text.set(
-                "1. Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon içinde izin verin. 2. Harici kart takılıysa çıkarıp yeniden takın. 3. Sonra 'Mikrofonları Yeniden Tara'ya basın."
-            )
             self.set_status(no_device_help_text())
             return
-        if self.input_device_id.get().strip() or self.output_device_id.get().strip():
-            self.setup_hint_text.set(
-                "Özel aygıt kimliği kullanıyorsunuz. Test başarısız olursa 'Varsayılana Dön' ile boş bırakıp tekrar deneyin."
-            )
-        else:
-            self.setup_hint_text.set(
-                "En güvenli kurulum: aygıt kimliklerini boş bırakın. Sorun olursa 'Önerilen Aygıtları Doldur' ile ilk uygun giriş/çıkışı seçin."
-            )
         self.restart_input_meter()
         if initial:
             self.set_status(f"Hazır. Giriş aygıtı: {input_count} | Çıkış aygıtı: {output_count}")
