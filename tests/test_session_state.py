@@ -48,6 +48,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.progress_subtitle_text = FakeVar("")
         recorder.preflight_warning_text = FakeVar("")
         recorder.source_subtitle_text = FakeVar("")
+        recorder.output_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
@@ -491,6 +492,45 @@ class SessionStateTests(unittest.TestCase):
             recorder.source_subtitle_text.get(),
             "Şu an sadece mikrofon etkin. İsterseniz arka plan ekleyebilir veya hızlı kayda geçebilirsiniz.",
         )
+
+    def test_build_output_subtitle_text_reports_single_folder_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.session_mode.set("Tek Klasör")
+
+        subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Dosyalar doğrudan /tmp/out klasörüne yazılacak.")
+
+    def test_build_output_subtitle_text_reports_named_session_mode(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Dosyalar /tmp/out içinde Akşam Kaydı klasörüne yazılacak.")
+
+    def test_build_output_subtitle_text_reports_dated_session_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.session_mode.set("Tarihli Oturum")
+
+        subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Dosyalar /tmp/out içinde tarihli bir klasöre yazılacak.")
+
+    def test_build_output_subtitle_text_requires_folder_selection(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Önce bir klasör seçin. MP3 ve WAV dosyaları seçtiğiniz yere yazılacak.")
+
+    def test_update_output_subtitle_updates_visible_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.session_mode.set("Tek Klasör")
+
+        recorder.update_output_subtitle()
+
+        self.assertEqual(recorder.output_subtitle_text.get(), "Dosyalar doğrudan /tmp/out klasörüne yazılacak.")
 
     def test_build_readiness_text_flags_missing_items_and_auto_take_name(self) -> None:
         recorder = self.make_app()

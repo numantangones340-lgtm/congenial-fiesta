@@ -662,6 +662,7 @@ class GuitarAmpRecorderApp:
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
         self.source_subtitle_text = StringVar(value="Kayıt kaynağı hazırlanıyor...")
+        self.output_subtitle_text = StringVar(value="Çıktı hedefi hazırlanıyor...")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -890,7 +891,7 @@ class GuitarAmpRecorderApp:
         Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(side="left")
         Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
 
-        export = self.create_section(title="Çıktı", subtitle="Klasörü seçin; MP3 ve WAV dosyaları buraya yazılır.")
+        export = self.create_section(title="Çıktı", subtitlevariable=self.output_subtitle_text)
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_dir, width=48).pack(anchor="w", padx=14)
         Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(8, 10))
@@ -1151,6 +1152,7 @@ class GuitarAmpRecorderApp:
         self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
+        self.update_output_subtitle()
         self.update_option_explanation_summary()
         self.update_recent_output_summary()
 
@@ -1188,6 +1190,7 @@ class GuitarAmpRecorderApp:
         self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
+        self.update_output_subtitle()
         self.update_option_explanation_summary()
 
     def session_mode_value(self) -> str:
@@ -1310,6 +1313,24 @@ class GuitarAmpRecorderApp:
     def update_recording_prep_summary(self) -> None:
         try:
             self.prep_summary_text.set(self.build_recording_prep_text())
+        except Exception:
+            pass
+
+    def build_output_subtitle_text(self) -> str:
+        base_dir = self.output_dir.get().strip()
+        if not base_dir:
+            return "Önce bir klasör seçin. MP3 ve WAV dosyaları seçtiğiniz yere yazılacak."
+        mode = self.session_mode_value()
+        if mode == "İsimli Oturum":
+            session_name = self.session_name.get().strip() or "session"
+            return f"Dosyalar {base_dir} içinde {session_name} klasörüne yazılacak."
+        if mode == "Tarihli Oturum":
+            return f"Dosyalar {base_dir} içinde tarihli bir klasöre yazılacak."
+        return f"Dosyalar doğrudan {base_dir} klasörüne yazılacak."
+
+    def update_output_subtitle(self) -> None:
+        try:
+            self.output_subtitle_text.set(self.build_output_subtitle_text())
         except Exception:
             pass
 
