@@ -1615,6 +1615,8 @@ class GuitarAmpRecorderApp:
 
     def build_readiness_subtitle_text(self) -> str:
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Hazırlık tamamlanmadan önce kurtarma notunu kontrol edin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return "Hazırlık tamamlanmadan önce kurtarma notunu kontrol edin."
         missing_items = self.missing_readiness_items()
         if missing_items:
