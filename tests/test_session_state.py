@@ -53,6 +53,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.source_subtitle_text = FakeVar("")
         recorder.output_subtitle_text = FakeVar("")
         recorder.option_subtitle_text = FakeVar("")
+        recorder.prep_subtitle_text = FakeVar("")
         recorder.tone_subtitle_text = FakeVar("")
         recorder.mix_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
@@ -228,6 +229,41 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Dosyalar: Mix WAV, Vokal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn("Cihazlar: Built-in Mic -> Built-in Output", prep_text)
         self.assertIn(f"Kurtarma: {recovery_note_path.name} hazır", prep_text)
+
+    def test_build_recording_prep_subtitle_text_requires_output_dir(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        subtitle_text = recorder.build_recording_prep_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Planı netleştirmek için önce kayıt klasörünü seçin.")
+
+    def test_build_recording_prep_subtitle_text_reports_target_and_count(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canlı Set")):
+            subtitle_text = recorder.build_recording_prep_subtitle_text()
+
+        self.assertEqual(subtitle_text, "4 çıktı hazırlanacak. Hedef: /tmp/out/Canlı Set")
+
+    def test_build_recording_prep_subtitle_text_marks_recovery_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+
+            subtitle_text = recorder.build_recording_prep_subtitle_text()
+
+        self.assertEqual(subtitle_text, "4 çıktı hazırlanacak. Hedef: /tmp/out/Akşam Kaydı | kurtarma notu var")
+
+    def test_update_recording_prep_summary_updates_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        recorder.update_recording_prep_summary()
+
+        self.assertEqual(recorder.prep_subtitle_text.get(), "Planı netleştirmek için önce kayıt klasörünü seçin.")
 
     def test_build_compact_status_text_summarizes_core_state_on_one_line(self) -> None:
         recorder = self.make_app()

@@ -662,6 +662,7 @@ class GuitarAmpRecorderApp:
         self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
         self.preflight_subtitle_text = StringVar(value="Ön kontrol özeti hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
+        self.prep_subtitle_text = StringVar(value="Kayıt planı özeti hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
         self.option_subtitle_text = StringVar(value="Seçenek özeti hazırlanıyor...")
@@ -920,7 +921,7 @@ class GuitarAmpRecorderApp:
         limit_menu = OptionMenu(export, self.record_limit_hours, "1", "2")
         limit_menu.pack(anchor="w", padx=14, pady=(0, 12))
 
-        prep_box = self.create_section(title="Kayıt Planı", subtitle="Ne üretileceğini ve nereye yazılacağını görün.")
+        prep_box = self.create_section(title="Kayıt Planı", subtitlevariable=self.prep_subtitle_text)
         self.prep_summary_label = Label(
             prep_box,
             textvariable=self.prep_summary_text,
@@ -1322,7 +1323,24 @@ class GuitarAmpRecorderApp:
 
     def update_recording_prep_summary(self) -> None:
         try:
+            self.update_recording_prep_subtitle()
             self.prep_summary_text.set(self.build_recording_prep_text())
+        except Exception:
+            pass
+
+    def build_recording_prep_subtitle_text(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Planı netleştirmek için önce kayıt klasörünü seçin."
+        output_dir = self.resolve_output_dir()
+        file_count = len(self.planned_output_labels())
+        subtitle = f"{file_count} çıktı hazırlanacak. Hedef: {output_dir}"
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            subtitle += " | kurtarma notu var"
+        return subtitle
+
+    def update_recording_prep_subtitle(self) -> None:
+        try:
+            self.prep_subtitle_text.set(self.build_recording_prep_subtitle_text())
         except Exception:
             pass
 
