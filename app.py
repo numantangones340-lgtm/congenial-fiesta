@@ -1877,7 +1877,7 @@ class GuitarAmpRecorderApp:
             return "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             if self.last_export_path is not None and self.last_export_path.exists():
-                return "Kurtarma notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
+                return f"Kurtarma notu hazır. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
             return "Kurtarma notu hazır. Önce notu kopyalayın, sonra klasörü açın."
         if self.last_export_path is not None and self.last_export_path.exists():
             ready_items = [f"son kayıt {recent_audio_status_text(self.last_export_path)}"]
@@ -1918,6 +1918,8 @@ class GuitarAmpRecorderApp:
         if self.recording_active:
             return "Kayıt sürerken eski çıktı işlemleri geçici olarak kapalıdır."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Sorun yaşandıysa önce kurtarma notunu inceleyin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return "Sorun yaşandıysa önce kurtarma notunu inceleyin."
         if self.last_export_path is not None and self.last_export_path.exists():
             return f"Son kayıt hazır: {recent_audio_status_text(self.last_export_path)}. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."

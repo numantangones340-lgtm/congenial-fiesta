@@ -748,20 +748,31 @@ class SessionStateTests(unittest.TestCase):
             recorder.last_recovery_note_path = recovery_path
 
             summary_text = recorder.build_recent_output_summary_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertEqual(summary_text, "Kurtarma notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın.")
+        self.assertEqual(
+            summary_text,
+            f"Kurtarma notu hazır. Son iyi kayıt: {latest_audio}. Önce notu kopyalayın, sonra son kaydı veya klasörü açın.",
+        )
 
     def test_build_recent_output_subtitle_text_prioritizes_recovery_note(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
+            export_path = output_dir / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
             recovery_path = output_dir / "export_recovery_note.txt"
             recovery_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
             recorder.last_recovery_note_path = recovery_path
 
             subtitle_text = recorder.build_recent_output_subtitle_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertEqual(subtitle_text, "Sorun yaşandıysa önce kurtarma notunu inceleyin.")
+        self.assertEqual(
+            subtitle_text,
+            f"Sorun yaşandıysa önce kurtarma notunu inceleyin. Son iyi kayıt: {latest_audio}.",
+        )
 
     def test_build_recent_output_summary_text_prefers_last_export_actions(self) -> None:
         recorder = self.make_app()
