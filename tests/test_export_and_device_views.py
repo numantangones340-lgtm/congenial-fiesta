@@ -106,9 +106,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.refresh_recent_exports()
-            expected = [app.recent_output_file_line(path) for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:8]]
+            expected_lines = [app.recent_output_file_line(path) for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:8]]
+            latest_audio = app.latest_audio_file_in_dir(output_dir)
+            expected = f"{app.recent_audio_highlight_line(latest_audio)}\n\n" + "\n".join(expected_lines)
 
-        self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
+        self.assertEqual(recorder.recent_exports_text.get(), expected)
 
     def test_refresh_recent_exports_handles_missing_dir(self) -> None:
         recorder = self.make_app()
@@ -129,10 +131,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/unused-output"))
 
             recorder.refresh_recent_exports()
-            expected = app.recent_output_file_line(newer)
+            expected = f"{app.recent_audio_highlight_line(newer)}\n\n{app.recent_output_file_line(newer)}"
 
         self.assertEqual(recorder.recent_exports_text.get(), expected)
         recorder.resolve_output_dir.assert_not_called()
+
+    def test_refresh_recent_exports_without_audio_skips_highlight_line(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            files = []
+            for offset, name in enumerate(["session_summary.json", "take_notes.txt"]):
+                path = output_dir / name
+                path.write_text(name, encoding="utf-8")
+                os.utime(path, (time.time() + offset, time.time() + offset))
+                files.append(path)
+
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.refresh_recent_exports()
+            expected = "\n".join(
+                app.recent_output_file_line(path) for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)
+            )
+
+        self.assertEqual(recorder.recent_exports_text.get(), expected)
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
         recorder = self.make_app()

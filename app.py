@@ -116,6 +116,11 @@ def recent_output_file_line(path: Path) -> str:
     return f"- {recent_output_file_label(path)} [{timestamp}]: {path.name}"
 
 
+def recent_audio_highlight_line(path: Path) -> str:
+    timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
+    return f"Son kayıt [{timestamp}]: {path.name}"
+
+
 def format_seconds_short(seconds: float) -> str:
     total_seconds = max(0, int(round(seconds)))
     minutes, secs = divmod(total_seconds, 60)
@@ -2586,7 +2591,11 @@ class GuitarAmpRecorderApp:
             self.update_recent_output_summary()
             return
         lines = [recent_output_file_line(path) for path in recent_files]
-        self.recent_exports_text.set("\n".join(lines))
+        latest_audio = latest_audio_file_in_dir(output_dir)
+        if latest_audio is not None:
+            self.recent_exports_text.set(f"{recent_audio_highlight_line(latest_audio)}\n\n" + "\n".join(lines))
+        else:
+            self.recent_exports_text.set("\n".join(lines))
         self.update_recent_output_summary()
 
     def copy_text_to_clipboard(self, content: str, success_message: str, failure_prefix: str) -> None:
