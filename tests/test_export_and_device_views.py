@@ -58,12 +58,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.selected_route_text = FakeVar("")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
         recorder.output_device_choice = FakeVar("Varsayılan macOS çıkışı")
+        recorder.mp3_quality = FakeVar("Yüksek VBR")
         recorder.wav_export_mode = FakeVar("Sadece Vokal WAV")
         recorder.input_device_id = FakeVar("")
         recorder.output_device_id = FakeVar("")
         recorder.device_summary_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
         recorder.setup_status_text = FakeVar("")
+        recorder.mp3_quality_label_text = FakeVar("")
         recorder.recording_active = False
         recorder.current_input_device_count = 0
         recorder.current_output_device_count = 0
@@ -74,6 +76,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.backing_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
         recorder.setup_status_label = mock.Mock()
+        recorder.mp3_quality_menu = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
         recorder.backing_file = None
@@ -239,6 +242,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             status = recorder.build_setup_status_text(1, 1)
 
         self.assertEqual(status, "Kurulum: Giriş hazır | Çıkış hazır | ffmpeg eksik | Klasör hazır")
+
+    def test_build_mp3_quality_label_text_reports_missing_ffmpeg(self) -> None:
+        recorder = self.make_app()
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            label = recorder.build_mp3_quality_label_text()
+
+        self.assertEqual(label, "MP3 Kalitesi (ffmpeg eksik)")
+
+    def test_update_mp3_quality_controls_disables_menu_when_mp3_unavailable(self) -> None:
+        recorder = self.make_app()
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            recorder.update_mp3_quality_controls()
+
+        self.assertEqual(recorder.mp3_quality_label_text.get(), "MP3 Kalitesi (ffmpeg eksik)")
+        recorder.mp3_quality_menu.configure.assert_called_once_with(state="disabled")
 
     def test_refresh_device_menus_resets_unknown_choices_and_updates_route(self) -> None:
         recorder = self.make_app()

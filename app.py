@@ -731,6 +731,7 @@ class GuitarAmpRecorderApp:
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
         self.option_subtitle_text = StringVar(value="Seçenek özeti hazırlanıyor...")
         self.source_subtitle_text = StringVar(value="Kayıt kaynağı hazırlanıyor...")
+        self.mp3_quality_label_text = StringVar(value="MP3 Kalitesi")
         self.output_name_label_text = StringVar(value="Çıkış Dosya Adı")
         self.output_subtitle_text = StringVar(value="Çıktı hedefi hazırlanıyor...")
         self.tone_subtitle_text = StringVar(value="Ton özeti hazırlanıyor...")
@@ -983,9 +984,9 @@ class GuitarAmpRecorderApp:
         Entry(export, textvariable=self.session_name, width=32).pack(anchor="w", padx=14)
         Label(export, textvariable=self.output_name_label_text, bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_name, width=48).pack(anchor="w", padx=14)
-        Label(export, text="MP3 Kalitesi", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
-        mp3_quality_menu = OptionMenu(export, self.mp3_quality, "Yüksek VBR", "320 kbps", "192 kbps", "128 kbps")
-        mp3_quality_menu.pack(anchor="w", padx=14)
+        Label(export, textvariable=self.mp3_quality_label_text, bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
+        self.mp3_quality_menu = OptionMenu(export, self.mp3_quality, "Yüksek VBR", "320 kbps", "192 kbps", "128 kbps")
+        self.mp3_quality_menu.pack(anchor="w", padx=14)
         Label(export, text="WAV Çıkışı", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
         wav_export_menu = OptionMenu(export, self.wav_export_mode, "Sadece Vokal WAV", "Mix + Vokal WAV", "Sadece WAV (Mix + Vokal)")
         wav_export_menu.pack(anchor="w", padx=14)
@@ -1251,6 +1252,7 @@ class GuitarAmpRecorderApp:
         self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
+        self.update_mp3_quality_controls()
         self.update_output_name_label()
         self.update_output_subtitle()
         self.update_tone_subtitle()
@@ -1292,6 +1294,7 @@ class GuitarAmpRecorderApp:
         self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
+        self.update_mp3_quality_controls()
         self.update_output_name_label()
         self.update_output_subtitle()
         self.update_tone_subtitle()
@@ -1551,6 +1554,22 @@ class GuitarAmpRecorderApp:
         if self.should_export_mp3():
             return "Çıkış Dosya Adı (MP3)"
         return "Çıkış Dosya Adı (WAV)"
+
+    def build_mp3_quality_label_text(self) -> str:
+        if self.mp3_dependency_missing():
+            return "MP3 Kalitesi (ffmpeg eksik)"
+        if not self.should_export_mp3():
+            return "MP3 Kalitesi (kapalı)"
+        return "MP3 Kalitesi"
+
+    def update_mp3_quality_controls(self) -> None:
+        try:
+            self.mp3_quality_label_text.set(self.build_mp3_quality_label_text())
+            menu = getattr(self, "mp3_quality_menu", None)
+            if menu is not None:
+                menu.configure(state="normal" if self.should_export_mp3() and not self.mp3_dependency_missing() else "disabled")
+        except Exception:
+            pass
 
     def update_output_name_label(self) -> None:
         try:
