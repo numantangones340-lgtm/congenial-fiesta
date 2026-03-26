@@ -696,6 +696,7 @@ class GuitarAmpRecorderApp:
         self.recent_output_subtitle_text = StringVar(value="Son çıktı bölümü hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
+        self.setup_status_text = StringVar(value="Kurulum özeti hazırlanıyor...")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
         self.clip_text = StringVar(value="Seviye: güvenli")
         self.safety_text = StringVar(value="Durum: seviye analizi bekleniyor")
@@ -847,6 +848,12 @@ class GuitarAmpRecorderApp:
         self.preflight_warning_label.pack(fill="x", padx=14, pady=(10, 10))
 
         setup = self.create_section(title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
+        self.setup_status_label = Label(
+            setup,
+            textvariable=self.setup_status_text,
+            **self.summary_card_style("#11202d", "#d7eefb"),
+        )
+        self.setup_status_label.pack(fill="x", padx=14, pady=(12, 0))
         Label(
             setup,
             text="1. Tara   2. Seç   3. Test Et",
@@ -2861,6 +2868,17 @@ class GuitarAmpRecorderApp:
         output_text = "\n".join(output_lines) if output_lines else "• Çıkış aygıtı bulunamadı."
         return f"Giriş Aygıtları ({len(inputs)}):\n{input_text}\n\nÇıkış Aygıtları ({len(outputs)}):\n{output_text}"
 
+    def build_setup_status_text(self, input_count: int, output_count: int) -> str:
+        parts = []
+        parts.append("Giriş hazır" if input_count > 0 else "Giriş yok")
+        parts.append("Çıkış hazır" if output_count > 0 else "Çıkış yok")
+        if self.should_export_mp3():
+            parts.append("ffmpeg hazır" if shutil.which("ffmpeg") is not None else "ffmpeg eksik")
+        else:
+            parts.append("MP3 kapalı")
+        parts.append("Klasör hazır" if self.output_dir.get().strip() else "Klasör seçilmedi")
+        return "Kurulum: " + " | ".join(parts)
+
     def build_setup_hint_text(self, input_count: int, output_count: int) -> str:
         if input_count == 0:
             return (
@@ -2881,6 +2899,19 @@ class GuitarAmpRecorderApp:
     def update_setup_hint_summary(self) -> None:
         try:
             self.setup_hint_text.set(self.build_setup_hint_text(self.current_input_device_count, self.current_output_device_count))
+            self.setup_status_text.set(self.build_setup_status_text(self.current_input_device_count, self.current_output_device_count))
+            label = getattr(self, "setup_status_label", None)
+            if label is not None:
+                ready = (
+                    self.current_input_device_count > 0
+                    and self.current_output_device_count > 0
+                    and bool(self.output_dir.get().strip())
+                    and (not self.should_export_mp3() or shutil.which("ffmpeg") is not None)
+                )
+                if ready:
+                    label.configure(**self.summary_card_style("#1f2b22", "#d8f3dc"))
+                else:
+                    label.configure(**self.summary_card_style("#2a1c1c", "#f6e7cb"))
         except Exception:
             pass
 

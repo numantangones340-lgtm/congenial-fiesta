@@ -63,6 +63,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.output_device_id = FakeVar("")
         recorder.device_summary_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
+        recorder.setup_status_text = FakeVar("")
         recorder.recording_active = False
         recorder.current_input_device_count = 0
         recorder.current_output_device_count = 0
@@ -72,6 +73,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.restart_input_meter = mock.Mock()
         recorder.backing_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
+        recorder.setup_status_label = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
         recorder.backing_file = None
@@ -219,6 +221,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             hint = recorder.build_setup_hint_text(1, 1)
 
         self.assertEqual(hint, "Kurulum tamamlanmak üzere. Son adım olarak kayıt klasörünü seçin.")
+
+    def test_build_setup_status_text_reports_ready_state(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+
+        with mock.patch.object(app.shutil, "which", return_value="/opt/homebrew/bin/ffmpeg"):
+            status = recorder.build_setup_status_text(1, 1)
+
+        self.assertEqual(status, "Kurulum: Giriş hazır | Çıkış hazır | ffmpeg hazır | Klasör hazır")
+
+    def test_build_setup_status_text_reports_missing_ffmpeg(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            status = recorder.build_setup_status_text(1, 1)
+
+        self.assertEqual(status, "Kurulum: Giriş hazır | Çıkış hazır | ffmpeg eksik | Klasör hazır")
 
     def test_refresh_device_menus_resets_unknown_choices_and_updates_route(self) -> None:
         recorder = self.make_app()

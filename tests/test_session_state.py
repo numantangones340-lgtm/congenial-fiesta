@@ -40,6 +40,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.operation_state_label = mock.Mock()
         recorder.readiness_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
+        recorder.setup_status_label = mock.Mock()
+        recorder.setup_status_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.session_mode = FakeVar("İsimli Oturum")
