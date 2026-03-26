@@ -92,6 +92,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.recording_mode = ""
         recorder.current_input_device_count = 1
         recorder.current_output_device_count = 1
+        recorder.last_input_peak = 0.0
         recorder.meter_stream = None
         recorder.monitor_stream = None
         recorder.status_messages = []
@@ -1120,6 +1121,22 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(subtitle_text, "Ön kontrol temiz görünüyor.")
 
+    def test_build_preflight_warning_text_reports_missing_ffmpeg_for_mp3(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            warning_text = recorder.build_preflight_warning_text()
+
+        self.assertEqual(warning_text, "Ön uyarı: MP3 açık ama ffmpeg yok, kayıt WAV olarak kalacak.")
+
+    def test_build_preflight_subtitle_text_reports_missing_ffmpeg_for_mp3(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            subtitle_text = recorder.build_preflight_subtitle_text()
+
+        self.assertEqual(subtitle_text, "MP3 için ffmpeg kurulmalı veya WAV ile devam edilmeli.")
+
     def test_build_preflight_subtitle_text_prioritizes_recovery_note(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1203,6 +1220,16 @@ class SessionStateTests(unittest.TestCase):
         recorder.update_option_explanation_summary()
 
         self.assertEqual(recorder.option_subtitle_text.get(), "MP3 açık | yalnız vokal WAV | limiter açık")
+
+    def test_build_option_subtitle_text_flags_missing_ffmpeg_when_mp3_enabled(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            subtitle_text = recorder.build_option_subtitle_text()
+            option_text = recorder.build_option_explanation_text()
+
+        self.assertEqual(subtitle_text, "MP3 açık (ffmpeg eksik) | yalnız vokal WAV | limiter açık")
+        self.assertIn("MP3: ffmpeg eksik", option_text)
 
     def test_build_tone_subtitle_text_reports_default_tone_summary(self) -> None:
         recorder = self.make_app()

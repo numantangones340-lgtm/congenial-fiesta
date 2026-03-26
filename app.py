@@ -1305,6 +1305,9 @@ class GuitarAmpRecorderApp:
     def wav_export_mode_value(self) -> str:
         return normalize_choice(self.wav_export_mode.get(), WAV_EXPORT_MODE_ALIASES, "Sadece Vokal WAV")
 
+    def mp3_dependency_missing(self) -> bool:
+        return self.should_export_mp3() and shutil.which("ffmpeg") is None
+
     def limiter_enabled_value(self) -> str:
         return normalize_choice(self.limiter_enabled.get(), LIMITER_ALIASES, "Açık")
 
@@ -1668,6 +1671,8 @@ class GuitarAmpRecorderApp:
             if self.last_export_path is not None and self.last_export_path.exists():
                 return f"Ön uyarı: son çıktı için kurtarma notu var ({self.last_recovery_note_path.name}). Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return f"Ön uyarı: son çıktı için kurtarma notu var ({self.last_recovery_note_path.name})."
+        if self.mp3_dependency_missing():
+            return "Ön uyarı: MP3 açık ama ffmpeg yok, kayıt WAV olarak kalacak."
         if self.last_input_peak >= 0.985:
             return "Ön uyarı: giriş çok yüksek, gain düşürmeden kayda başlamayın."
         if self.last_input_peak < 0.01:
@@ -1695,6 +1700,8 @@ class GuitarAmpRecorderApp:
             if self.last_export_path is not None and self.last_export_path.exists():
                 return f"Son hatayı incelemeden yeni kayıt başlatmayın. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return "Son hatayı incelemeden yeni kayıt başlatmayın."
+        if self.mp3_dependency_missing():
+            return "MP3 için ffmpeg kurulmalı veya WAV ile devam edilmeli."
         if self.last_input_peak >= 0.985:
             return "Giriş seviyesi fazla yüksek."
         if self.last_input_peak < 0.01:
@@ -1782,6 +1789,8 @@ class GuitarAmpRecorderApp:
             pass
 
     def explain_mp3_quality(self) -> str:
+        if self.mp3_dependency_missing():
+            return "MP3: ffmpeg eksik, bu tur WAV yedeğiyle devam edilecek"
         quality = self.mp3_quality_value()
         if quality == "320 kbps":
             return "MP3: en yüksek sabit kalite"
@@ -1842,7 +1851,10 @@ class GuitarAmpRecorderApp:
         mp3_enabled = self.should_export_mp3()
         limiter_enabled = self.limiter_enabled_value() == "Açık"
         parts = []
-        parts.append("MP3 açık" if mp3_enabled else "MP3 kapalı")
+        if mp3_enabled:
+            parts.append("MP3 açık (ffmpeg eksik)" if self.mp3_dependency_missing() else "MP3 açık")
+        else:
+            parts.append("MP3 kapalı")
         if wav_mode == "Mix + Vokal WAV":
             parts.append("mix + vokal WAV")
         elif wav_mode == "Sadece WAV (Mix + Vokal)":
@@ -2873,7 +2885,7 @@ class GuitarAmpRecorderApp:
         parts.append("Giriş hazır" if input_count > 0 else "Giriş yok")
         parts.append("Çıkış hazır" if output_count > 0 else "Çıkış yok")
         if self.should_export_mp3():
-            parts.append("ffmpeg hazır" if shutil.which("ffmpeg") is not None else "ffmpeg eksik")
+            parts.append("ffmpeg hazır" if not self.mp3_dependency_missing() else "ffmpeg eksik")
         else:
             parts.append("MP3 kapalı")
         parts.append("Klasör hazır" if self.output_dir.get().strip() else "Klasör seçilmedi")
@@ -2886,7 +2898,7 @@ class GuitarAmpRecorderApp:
                 "2. Harici kart takılıysa çıkarıp yeniden takın. "
                 "3. Sonra 'Mikrofonları Yeniden Tara'ya basın."
             )
-        if self.should_export_mp3() and shutil.which("ffmpeg") is None:
+        if self.mp3_dependency_missing():
             return "Kurulum eksiği: MP3 için ffmpeg bulunamadı. Şimdilik WAV ile devam edebilirsiniz veya `brew install ffmpeg` kurun."
         if not self.output_dir.get().strip():
             return "Kurulum tamamlanmak üzere. Son adım olarak kayıt klasörünü seçin."
@@ -2906,7 +2918,7 @@ class GuitarAmpRecorderApp:
                     self.current_input_device_count > 0
                     and self.current_output_device_count > 0
                     and bool(self.output_dir.get().strip())
-                    and (not self.should_export_mp3() or shutil.which("ffmpeg") is not None)
+                    and not self.mp3_dependency_missing()
                 )
                 if ready:
                     label.configure(**self.summary_card_style("#1f2b22", "#d8f3dc"))
