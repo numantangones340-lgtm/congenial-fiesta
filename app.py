@@ -1327,10 +1327,12 @@ class GuitarAmpRecorderApp:
 
     def planned_output_labels(self) -> list[str]:
         labels = []
-        if self.should_export_mp3():
+        mp3_enabled = self.should_export_mp3()
+        mp3_missing = self.mp3_dependency_missing()
+        if mp3_enabled and not mp3_missing:
             labels.append(f"MP3 ({self.mp3_quality_value()})")
-        if self.should_export_mix_wav():
-            labels.append("Mix WAV")
+        if self.should_export_mix_wav() or mp3_missing:
+            labels.append("Mix WAV (MP3 yerine)" if mp3_enabled and mp3_missing else "Mix WAV")
         labels.append("Vokal WAV")
         labels.append("session_summary.json")
         labels.append("take_notes.txt")

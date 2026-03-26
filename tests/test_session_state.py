@@ -277,6 +277,25 @@ class SessionStateTests(unittest.TestCase):
             f"4 çıktı hazırlanacak. Hedef: /tmp/out/Akşam Kaydı | kurtarma notu var | son iyi kayıt: {latest_audio}",
         )
 
+    def test_planned_output_labels_fall_back_to_mix_wav_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            labels = recorder.planned_output_labels()
+
+        self.assertEqual(labels, ["Mix WAV (MP3 yerine)", "Vokal WAV", "session_summary.json", "take_notes.txt"])
+
+    def test_build_recording_prep_text_mentions_mix_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+        with mock.patch.object(app.shutil, "which", return_value=None), mock.patch.object(
+            app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out")
+        ):
+            prep_text = recorder.build_recording_prep_text()
+
+        self.assertIn("Dosyalar: Mix WAV (MP3 yerine), Vokal WAV, session_summary.json, take_notes.txt", prep_text)
+
     def test_update_recording_prep_summary_updates_subtitle(self) -> None:
         recorder = self.make_app()
         recorder.output_dir.set("")
