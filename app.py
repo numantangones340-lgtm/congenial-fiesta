@@ -697,6 +697,7 @@ class GuitarAmpRecorderApp:
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.setup_status_text = StringVar(value="Kurulum özeti hazırlanıyor...")
+        self.setup_next_text = StringVar(value="Sıradaki kurulum adımı hazırlanıyor...")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
         self.clip_text = StringVar(value="Seviye: güvenli")
         self.safety_text = StringVar(value="Durum: seviye analizi bekleniyor")
@@ -856,6 +857,12 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#11202d", "#d7eefb"),
         )
         self.setup_status_label.pack(fill="x", padx=14, pady=(12, 0))
+        self.setup_next_label = Label(
+            setup,
+            textvariable=self.setup_next_text,
+            **self.summary_card_style("#1e252d", "#e4edf5"),
+        )
+        self.setup_next_label.pack(fill="x", padx=14, pady=(10, 0))
         Label(
             setup,
             text="1. Tara   2. Seç   3. Test Et",
@@ -2968,10 +2975,24 @@ class GuitarAmpRecorderApp:
             return "Çıkış aygıtı görünmüyor. Hoparlör veya kulaklığı kontrol edip sonra tekrar tarayın."
         return "Kurulum hazır görünüyor. En güvenli akış: önce 5 saniyelik test, sonra kayıt."
 
+    def build_setup_next_text(self, input_count: int, output_count: int) -> str:
+        if input_count == 0:
+            return "Sıradaki adım: mikrofon iznini açıp yeniden tara."
+        if output_count == 0:
+            return "Sıradaki adım: çıkışı kontrol edip yeniden tara."
+        if self.mp3_dependency_missing():
+            return "Sıradaki adım: ffmpeg kur veya WAV ile devam et."
+        if not self.output_dir.get().strip():
+            return "Sıradaki adım: kayıt klasörü seç."
+        if self.input_device_id.get().strip() or self.output_device_id.get().strip():
+            return "Sıradaki adım: 5 saniyelik test yap ve cihaz seçimini doğrula."
+        return "Sıradaki adım: 5 saniyelik test yap."
+
     def update_setup_hint_summary(self) -> None:
         try:
             self.setup_hint_text.set(self.build_setup_hint_text(self.current_input_device_count, self.current_output_device_count))
             self.setup_status_text.set(self.build_setup_status_text(self.current_input_device_count, self.current_output_device_count))
+            self.setup_next_text.set(self.build_setup_next_text(self.current_input_device_count, self.current_output_device_count))
             label = getattr(self, "setup_status_label", None)
             if label is not None:
                 ready = (
@@ -2984,6 +3005,18 @@ class GuitarAmpRecorderApp:
                     label.configure(**self.summary_card_style("#1f2b22", "#d8f3dc"))
                 else:
                     label.configure(**self.summary_card_style("#2a1c1c", "#f6e7cb"))
+            next_label = getattr(self, "setup_next_label", None)
+            if next_label is not None:
+                ready = (
+                    self.current_input_device_count > 0
+                    and self.current_output_device_count > 0
+                    and bool(self.output_dir.get().strip())
+                    and not self.mp3_dependency_missing()
+                )
+                if ready:
+                    next_label.configure(**self.summary_card_style("#1f2b22", "#d8f3dc"))
+                else:
+                    next_label.configure(**self.summary_card_style("#1e252d", "#e4edf5"))
         except Exception:
             pass
 

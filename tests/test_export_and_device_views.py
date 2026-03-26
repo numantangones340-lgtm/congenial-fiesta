@@ -65,6 +65,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.device_summary_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
         recorder.setup_status_text = FakeVar("")
+        recorder.setup_next_text = FakeVar("")
         recorder.mp3_quality_label_text = FakeVar("")
         recorder.recording_active = False
         recorder.current_input_device_count = 0
@@ -76,6 +77,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.backing_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
         recorder.setup_status_label = mock.Mock()
+        recorder.setup_next_label = mock.Mock()
         recorder.mp3_quality_menu = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
@@ -242,6 +244,44 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             status = recorder.build_setup_status_text(1, 1)
 
         self.assertEqual(status, "Kurulum: Giriş hazır | Çıkış hazır | ffmpeg eksik | Klasör hazır")
+
+    def test_build_setup_next_text_requests_mic_rescan_when_input_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+
+        with mock.patch.object(app.shutil, "which", return_value="/opt/homebrew/bin/ffmpeg"):
+            next_step = recorder.build_setup_next_text(0, 1)
+
+        self.assertEqual(next_step, "Sıradaki adım: mikrofon iznini açıp yeniden tara.")
+
+    def test_build_setup_next_text_offers_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            next_step = recorder.build_setup_next_text(1, 1)
+
+        self.assertEqual(next_step, "Sıradaki adım: ffmpeg kur veya WAV ile devam et.")
+
+    def test_build_setup_next_text_requests_output_dir_before_test(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("")
+
+        with mock.patch.object(app.shutil, "which", return_value="/opt/homebrew/bin/ffmpeg"):
+            next_step = recorder.build_setup_next_text(1, 1)
+
+        self.assertEqual(next_step, "Sıradaki adım: kayıt klasörü seç.")
+
+    def test_build_setup_next_text_recommends_test_when_ready(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+        recorder.input_device_id = FakeVar("")
+        recorder.output_device_id = FakeVar("")
+
+        with mock.patch.object(app.shutil, "which", return_value="/opt/homebrew/bin/ffmpeg"):
+            next_step = recorder.build_setup_next_text(1, 1)
+
+        self.assertEqual(next_step, "Sıradaki adım: 5 saniyelik test yap.")
 
     def test_build_mp3_quality_label_text_reports_missing_ffmpeg(self) -> None:
         recorder = self.make_app()
