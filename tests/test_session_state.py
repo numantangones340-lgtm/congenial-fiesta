@@ -38,8 +38,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.readiness_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
         recorder.preset_name = FakeVar("Temiz Gitar")
-        recorder.session_mode = FakeVar("Isimli Oturum")
-        recorder.session_name = FakeVar("Aksam Kaydi")
+        recorder.session_mode = FakeVar("İsimli Oturum")
+        recorder.session_name = FakeVar("Akşam Kaydı")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.action_guidance_text = FakeVar("")
@@ -48,8 +48,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
         recorder.output_name = FakeVar("aksam_take")
-        recorder.mp3_quality = FakeVar("Yuksek VBR")
-        recorder.wav_export_mode = FakeVar("Tum WAV Dosyalari")
+        recorder.mp3_quality = FakeVar("Yüksek VBR")
+        recorder.wav_export_mode = FakeVar("Tüm WAV Dosyaları")
         recorder.record_limit_hours = FakeVar("2")
         recorder.mic_record_seconds = FakeVar("90")
         recorder.gain = FakeVar(7)
@@ -67,7 +67,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.compressor_amount = FakeVar(15)
         recorder.compressor_threshold = FakeVar(-18)
         recorder.compressor_makeup = FakeVar(2)
-        recorder.limiter_enabled = FakeVar("Acik")
+        recorder.limiter_enabled = FakeVar("Açık")
         recorder.speed_ratio = FakeVar(100)
         recorder.output_gain = FakeVar(-3)
         recorder.output_dir = FakeVar("/tmp/out")
@@ -114,11 +114,11 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(summary["event"], "record_export")
         self.assertEqual(summary["output_dir"], str(output_dir))
         self.assertEqual(summary["preset_name"], "Temiz Gitar")
-        self.assertEqual(summary["session_mode"], "Isimli Oturum")
-        self.assertEqual(summary["session_name"], "Aksam Kaydi")
+        self.assertEqual(summary["session_mode"], "İsimli Oturum")
+        self.assertEqual(summary["session_name"], "Akşam Kaydı")
         self.assertEqual(summary["backing_file"], "/tmp/backing.mp3")
         self.assertEqual(summary["export"]["output_name"], "aksam_take")
-        self.assertEqual(summary["mix"]["limiter_enabled"], "Acik")
+        self.assertEqual(summary["mix"]["limiter_enabled"], "Açık")
         self.assertEqual(summary["generated_files"], [str(path) for path in generated])
         self.assertEqual(summary["artifacts"]["session_summary"], str(output_dir / "session_summary.json"))
         self.assertEqual(summary["artifacts"]["take_notes"], str(output_dir / "take_notes.txt"))
@@ -202,33 +202,33 @@ class SessionStateTests(unittest.TestCase):
     def test_build_recording_prep_text_summarizes_plan_clearly(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing_track.wav")
-        recorder.session_mode.set("Isimli Oturum")
-        recorder.session_name.set("Canli Set")
+        recorder.session_mode.set("İsimli Oturum")
+        recorder.session_name.set("Canlı Set")
         with tempfile.TemporaryDirectory() as tmpdir:
             recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
             recorder.last_recovery_note_path = recovery_note_path
-            with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
+            with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canlı Set")):
                 prep_text = recorder.build_recording_prep_text()
 
-        self.assertIn("Preset/Oturum: Temiz Gitar | Isimli Oturum (Canli Set)", prep_text)
+        self.assertIn("Preset/Oturum: Temiz Gitar | İsimli Oturum (Canlı Set)", prep_text)
         self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", prep_text)
-        self.assertIn("Take/Hedef: aksam_take | /tmp/out/Canli Set", prep_text)
-        self.assertIn("Dosyalar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
+        self.assertIn("Take/Hedef: aksam_take | /tmp/out/Canlı Set", prep_text)
+        self.assertIn("Dosyalar: Mix WAV, Vokal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn("Cihazlar: Built-in Mic -> Built-in Output", prep_text)
         self.assertIn(f"Kurtarma: {recovery_note_path.name} hazır", prep_text)
 
     def test_build_compact_status_text_summarizes_core_state_on_one_line(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing_track.wav")
-        recorder.session_mode.set("Isimli Oturum")
-        recorder.session_name.set("Canli Set")
-        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canli Set")):
+        recorder.session_mode.set("İsimli Oturum")
+        recorder.session_name.set("Canlı Set")
+        with mock.patch.object(app.GuitarAmpRecorderApp, "resolve_output_dir", return_value=Path("/tmp/out/Canlı Set")):
             compact_text = recorder.build_compact_status_text()
 
         self.assertEqual(
             compact_text,
-            "Preset: Temiz Gitar | Kaynak: backing_track.wav + mikrofon | Oturum: Isimli Oturum (Canli Set) | Take: aksam_take | Hedef: /tmp/out/Canli Set",
+            "Preset: Temiz Gitar | Kaynak: backing_track.wav + mikrofon | Oturum: İsimli Oturum (Canlı Set) | Take: aksam_take | Hedef: /tmp/out/Canlı Set",
         )
 
     def test_build_compact_status_text_marks_auto_take_and_missing_folder(self) -> None:
@@ -244,7 +244,7 @@ class SessionStateTests(unittest.TestCase):
 
     def test_build_completion_status_text_summarizes_primary_file_and_output_dir(self) -> None:
         recorder = self.make_app()
-        output_dir = Path("/tmp/out/Canli Set")
+        output_dir = Path("/tmp/out/Canlı Set")
         primary_path = output_dir / "take.mp3"
         generated_files = [primary_path, output_dir / "take_vocal.wav"]
 
@@ -252,7 +252,7 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(
             status_text,
-            "Kayıt hazır | Ana dosya: take.mp3 | Dosya sayısı: 2 | Klasör: /tmp/out/Canli Set",
+            "Kayıt hazır | Ana dosya: take.mp3 | Dosya sayısı: 2 | Klasör: /tmp/out/Canlı Set",
         )
 
     def test_build_completion_status_text_handles_missing_primary_file(self) -> None:
@@ -623,15 +623,15 @@ class SessionStateTests(unittest.TestCase):
     def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
         recorder = self.make_app()
         recorder.mp3_quality.set("320 kbps")
-        recorder.wav_export_mode.set("Mix + Vocal WAV")
+        recorder.wav_export_mode.set("Mix + Vokal WAV")
         recorder.monitor_level.set(140)
         recorder.speed_ratio.set(85)
-        recorder.limiter_enabled.set("Acik")
+        recorder.limiter_enabled.set("Açık")
 
         option_text = recorder.build_option_explanation_text()
 
         self.assertIn("MP3: en yüksek sabit kalite", option_text)
-        self.assertIn("WAV: mix + vocal ayrı yazılacak", option_text)
+        self.assertIn("WAV: mix + vokal ayrı yazılacak", option_text)
         self.assertIn("İzleme: yüksek (%140)", option_text)
         self.assertIn("Hız: daha yavaş (%85)", option_text)
         self.assertIn("Limiter: açık, tepeler sınırlanacak", option_text)
@@ -661,7 +661,7 @@ class SessionStateTests(unittest.TestCase):
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
             state_path = Path(tmpdir) / ".last_session.json"
-            output_dir = Path(tmpdir) / "Aksam Kaydi"
+            output_dir = Path(tmpdir) / "Akşam Kaydı"
             summary_path = output_dir / "session_summary.json"
 
             with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
@@ -670,8 +670,8 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(loaded["app_version"], "1.1.3")
         self.assertEqual(loaded["output_dir"], str(output_dir))
-        self.assertEqual(loaded["session_mode"], "Isimli Oturum")
-        self.assertEqual(loaded["session_name"], "Aksam Kaydi")
+        self.assertEqual(loaded["session_mode"], "İsimli Oturum")
+        self.assertEqual(loaded["session_name"], "Akşam Kaydı")
         self.assertEqual(loaded["preset_name"], "Temiz Gitar")
         self.assertEqual(loaded["last_export_path"], "")
         self.assertEqual(loaded["take_notes_path"], "")
@@ -682,14 +682,14 @@ class SessionStateTests(unittest.TestCase):
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
             base_dir = Path(tmpdir) / "exports"
-            session_dir = base_dir / "Aksam Kaydi"
+            session_dir = base_dir / "Akşam Kaydı"
             session_dir.mkdir(parents=True)
             state_path = Path(tmpdir) / ".last_session.json"
             state_path.write_text(
                 json.dumps(
                     {
                         "output_dir": str(session_dir),
-                        "session_mode": "Isimli Oturum",
+                        "session_mode": "İsimli Oturum",
                         "preset_name": "Parlak Solo",
                     },
                     ensure_ascii=False,
@@ -701,8 +701,8 @@ class SessionStateTests(unittest.TestCase):
                 recorder.reload_last_session()
 
         self.assertEqual(recorder.output_dir.get(), str(base_dir))
-        self.assertEqual(recorder.session_name.get(), "Aksam Kaydi")
-        self.assertEqual(recorder.session_mode.get(), "Isimli Oturum")
+        self.assertEqual(recorder.session_name.get(), "Akşam Kaydı")
+        self.assertEqual(recorder.session_mode.get(), "İsimli Oturum")
         self.assertEqual(recorder.preset_name.get(), "Parlak Solo")
         recorder.load_saved_preset.assert_called_once()
         recorder.refresh_recent_exports.assert_called_once()
@@ -718,7 +718,7 @@ class SessionStateTests(unittest.TestCase):
                 json.dumps(
                     {
                         "output_dir": str(output_dir),
-                        "session_mode": "Tek Klasor",
+                        "session_mode": "Tek Klasör",
                         "preset_name": "",
                     },
                     ensure_ascii=False,
@@ -730,7 +730,7 @@ class SessionStateTests(unittest.TestCase):
                 recorder.reload_last_session()
 
         self.assertEqual(recorder.output_dir.get(), str(output_dir))
-        self.assertEqual(recorder.session_mode.get(), "Tek Klasor")
+        self.assertEqual(recorder.session_mode.get(), "Tek Klasör")
         recorder.load_saved_preset.assert_not_called()
         self.assertIn(str(output_dir), recorder.status_messages[-1])
 
@@ -746,7 +746,7 @@ class SessionStateTests(unittest.TestCase):
                 json.dumps(
                     {
                         "output_dir": str(output_dir),
-                        "session_mode": "Tek Klasor",
+                        "session_mode": "Tek Klasör",
                         "summary_path": str(summary_path),
                     },
                     ensure_ascii=False,
@@ -774,7 +774,7 @@ class SessionStateTests(unittest.TestCase):
                 json.dumps(
                     {
                         "output_dir": str(output_dir),
-                        "session_mode": "Tek Klasor",
+                        "session_mode": "Tek Klasör",
                         "take_notes_path": str(take_notes_path),
                         "recovery_note_path": str(recovery_note_path),
                     },
@@ -801,7 +801,7 @@ class SessionStateTests(unittest.TestCase):
                 json.dumps(
                     {
                         "output_dir": str(output_dir),
-                        "session_mode": "Tek Klasor",
+                        "session_mode": "Tek Klasör",
                         "last_export_path": str(export_path),
                     },
                     ensure_ascii=False,
@@ -832,7 +832,7 @@ class SessionStateTests(unittest.TestCase):
                 json.dumps(
                     {
                         "output_dir": str(output_dir),
-                        "session_mode": "Tek Klasor",
+                        "session_mode": "Tek Klasör",
                     },
                     ensure_ascii=False,
                 ),

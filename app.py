@@ -32,6 +32,41 @@ GUI_PRESET_PATH = Path(__file__).resolve().with_name(".gui_saved_preset.json")
 LAST_SESSION_PATH = Path(__file__).resolve().with_name(".last_session.json")
 VERSION_PATH = Path(__file__).resolve().with_name("VERSION")
 
+SESSION_MODE_ALIASES = {
+    "Tek Klasor": "Tek Klasör",
+    "Tek Klasör": "Tek Klasör",
+    "Tarihli Oturum": "Tarihli Oturum",
+    "Isimli Oturum": "İsimli Oturum",
+    "İsimli Oturum": "İsimli Oturum",
+}
+MP3_QUALITY_ALIASES = {
+    "Yuksek VBR": "Yüksek VBR",
+    "Yüksek VBR": "Yüksek VBR",
+    "320 kbps": "320 kbps",
+    "192 kbps": "192 kbps",
+    "128 kbps": "128 kbps",
+}
+WAV_EXPORT_MODE_ALIASES = {
+    "Sadece Vocal WAV": "Sadece Vokal WAV",
+    "Sadece Vokal WAV": "Sadece Vokal WAV",
+    "Mix + Vocal WAV": "Mix + Vokal WAV",
+    "Mix + Vokal WAV": "Mix + Vokal WAV",
+    "Sadece WAV (Mix + Vocal)": "Sadece WAV (Mix + Vokal)",
+    "Sadece WAV (Mix + Vokal)": "Sadece WAV (Mix + Vokal)",
+    "Tum WAV Dosyalari": "Tüm WAV Dosyaları",
+    "Tüm WAV Dosyaları": "Tüm WAV Dosyaları",
+}
+LIMITER_ALIASES = {
+    "Acik": "Açık",
+    "Açık": "Açık",
+    "Kapali": "Kapalı",
+    "Kapalı": "Kapalı",
+}
+
+
+def normalize_choice(value: str, aliases: dict[str, str], default: str) -> str:
+    return aliases.get(str(value or "").strip(), default)
+
 
 def read_app_version() -> str:
     try:
@@ -403,10 +438,10 @@ def builtin_preset_store() -> dict:
                 "output_device_id": "",
                 "output_name": "",
                 "output_dir": str(Path.home() / "Desktop"),
-                "session_mode": "Tek Klasor",
+                "session_mode": "Tek Klasör",
                 "session_name": time.strftime("session_%Y%m%d"),
-                "mp3_quality": "Yuksek VBR",
-                "wav_export_mode": "Sadece Vocal WAV",
+                "mp3_quality": "Yüksek VBR",
+                "wav_export_mode": "Sadece Vokal WAV",
                 "record_limit_hours": "1",
                 "mic_record_seconds": "60",
                 "gain": 4,
@@ -424,7 +459,7 @@ def builtin_preset_store() -> dict:
                 "compressor_amount": 10,
                 "compressor_threshold": -20,
                 "compressor_makeup": 1,
-                "limiter_enabled": "Acik",
+                "limiter_enabled": "Açık",
                 "speed_ratio": 100,
                 "output_gain": -4,
             },
@@ -435,10 +470,10 @@ def builtin_preset_store() -> dict:
                 "output_device_id": "",
                 "output_name": "",
                 "output_dir": str(Path.home() / "Desktop"),
-                "session_mode": "Tek Klasor",
+                "session_mode": "Tek Klasör",
                 "session_name": time.strftime("session_%Y%m%d"),
-                "mp3_quality": "Yuksek VBR",
-                "wav_export_mode": "Sadece Vocal WAV",
+                "mp3_quality": "Yüksek VBR",
+                "wav_export_mode": "Sadece Vokal WAV",
                 "record_limit_hours": "1",
                 "mic_record_seconds": "60",
                 "gain": 2,
@@ -456,7 +491,7 @@ def builtin_preset_store() -> dict:
                 "compressor_amount": 0,
                 "compressor_threshold": -12,
                 "compressor_makeup": 0,
-                "limiter_enabled": "Acik",
+                "limiter_enabled": "Açık",
                 "speed_ratio": 100,
                 "output_gain": -6,
             },
@@ -467,10 +502,10 @@ def builtin_preset_store() -> dict:
                 "output_device_id": "",
                 "output_name": "",
                 "output_dir": str(Path.home() / "Desktop"),
-                "session_mode": "Tek Klasor",
+                "session_mode": "Tek Klasör",
                 "session_name": time.strftime("session_%Y%m%d"),
-                "mp3_quality": "Yuksek VBR",
-                "wav_export_mode": "Sadece Vocal WAV",
+                "mp3_quality": "Yüksek VBR",
+                "wav_export_mode": "Sadece Vokal WAV",
                 "record_limit_hours": "1",
                 "mic_record_seconds": "60",
                 "gain": 2,
@@ -488,7 +523,7 @@ def builtin_preset_store() -> dict:
                 "compressor_amount": 0,
                 "compressor_threshold": -12,
                 "compressor_makeup": 0,
-                "limiter_enabled": "Acik",
+                "limiter_enabled": "Açık",
                 "speed_ratio": 100,
                 "output_gain": -6,
             },
@@ -499,10 +534,10 @@ def builtin_preset_store() -> dict:
                 "output_device_id": "",
                 "output_name": "",
                 "output_dir": str(Path.home() / "Desktop"),
-                "session_mode": "Tek Klasor",
+                "session_mode": "Tek Klasör",
                 "session_name": time.strftime("session_%Y%m%d"),
-                "mp3_quality": "Yuksek VBR",
-                "wav_export_mode": "Sadece Vocal WAV",
+                "mp3_quality": "Yüksek VBR",
+                "wav_export_mode": "Sadece Vokal WAV",
                 "record_limit_hours": "1",
                 "mic_record_seconds": "60",
                 "gain": 2,
@@ -520,7 +555,7 @@ def builtin_preset_store() -> dict:
                 "compressor_amount": 0,
                 "compressor_threshold": -12,
                 "compressor_makeup": 0,
-                "limiter_enabled": "Acik",
+                "limiter_enabled": "Açık",
                 "speed_ratio": 100,
                 "output_gain": -6,
             },
@@ -531,10 +566,10 @@ def builtin_preset_store() -> dict:
                 "output_device_id": "",
                 "output_name": "",
                 "output_dir": str(Path.home() / "Desktop"),
-                "session_mode": "Tek Klasor",
+                "session_mode": "Tek Klasör",
                 "session_name": time.strftime("session_%Y%m%d"),
-                "mp3_quality": "Yuksek VBR",
-                "wav_export_mode": "Mix + Vocal WAV",
+                "mp3_quality": "Yüksek VBR",
+                "wav_export_mode": "Mix + Vokal WAV",
                 "record_limit_hours": "1",
                 "mic_record_seconds": "60",
                 "gain": 5,
@@ -552,7 +587,7 @@ def builtin_preset_store() -> dict:
                 "compressor_amount": 30,
                 "compressor_threshold": -18,
                 "compressor_makeup": 2,
-                "limiter_enabled": "Acik",
+                "limiter_enabled": "Açık",
                 "speed_ratio": 100,
                 "output_gain": -5,
             },
@@ -603,12 +638,12 @@ class GuitarAmpRecorderApp:
         self.selected_route_text = StringVar(value="Aktif giriş: Varsayılan macOS girişi | Aktif çıkış: Varsayılan macOS çıkışı")
         self.output_name = StringVar(value=f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}")
         self.output_dir = StringVar(value=str(Path.home() / "Desktop"))
-        self.session_mode = StringVar(value="Tek Klasor")
+        self.session_mode = StringVar(value="Tek Klasör")
         self.session_name = StringVar(value=time.strftime("session_%Y%m%d"))
-        self.mp3_quality = StringVar(value="Yuksek VBR")
-        self.wav_export_mode = StringVar(value="Sadece Vocal WAV")
+        self.mp3_quality = StringVar(value="Yüksek VBR")
+        self.wav_export_mode = StringVar(value="Sadece Vokal WAV")
         self.preset_name = StringVar(value="Temiz Gitar")
-        self.limiter_enabled = StringVar(value="Acik")
+        self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.input_device_id = StringVar(value="")
         self.output_device_id = StringVar(value="")
@@ -856,17 +891,17 @@ class GuitarAmpRecorderApp:
         Entry(export, textvariable=self.output_dir, width=48).pack(anchor="w", padx=14)
         Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(8, 10))
         Label(export, text="Oturum Modu", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(8, 2))
-        session_mode_menu = OptionMenu(export, self.session_mode, "Tek Klasor", "Tarihli Oturum", "Isimli Oturum")
+        session_mode_menu = OptionMenu(export, self.session_mode, "Tek Klasör", "Tarihli Oturum", "İsimli Oturum")
         session_mode_menu.pack(anchor="w", padx=14)
-        Label(export, text="Oturum Adi", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(8, 2))
+        Label(export, text="Oturum Adı", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(8, 2))
         Entry(export, textvariable=self.session_name, width=32).pack(anchor="w", padx=14)
         Label(export, text="Çıkış Dosya Adı (MP3)", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_name, width=48).pack(anchor="w", padx=14)
         Label(export, text="MP3 Kalitesi", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
-        mp3_quality_menu = OptionMenu(export, self.mp3_quality, "Yuksek VBR", "320 kbps", "192 kbps", "128 kbps")
+        mp3_quality_menu = OptionMenu(export, self.mp3_quality, "Yüksek VBR", "320 kbps", "192 kbps", "128 kbps")
         mp3_quality_menu.pack(anchor="w", padx=14)
         Label(export, text="WAV Çıkışı", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
-        wav_export_menu = OptionMenu(export, self.wav_export_mode, "Sadece Vocal WAV", "Mix + Vocal WAV", "Sadece WAV (Mix + Vocal)")
+        wav_export_menu = OptionMenu(export, self.wav_export_mode, "Sadece Vokal WAV", "Mix + Vokal WAV", "Sadece WAV (Mix + Vokal)")
         wav_export_menu.pack(anchor="w", padx=14)
         Label(export, text="Sadece Mikrofon Süresi (sn)", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
         Entry(export, textvariable=self.mic_record_seconds, width=12).pack(anchor="w", padx=14)
@@ -905,11 +940,11 @@ class GuitarAmpRecorderApp:
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
         self.noise_gate_threshold = self.make_slider(mix, "Noise Gate Eşigi (%)", 0, 100, 25)
         self.monitor_level = self.make_slider(mix, "Canlı İzleme Seviyesi (%)", 0, 200, 100)
-        self.compressor_amount = self.make_slider(mix, "Kompresor Miktari (%)", 0, 100, 35)
-        self.compressor_threshold = self.make_slider(mix, "Kompresor Threshold (dB)", -36, -6, -18)
+        self.compressor_amount = self.make_slider(mix, "Kompresör Miktarı (%)", 0, 100, 35)
+        self.compressor_threshold = self.make_slider(mix, "Kompresör Eşiği (dB)", -36, -6, -18)
         self.compressor_makeup = self.make_slider(mix, "Makeup Gain (dB)", 0, 18, 4)
         Label(mix, text="Limiter", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(6, 2))
-        limiter_menu = OptionMenu(mix, self.limiter_enabled, "Acik", "Kapali")
+        limiter_menu = OptionMenu(mix, self.limiter_enabled, "Açık", "Kapalı")
         limiter_menu.pack(anchor="w", padx=14)
         self.speed_ratio = self.make_slider(mix, "Hız (%)", 50, 150, 100)
         self.output_gain = self.make_slider(mix, "Çıkış Kazancı (dB)", -12, 12, 0)
@@ -967,7 +1002,7 @@ class GuitarAmpRecorderApp:
         self.open_last_export_button.pack(side="left")
         self.play_last_export_button = Button(
             recent_buttons,
-            text="Son Kaydi Oynat",
+            text="Son Kaydı Oynat",
             command=self.start_last_export_playback_thread,
             bg="#16a085",
             fg="white",
@@ -1143,6 +1178,18 @@ class GuitarAmpRecorderApp:
         self.update_action_guidance_summary()
         self.update_option_explanation_summary()
 
+    def session_mode_value(self) -> str:
+        return normalize_choice(self.session_mode.get(), SESSION_MODE_ALIASES, "Tek Klasör")
+
+    def mp3_quality_value(self) -> str:
+        return normalize_choice(self.mp3_quality.get(), MP3_QUALITY_ALIASES, "Yüksek VBR")
+
+    def wav_export_mode_value(self) -> str:
+        return normalize_choice(self.wav_export_mode.get(), WAV_EXPORT_MODE_ALIASES, "Sadece Vokal WAV")
+
+    def limiter_enabled_value(self) -> str:
+        return normalize_choice(self.limiter_enabled.get(), LIMITER_ALIASES, "Açık")
+
     def plan_take_name_hint(self) -> str:
         name = self.output_name.get().strip()
         if name:
@@ -1150,20 +1197,20 @@ class GuitarAmpRecorderApp:
         return "otomatik take adı"
 
     def plan_session_hint(self) -> str:
-        mode = self.session_mode.get()
-        if mode == "Isimli Oturum":
-            return f"Isimli Oturum ({self.session_name.get().strip() or 'session'})"
+        mode = self.session_mode_value()
+        if mode == "İsimli Oturum":
+            return f"İsimli Oturum ({self.session_name.get().strip() or 'session'})"
         if mode == "Tarihli Oturum":
             return "Tarihli Oturum"
-        return "Tek Klasor"
+        return "Tek Klasör"
 
     def planned_output_labels(self) -> list[str]:
         labels = []
         if self.should_export_mp3():
-            labels.append(f"MP3 ({self.mp3_quality.get()})")
+            labels.append(f"MP3 ({self.mp3_quality_value()})")
         if self.should_export_mix_wav():
             labels.append("Mix WAV")
-        labels.append("Vocal WAV")
+        labels.append("Vokal WAV")
         labels.append("session_summary.json")
         labels.append("take_notes.txt")
         return labels
@@ -1376,7 +1423,7 @@ class GuitarAmpRecorderApp:
             pass
 
     def explain_mp3_quality(self) -> str:
-        quality = self.mp3_quality.get()
+        quality = self.mp3_quality_value()
         if quality == "320 kbps":
             return "MP3: en yüksek sabit kalite"
         if quality == "192 kbps":
@@ -1386,12 +1433,14 @@ class GuitarAmpRecorderApp:
         return "MP3: yüksek kalite VBR"
 
     def explain_wav_export_mode(self) -> str:
-        mode = self.wav_export_mode.get()
-        if mode == "Mix + Vocal WAV":
-            return "WAV: mix + vocal ayrı yazılacak"
-        if mode == "Sadece WAV (Mix + Vocal)":
-            return "WAV: sadece mix + vocal yazılacak"
-        return "WAV: sadece işlenmiş vocal yazılacak"
+        mode = self.wav_export_mode_value()
+        if mode == "Mix + Vokal WAV":
+            return "WAV: mix + vokal ayrı yazılacak"
+        if mode == "Sadece WAV (Mix + Vokal)":
+            return "WAV: sadece mix + vokal yazılacak"
+        if mode == "Tüm WAV Dosyaları":
+            return "WAV: tüm WAV dosyaları yazılacak"
+        return "WAV: sadece işlenmiş vokal yazılacak"
 
     def explain_monitor_behavior(self) -> str:
         level = int(self.monitor_level.get())
@@ -1412,7 +1461,7 @@ class GuitarAmpRecorderApp:
         return f"Hız: daha hızlı (%{speed})"
 
     def build_option_explanation_text(self) -> str:
-        limiter_text = "Limiter: açık, tepeler sınırlanacak" if self.limiter_enabled.get() == "Acik" else "Limiter: kapalı, tepeler serbest kalacak"
+        limiter_text = "Limiter: açık, tepeler sınırlanacak" if self.limiter_enabled_value() == "Açık" else "Limiter: kapalı, tepeler serbest kalacak"
         lines = [
             self.explain_mp3_quality(),
             self.explain_wav_export_mode(),
@@ -1669,7 +1718,7 @@ class GuitarAmpRecorderApp:
             output_dir = str(last_session.get("output_dir", "")).strip()
             if output_dir:
                 path = Path(output_dir)
-                if last_session.get("session_mode") == "Tek Klasor":
+                if normalize_choice(str(last_session.get("session_mode", "")), SESSION_MODE_ALIASES, "Tek Klasör") == "Tek Klasör":
                     self.output_dir.set(str(path))
                 elif path.parent.exists():
                     self.output_dir.set(str(path.parent))
@@ -1689,10 +1738,10 @@ class GuitarAmpRecorderApp:
             "output_device_id": self.output_device_id.get(),
             "output_name": self.output_name.get(),
             "output_dir": self.output_dir.get(),
-            "session_mode": self.session_mode.get(),
+            "session_mode": self.session_mode_value(),
             "session_name": self.session_name.get(),
-            "mp3_quality": self.mp3_quality.get(),
-            "wav_export_mode": self.wav_export_mode.get(),
+            "mp3_quality": self.mp3_quality_value(),
+            "wav_export_mode": self.wav_export_mode_value(),
             "record_limit_hours": self.record_limit_hours.get(),
             "mic_record_seconds": self.mic_record_seconds.get(),
             "gain": int(self.gain.get()),
@@ -1710,7 +1759,7 @@ class GuitarAmpRecorderApp:
             "compressor_amount": int(self.compressor_amount.get()),
             "compressor_threshold": int(self.compressor_threshold.get()),
             "compressor_makeup": int(self.compressor_makeup.get()),
-            "limiter_enabled": self.limiter_enabled.get(),
+            "limiter_enabled": self.limiter_enabled_value(),
             "speed_ratio": int(self.speed_ratio.get()),
             "output_gain": int(self.output_gain.get()),
         }
@@ -1722,10 +1771,10 @@ class GuitarAmpRecorderApp:
         self.output_device_id.set(str(preset.get("output_device_id", "")))
         self.output_name.set(str(preset.get("output_name", self.output_name.get())))
         self.output_dir.set(str(preset.get("output_dir", self.output_dir.get())))
-        self.session_mode.set(str(preset.get("session_mode", self.session_mode.get())))
+        self.session_mode.set(normalize_choice(str(preset.get("session_mode", self.session_mode.get())), SESSION_MODE_ALIASES, self.session_mode_value()))
         self.session_name.set(str(preset.get("session_name", self.session_name.get())))
-        self.mp3_quality.set(str(preset.get("mp3_quality", self.mp3_quality.get())))
-        self.wav_export_mode.set(str(preset.get("wav_export_mode", self.wav_export_mode.get())))
+        self.mp3_quality.set(normalize_choice(str(preset.get("mp3_quality", self.mp3_quality.get())), MP3_QUALITY_ALIASES, self.mp3_quality_value()))
+        self.wav_export_mode.set(normalize_choice(str(preset.get("wav_export_mode", self.wav_export_mode.get())), WAV_EXPORT_MODE_ALIASES, self.wav_export_mode_value()))
         self.record_limit_hours.set(str(preset.get("record_limit_hours", "1")))
         self.mic_record_seconds.set(str(preset.get("mic_record_seconds", "60")))
 
@@ -1744,7 +1793,7 @@ class GuitarAmpRecorderApp:
         self.compressor_amount.set(int(preset.get("compressor_amount", 35)))
         self.compressor_threshold.set(int(preset.get("compressor_threshold", -18)))
         self.compressor_makeup.set(int(preset.get("compressor_makeup", 4)))
-        self.limiter_enabled.set(str(preset.get("limiter_enabled", "Acik")))
+        self.limiter_enabled.set(normalize_choice(str(preset.get("limiter_enabled", "Açık")), LIMITER_ALIASES, "Açık"))
         self.speed_ratio.set(int(preset.get("speed_ratio", 100)))
         self.output_gain.set(int(preset.get("output_gain", 0)))
 
@@ -1854,10 +1903,10 @@ class GuitarAmpRecorderApp:
 
     def resolve_output_dir(self) -> Path:
         base_dir = Path(self.output_dir.get().strip() or str(Path.home() / "Desktop")).expanduser()
-        mode = self.session_mode.get()
+        mode = self.session_mode_value()
         if mode == "Tarihli Oturum":
             return base_dir / time.strftime("%Y-%m-%d_%H-%M-%S")
-        if mode == "Isimli Oturum":
+        if mode == "İsimli Oturum":
             session_name = self.session_name.get().strip() or time.strftime("session_%Y%m%d")
             safe_name = "".join(ch if ch.isalnum() or ch in "-_ ." else "_" for ch in session_name).strip() or "session"
             return base_dir / safe_name
@@ -1876,7 +1925,7 @@ class GuitarAmpRecorderApp:
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "output_dir": str(output_dir),
             "preset_name": self.preset_name.get(),
-            "session_mode": self.session_mode.get(),
+            "session_mode": self.session_mode_value(),
             "session_name": self.session_name.get(),
             "input_device_choice": self.input_device_choice.get(),
             "output_device_choice": self.output_device_choice.get(),
@@ -1885,8 +1934,8 @@ class GuitarAmpRecorderApp:
             "backing_file": str(self.backing_file) if self.backing_file else "",
             "export": {
                 "output_name": self.output_name.get(),
-                "mp3_quality": self.mp3_quality.get(),
-                "wav_export_mode": self.wav_export_mode.get(),
+                "mp3_quality": self.mp3_quality_value(),
+                "wav_export_mode": self.wav_export_mode_value(),
                 "record_limit_hours": self.record_limit_hours.get(),
                 "mic_record_seconds": self.mic_record_seconds.get(),
             },
@@ -1908,7 +1957,7 @@ class GuitarAmpRecorderApp:
                 "compressor_amount": int(self.compressor_amount.get()),
                 "compressor_threshold": int(self.compressor_threshold.get()),
                 "compressor_makeup": int(self.compressor_makeup.get()),
-                "limiter_enabled": self.limiter_enabled.get(),
+                "limiter_enabled": self.limiter_enabled_value(),
                 "speed_ratio": int(self.speed_ratio.get()),
                 "output_gain": int(self.output_gain.get()),
             },
@@ -2012,7 +2061,7 @@ class GuitarAmpRecorderApp:
                 "app_version": self.app_version,
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "output_dir": str(output_dir),
-                "session_mode": self.session_mode.get(),
+                "session_mode": self.session_mode_value(),
                 "session_name": self.session_name.get(),
                 "preset_name": self.preset_name.get(),
                 "last_export_path": str(self.last_export_path) if self.last_export_path else "",
@@ -2088,7 +2137,7 @@ class GuitarAmpRecorderApp:
         if output_dir:
             path = Path(output_dir)
             if path.parent.exists():
-                if data.get("session_mode") == "Tek Klasor":
+                if normalize_choice(str(data.get("session_mode", "")), SESSION_MODE_ALIASES, "Tek Klasör") == "Tek Klasör":
                     self.output_dir.set(str(path))
                 else:
                     self.output_dir.set(str(path.parent))
@@ -2833,13 +2882,13 @@ class GuitarAmpRecorderApp:
         )
 
     def should_export_mp3(self) -> bool:
-        return self.wav_export_mode.get() != "Sadece WAV (Mix + Vocal)"
+        return self.wav_export_mode_value() not in {"Sadece WAV (Mix + Vokal)", "Tüm WAV Dosyaları"}
 
     def should_export_mix_wav(self) -> bool:
-        return self.wav_export_mode.get() in {"Mix + Vocal WAV", "Sadece WAV (Mix + Vocal)"}
+        return self.wav_export_mode_value() in {"Mix + Vokal WAV", "Sadece WAV (Mix + Vokal)", "Tüm WAV Dosyaları"}
 
     def ffmpeg_mp3_args(self) -> list[str]:
-        quality = self.mp3_quality.get()
+        quality = self.mp3_quality_value()
         if quality == "320 kbps":
             return ["-codec:a", "libmp3lame", "-b:a", "320k"]
         if quality == "192 kbps":
@@ -2856,7 +2905,7 @@ class GuitarAmpRecorderApp:
         out = signal
         if amount > 0:
             out = apply_compressor(out, threshold_db, ratio, makeup_db)
-        if self.limiter_enabled.get() == "Acik":
+        if self.limiter_enabled_value() == "Açık":
             out = apply_limiter(out, 0.98)
         return out
 
@@ -3118,7 +3167,7 @@ class GuitarAmpRecorderApp:
             mix[:, 1] += processed_voice * vocal_level
             mix = apply_output_gain(mix, output_gain_db)
             processed_voice = apply_output_gain(processed_voice, output_gain_db)
-            if self.limiter_enabled.get() == "Acik":
+            if self.limiter_enabled_value() == "Açık":
                 mix = apply_limiter(mix, 0.98)
                 processed_voice = apply_limiter(processed_voice, 0.98)
 
