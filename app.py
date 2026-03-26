@@ -1994,6 +1994,12 @@ class GuitarAmpRecorderApp:
     def build_merge_subtitle_text(self) -> str:
         if self.backing_file is None:
             return "Arka plan eklerseniz ses ve müzik dengesi burada özetlenir."
+        if self.current_input_device_count <= 0:
+            return "Birleştirme için önce mikrofonu görünür hale getirip yeniden tarayın."
+        if self.current_output_device_count <= 0:
+            return "Birleştirme için önce çıkışı görünür hale getirip yeniden tarayın."
+        if not self.output_dir.get().strip():
+            return "Birleştirme için önce kayıt klasörünü seçin."
         if self.mp3_dependency_missing():
             return "Arka planlı kayıt hazır. MP3 yerine Mix WAV yazılacak."
         return "Arka planlı kayıt hazır. Önce test yapın, sonra tam kayda geçin."
@@ -2004,7 +2010,7 @@ class GuitarAmpRecorderApp:
                 [
                     "Kanal: kapalı",
                     "Durum: yalnız mikrofon kaydı",
-                    "Hızlı Kayıt: açık",
+                "Hızlı Kayıt: açık",
                 ]
             )
         backing = int(self.backing_level.get())
@@ -2012,6 +2018,13 @@ class GuitarAmpRecorderApp:
         monitor = int(self.monitor_level.get())
         speed = int(self.speed_ratio.get())
         outputs = ", ".join(self.planned_audio_output_labels())
+        missing_bits = []
+        if self.current_input_device_count <= 0:
+            missing_bits.append("mikrofon")
+        if self.current_output_device_count <= 0:
+            missing_bits.append("çıkış")
+        if not self.output_dir.get().strip():
+            missing_bits.append("klasör")
         return "\n".join(
             [
                 "Kanal: arka plan + mikrofon",
@@ -2019,14 +2032,27 @@ class GuitarAmpRecorderApp:
                 f"Denge: müzik %{backing} | vokal %{vocal}",
                 f"İzleme / hız: %{monitor} | %{speed}",
                 f"Çıktı: {outputs}",
+                f"Eksik: {', '.join(missing_bits)}" if missing_bits else "Durum: birleştirme hazır",
                 "Akış: önce test, sonra tam kayıt",
             ]
         )
+
+    def build_merge_palette(self) -> dict[str, str]:
+        if self.backing_file is None:
+            return {"bg": "#1e252d", "fg": "#e4edf5"}
+        if self.current_input_device_count <= 0 or self.current_output_device_count <= 0 or not self.output_dir.get().strip():
+            return {"bg": "#2c2418", "fg": "#ffe7b3"}
+        if self.mp3_dependency_missing():
+            return {"bg": "#33261a", "fg": "#ffe0a8"}
+        return {"bg": "#1f2b22", "fg": "#d8f3dc"}
 
     def update_merge_summary(self) -> None:
         try:
             self.merge_subtitle_text.set(self.build_merge_subtitle_text())
             self.merge_summary_text.set(self.build_merge_summary_text())
+            label = getattr(self, "merge_summary_label", None)
+            if label is not None:
+                label.configure(**self.build_merge_palette())
         except Exception:
             pass
 

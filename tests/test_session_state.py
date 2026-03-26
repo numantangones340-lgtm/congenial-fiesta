@@ -64,6 +64,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.prep_subtitle_text = FakeVar("")
         recorder.merge_subtitle_text = FakeVar("")
         recorder.merge_summary_text = FakeVar("")
+        recorder.merge_summary_label = mock.Mock()
         recorder.tone_subtitle_text = FakeVar("")
         recorder.mix_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
@@ -1478,6 +1479,23 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(subtitle_text, "Arka planlı kayıt hazır. MP3 yerine Mix WAV yazılacak.")
 
+    def test_build_merge_subtitle_text_requires_output_dir_before_backing_record(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        subtitle_text = recorder.build_merge_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Birleştirme için önce kayıt klasörünü seçin.")
+
+    def test_build_merge_summary_text_reports_missing_setup_bits(self) -> None:
+        recorder = self.make_app()
+        recorder.current_output_device_count = 0
+        recorder.output_dir.set("")
+
+        merge_text = recorder.build_merge_summary_text()
+
+        self.assertIn("Eksik: çıkış, klasör", merge_text)
+
     def test_update_tone_and_mix_subtitles_refresh_visible_state(self) -> None:
         recorder = self.make_app()
 
@@ -1492,6 +1510,7 @@ class SessionStateTests(unittest.TestCase):
         )
         self.assertEqual(recorder.merge_subtitle_text.get(), "Arka planlı kayıt hazır. Önce test yapın, sonra tam kayda geçin.")
         self.assertIn("Dosya: backing.mp3", recorder.merge_summary_text.get())
+        recorder.merge_summary_label.configure.assert_called_once_with(bg="#1f2b22", fg="#d8f3dc")
 
     def test_on_slider_settings_changed_refreshes_dependent_summaries(self) -> None:
         recorder = self.make_app()
