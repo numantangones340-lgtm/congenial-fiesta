@@ -34,6 +34,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.compact_status_text = FakeVar("")
         recorder.readiness_text = FakeVar("")
         recorder.readiness_subtitle_text = FakeVar("")
+        recorder.next_step_subtitle_text = FakeVar("")
         recorder.recent_output_summary_text = FakeVar("")
         recorder.recent_output_subtitle_text = FakeVar("")
         recorder.operation_state_label = mock.Mock()
@@ -437,6 +438,17 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertIn("Kurtarma notunu inceleyin", next_step)
 
+    def test_build_next_step_subtitle_text_prefers_recovery_state(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+
+            subtitle_text = recorder.build_next_step_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Yeniden denemeden önce kurtarma notu kontrol edilmeli.")
+
     def test_build_next_step_text_guides_microphone_mode_when_no_backing(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = None
@@ -445,6 +457,14 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(next_step, "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın.")
 
+    def test_build_next_step_subtitle_text_reports_mic_only_flow(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        subtitle_text = recorder.build_next_step_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Sadece mikrofon akışı hazır.")
+
     def test_build_next_step_text_guides_full_recording_when_backing_ready(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing_track.wav")
@@ -452,6 +472,38 @@ class SessionStateTests(unittest.TestCase):
         next_step = recorder.build_next_step_text()
 
         self.assertEqual(next_step, "Backing ve cihazlar hazır. Test kaydı iyi ise tam kaydı başlatabilirsiniz.")
+
+    def test_build_next_step_subtitle_text_reports_backing_flow(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+
+        subtitle_text = recorder.build_next_step_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Arka planlı kayıt akışı hazır.")
+
+    def test_build_next_step_subtitle_text_reports_missing_input(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("")
+
+        subtitle_text = recorder.build_next_step_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Önce mikrofon seçimi tamamlanmalı.")
+
+    def test_build_next_step_subtitle_text_reports_active_recording_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        subtitle_text = recorder.build_next_step_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kayıt aktif. Sıradaki adım durdurma olacak.")
+
+    def test_update_next_step_summary_updates_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        recorder.update_next_step_summary()
+
+        self.assertEqual(recorder.next_step_subtitle_text.get(), "Sadece mikrofon akışı hazır.")
 
     def test_build_readiness_text_summarizes_ready_state(self) -> None:
         recorder = self.make_app()

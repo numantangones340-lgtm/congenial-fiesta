@@ -656,6 +656,7 @@ class GuitarAmpRecorderApp:
         self.monitor_status_text = StringVar(value="Canlı monitor kapalı")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
         self.readiness_subtitle_text = StringVar(value="Hazırlık özeti hazırlanıyor...")
+        self.next_step_subtitle_text = StringVar(value="Sonraki adım özeti hazırlanıyor...")
         self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
         self.action_subtitle_text = StringVar(value="İşlem akışı hazırlanıyor...")
         self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
@@ -751,7 +752,7 @@ class GuitarAmpRecorderApp:
         self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
         Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
 
-        next_step_box = self.create_section(title="Sonraki Adım", subtitle="Sıradaki hareket burada netleşsin.")
+        next_step_box = self.create_section(title="Sonraki Adım", subtitlevariable=self.next_step_subtitle_text)
         self.next_step_label = Label(
             next_step_box,
             textvariable=self.next_step_text,
@@ -1362,7 +1363,31 @@ class GuitarAmpRecorderApp:
 
     def update_next_step_summary(self) -> None:
         try:
+            self.update_next_step_subtitle()
             self.next_step_text.set(self.build_next_step_text())
+        except Exception:
+            pass
+
+    def build_next_step_subtitle_text(self) -> str:
+        input_ready = bool(self.input_device_choice.get().strip())
+        output_ready = bool(self.output_device_choice.get().strip())
+        if self.recording_active:
+            if self.stop_recording_requested:
+                return "Kayıt duruyor. İşlem tamamlanana kadar bekleyin."
+            return "Kayıt aktif. Sıradaki adım durdurma olacak."
+        if not input_ready:
+            return "Önce mikrofon seçimi tamamlanmalı."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return "Yeniden denemeden önce kurtarma notu kontrol edilmeli."
+        if self.backing_file is None:
+            return "Sadece mikrofon akışı hazır."
+        if not output_ready:
+            return "Arka plan seçili, çıkış seçimi bekleniyor."
+        return "Arka planlı kayıt akışı hazır."
+
+    def update_next_step_subtitle(self) -> None:
+        try:
+            self.next_step_subtitle_text.set(self.build_next_step_subtitle_text())
         except Exception:
             pass
 
