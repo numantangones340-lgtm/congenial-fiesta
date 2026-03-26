@@ -44,6 +44,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.action_guidance_text = FakeVar("")
         recorder.action_subtitle_text = FakeVar("")
+        recorder.progress_subtitle_text = FakeVar("")
         recorder.preflight_warning_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
@@ -588,6 +589,38 @@ class SessionStateTests(unittest.TestCase):
         recorder.update_action_subtitle()
 
         self.assertEqual(recorder.action_subtitle_text.get(), "Önce test yapın, sonra hızlı kayıt veya tam kayıt seçin.")
+
+    def test_build_progress_subtitle_text_reports_idle_state(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_progress_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kayıt başlamadığında son durum burada görünür.")
+
+    def test_build_progress_subtitle_text_reports_active_recording_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        subtitle_text = recorder.build_progress_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kayıt sürerken geçen ve kalan süre burada yenilenir.")
+
+    def test_build_progress_subtitle_text_reports_stop_request_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+        recorder.stop_recording_requested = True
+
+        subtitle_text = recorder.build_progress_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kayıt durduruluyor. Elde edilen bölüm hazırlanıyor.")
+
+    def test_update_progress_subtitle_updates_visible_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        recorder.update_progress_subtitle()
+
+        self.assertEqual(recorder.progress_subtitle_text.get(), "Kayıt sürerken geçen ve kalan süre burada yenilenir.")
 
     def test_build_quick_record_button_text_reports_mic_only_mode(self) -> None:
         recorder = self.make_app()

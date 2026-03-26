@@ -645,6 +645,7 @@ class GuitarAmpRecorderApp:
         self.preset_name = StringVar(value="Temiz Gitar")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
+        self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
         self.input_device_id = StringVar(value="")
         self.output_device_id = StringVar(value="")
         self.input_device_choice = StringVar(value="Varsayılan macOS girişi")
@@ -972,7 +973,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_button = Button(actions, text="Kaydı Durdur ve Kaydet", command=self.request_stop_recording, bg="#c0392b", fg="white", state="disabled")
         self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
 
-        progress_box = self.create_section(title="Kayıt Durumu", subtitle="Geçen ve kalan süre burada görünür.")
+        progress_box = self.create_section(title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
         self.progress_label = Label(
             progress_box,
             textvariable=self.record_progress_text,
@@ -1146,6 +1147,7 @@ class GuitarAmpRecorderApp:
         self.update_action_guidance_summary()
         self.update_action_subtitle()
         self.update_action_button_copy()
+        self.update_progress_subtitle()
         self.update_option_explanation_summary()
         self.update_recent_output_summary()
 
@@ -1181,6 +1183,7 @@ class GuitarAmpRecorderApp:
         self.update_action_guidance_summary()
         self.update_action_subtitle()
         self.update_action_button_copy()
+        self.update_progress_subtitle()
         self.update_option_explanation_summary()
 
     def session_mode_value(self) -> str:
@@ -1439,6 +1442,19 @@ class GuitarAmpRecorderApp:
     def update_action_subtitle(self) -> None:
         try:
             self.action_subtitle_text.set(self.build_action_subtitle_text())
+        except Exception:
+            pass
+
+    def build_progress_subtitle_text(self) -> str:
+        if self.recording_active:
+            if self.stop_recording_requested:
+                return "Kayıt durduruluyor. Elde edilen bölüm hazırlanıyor."
+            return "Kayıt sürerken geçen ve kalan süre burada yenilenir."
+        return "Kayıt başlamadığında son durum burada görünür."
+
+    def update_progress_subtitle(self) -> None:
+        try:
+            self.progress_subtitle_text.set(self.build_progress_subtitle_text())
         except Exception:
             pass
 
@@ -2760,6 +2776,7 @@ class GuitarAmpRecorderApp:
             self.update_action_guidance_summary()
             self.update_action_subtitle()
             self.update_operation_state_summary()
+            self.update_progress_subtitle()
             self.update_recent_output_summary()
         except TclError:
             pass
@@ -2776,6 +2793,7 @@ class GuitarAmpRecorderApp:
             self.update_action_guidance_summary()
             self.update_action_subtitle()
             self.update_operation_state_summary()
+            self.update_progress_subtitle()
             if self.last_export_path is not None and self.last_export_path.exists():
                 self.open_last_export_button.configure(state="normal")
                 self.play_last_export_button.configure(state="normal")
@@ -2839,6 +2857,7 @@ class GuitarAmpRecorderApp:
             self.update_action_guidance_summary()
             self.update_action_subtitle()
             self.update_operation_state_summary()
+            self.update_progress_subtitle()
         except TclError:
             pass
         try:
