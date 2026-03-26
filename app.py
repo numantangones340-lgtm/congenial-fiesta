@@ -1401,6 +1401,8 @@ class GuitarAmpRecorderApp:
         parts = [f"{label} hazır"]
         if primary_path is not None:
             parts.append(f"Ana dosya: {recent_audio_status_text(primary_path)}")
+            if self.mp3_dependency_missing():
+                parts.append("Not: MP3 yerine WAV kullanıldı")
         if generated_files:
             parts.append(f"Dosya sayısı: {len(generated_files)}")
         parts.append(f"Klasör: {output_dir}")
@@ -1410,6 +1412,8 @@ class GuitarAmpRecorderApp:
         parts = ["Hazır", "Dosyalar hazır", f"Klasör: {output_dir}"]
         if self.last_export_path is not None and self.last_export_path.exists():
             parts.append(f"Son kayıt: {recent_audio_status_text(self.last_export_path)}")
+            if self.mp3_dependency_missing():
+                parts.append("MP3 yerine WAV kullanıldı")
         return " | ".join(parts)
 
     def build_recording_prep_text(self) -> str:

@@ -376,6 +376,20 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(status_text, "Test hazır | Klasör: /tmp/out/Test")
 
+    def test_build_completion_status_text_mentions_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+        output_dir = Path("/tmp/out/Canlı Set")
+        primary_path = output_dir / "take_mix.wav"
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            status_text = recorder.build_completion_status_text("Kayıt", output_dir, primary_path, [primary_path])
+
+        self.assertEqual(
+            status_text,
+            "Kayıt hazır | Ana dosya: take_mix.wav (WAV | Canlı Set) | Not: MP3 yerine WAV kullanıldı | Dosya sayısı: 1 | Klasör: /tmp/out/Canlı Set",
+        )
+
     def test_build_ready_recording_progress_text_includes_latest_audio_summary(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -388,6 +402,21 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertIn("Hazır | Dosyalar hazır | Klasör:", progress_text)
         self.assertIn("Son kayıt: take.mp3 (MP3 | Canlı Set)", progress_text)
+
+    def test_build_ready_recording_progress_text_mentions_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "Canlı Set"
+            output_dir.mkdir()
+            recorder.last_export_path = output_dir / "take_mix.wav"
+            recorder.last_export_path.write_text("audio", encoding="utf-8")
+
+            with mock.patch.object(app.shutil, "which", return_value=None):
+                progress_text = recorder.build_ready_recording_progress_text(output_dir)
+
+        self.assertIn("Son kayıt: take_mix.wav (WAV | Canlı Set)", progress_text)
+        self.assertIn("MP3 yerine WAV kullanıldı", progress_text)
 
     def test_build_operation_state_text_reports_idle_state(self) -> None:
         recorder = self.make_app()
