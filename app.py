@@ -99,6 +99,18 @@ def visible_recent_output_file(path: Path) -> bool:
     }
 
 
+def recent_output_file_label(path: Path) -> str:
+    if path.suffix.lower() in {".mp3", ".wav"}:
+        return "Ses"
+    return {
+        "session_summary.json": "Oturum özeti",
+        "take_notes.txt": "Take notu",
+        "export_recovery_note.txt": "Kurtarma notu",
+        "preparation_summary.txt": "Hazırlık özeti",
+        "session_brief.txt": "Kısa rapor",
+    }.get(path.name, "Çıktı")
+
+
 def format_seconds_short(seconds: float) -> str:
     total_seconds = max(0, int(round(seconds)))
     minutes, secs = divmod(total_seconds, 60)
@@ -2568,7 +2580,7 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set("Henüz çıktı yok.")
             self.update_recent_output_summary()
             return
-        lines = [f"- {path.name}" for path in recent_files]
+        lines = [f"- {recent_output_file_label(path)}: {path.name}" for path in recent_files]
         self.recent_exports_text.set("\n".join(lines))
         self.update_recent_output_summary()
 
