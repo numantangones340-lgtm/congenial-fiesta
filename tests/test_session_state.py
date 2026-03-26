@@ -781,8 +781,12 @@ class SessionStateTests(unittest.TestCase):
             recorder.last_preparation_summary_path = prep_path
 
             summary_text = recorder.build_recent_output_summary_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertEqual(summary_text, "Hazır: son kayıt, özet, take notu, hazırlık dosyası. Önce son kaydı açın veya oynatın.")
+        self.assertEqual(
+            summary_text,
+            f"Hazır: son kayıt {latest_audio}, özet, take notu, hazırlık dosyası. Önce son kaydı açın veya oynatın.",
+        )
 
     def test_update_recent_output_summary_updates_text_and_label_style(self) -> None:
         recorder = self.make_app()

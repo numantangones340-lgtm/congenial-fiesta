@@ -1880,7 +1880,7 @@ class GuitarAmpRecorderApp:
                 return "Kurtarma notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
             return "Kurtarma notu hazır. Önce notu kopyalayın, sonra klasörü açın."
         if self.last_export_path is not None and self.last_export_path.exists():
-            ready_items = ["son kayıt"]
+            ready_items = [f"son kayıt {recent_audio_status_text(self.last_export_path)}"]
             if self.last_summary_path is not None and self.last_summary_path.exists():
                 ready_items.append("özet")
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
