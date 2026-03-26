@@ -2993,6 +2993,8 @@ class GuitarAmpRecorderApp:
             self.setup_hint_text.set(self.build_setup_hint_text(self.current_input_device_count, self.current_output_device_count))
             self.setup_status_text.set(self.build_setup_status_text(self.current_input_device_count, self.current_output_device_count))
             self.setup_next_text.set(self.build_setup_next_text(self.current_input_device_count, self.current_output_device_count))
+            if hasattr(self, "start_test_button"):
+                self.set_recording_action_button_states(recording_active=self.recording_active)
             label = getattr(self, "setup_status_label", None)
             if label is not None:
                 ready = (
@@ -3132,6 +3134,9 @@ class GuitarAmpRecorderApp:
         if not self.output_dir.get().strip():
             return False, f"{action_label} öncesi çıkış klasörü seçin."
         return True, ""
+
+    def start_actions_ready(self) -> bool:
+        return self.current_input_device_count > 0 and self.current_output_device_count > 0 and bool(self.output_dir.get().strip())
 
     def meter_callback(self, indata, _frames, _time_info, status) -> None:
         if status:
@@ -3321,9 +3326,10 @@ class GuitarAmpRecorderApp:
         self.root.after(50, self.start_input_meter)
 
     def set_recording_action_button_states(self, recording_active: bool) -> None:
-        start_state = "disabled" if recording_active else "normal"
+        setup_ready = self.start_actions_ready()
+        start_state = "disabled" if recording_active or not setup_ready else "normal"
         stop_state = "normal" if recording_active else "disabled"
-        quick_state = "disabled" if recording_active or self.backing_file is not None else "normal"
+        quick_state = "disabled" if recording_active or not setup_ready or self.backing_file is not None else "normal"
         self.start_test_button.configure(state=start_state)
         self.start_quick_record_button.configure(state=quick_state)
         self.start_recording_button.configure(state=start_state)

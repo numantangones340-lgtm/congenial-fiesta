@@ -561,6 +561,17 @@ class SessionStateTests(unittest.TestCase):
         recorder.start_recording_button.configure.assert_called_once_with(state="normal")
         recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
 
+    def test_set_recording_action_button_states_disables_start_buttons_when_setup_is_incomplete(self) -> None:
+        recorder = self.make_app()
+        recorder.current_input_device_count = 0
+
+        recorder.set_recording_action_button_states(recording_active=False)
+
+        recorder.start_test_button.configure.assert_called_once_with(state="disabled")
+        recorder.start_quick_record_button.configure.assert_called_once_with(state="disabled")
+        recorder.start_recording_button.configure.assert_called_once_with(state="disabled")
+        recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
+
     def test_set_recent_output_button_states_disables_recent_actions(self) -> None:
         recorder = self.make_app()
 
