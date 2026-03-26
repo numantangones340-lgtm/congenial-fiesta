@@ -1641,6 +1641,8 @@ class GuitarAmpRecorderApp:
         if not self.output_dir.get().strip():
             return "Ön uyarı: kayıt klasörü seçilmedi."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Ön uyarı: son çıktı için kurtarma notu var ({self.last_recovery_note_path.name}). Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return f"Ön uyarı: son çıktı için kurtarma notu var ({self.last_recovery_note_path.name})."
         if self.last_input_peak >= 0.985:
             return "Ön uyarı: giriş çok yüksek, gain düşürmeden kayda başlamayın."
@@ -1666,6 +1668,8 @@ class GuitarAmpRecorderApp:
         if not self.output_dir.get().strip():
             return "Önce kayıt klasörünü seçin."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Son hatayı incelemeden yeni kayıt başlatmayın. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return "Son hatayı incelemeden yeni kayıt başlatmayın."
         if self.last_input_peak >= 0.985:
             return "Giriş seviyesi fazla yüksek."
