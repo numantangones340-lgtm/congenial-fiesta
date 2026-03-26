@@ -1532,9 +1532,12 @@ class GuitarAmpRecorderApp:
 
     def build_output_subtitle_text(self) -> str:
         base_dir = self.output_dir.get().strip()
+        mp3_enabled = self.should_export_mp3()
         if not base_dir:
             if self.mp3_dependency_missing():
                 return "Önce bir klasör seçin. Bu tur MP3 yerine WAV dosyaları seçtiğiniz yere yazılacak."
+            if not mp3_enabled:
+                return "Önce bir klasör seçin. Bu tur yalnız WAV dosyaları seçtiğiniz yere yazılacak."
             return "Önce bir klasör seçin. MP3 ve WAV dosyaları seçtiğiniz yere yazılacak."
         mode = self.session_mode_value()
         if mode == "İsimli Oturum":
@@ -1546,6 +1549,8 @@ class GuitarAmpRecorderApp:
             subtitle = f"Dosyalar doğrudan {base_dir} klasörüne yazılacak."
         if self.mp3_dependency_missing():
             subtitle += " MP3 yerine Mix WAV yazılacak."
+        elif not mp3_enabled:
+            subtitle += " Yalnız WAV yazılacak."
         return subtitle
 
     def build_output_name_label_text(self) -> str:

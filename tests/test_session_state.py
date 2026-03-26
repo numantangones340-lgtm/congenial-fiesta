@@ -741,6 +741,7 @@ class SessionStateTests(unittest.TestCase):
     def test_build_output_subtitle_text_reports_single_folder_mode(self) -> None:
         recorder = self.make_app()
         recorder.session_mode.set("Tek Klasör")
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
 
         subtitle_text = recorder.build_output_subtitle_text()
 
@@ -748,6 +749,7 @@ class SessionStateTests(unittest.TestCase):
 
     def test_build_output_subtitle_text_reports_named_session_mode(self) -> None:
         recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
 
         subtitle_text = recorder.build_output_subtitle_text()
 
@@ -756,6 +758,7 @@ class SessionStateTests(unittest.TestCase):
     def test_build_output_subtitle_text_reports_dated_session_mode(self) -> None:
         recorder = self.make_app()
         recorder.session_mode.set("Tarihli Oturum")
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
 
         subtitle_text = recorder.build_output_subtitle_text()
 
@@ -764,10 +767,28 @@ class SessionStateTests(unittest.TestCase):
     def test_build_output_subtitle_text_requires_folder_selection(self) -> None:
         recorder = self.make_app()
         recorder.output_dir.set("")
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
 
         subtitle_text = recorder.build_output_subtitle_text()
 
         self.assertEqual(subtitle_text, "Önce bir klasör seçin. MP3 ve WAV dosyaları seçtiğiniz yere yazılacak.")
+
+    def test_build_output_subtitle_text_reports_wav_only_when_mp3_disabled(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece WAV (Mix + Vokal)")
+
+        subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Dosyalar /tmp/out içinde Akşam Kaydı klasörüne yazılacak. Yalnız WAV yazılacak.")
+
+    def test_build_output_subtitle_text_reports_wav_only_when_folder_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+        recorder.wav_export_mode.set("Sadece WAV (Mix + Vokal)")
+
+        subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Önce bir klasör seçin. Bu tur yalnız WAV dosyaları seçtiğiniz yere yazılacak.")
 
     def test_build_output_subtitle_text_mentions_wav_fallback_when_ffmpeg_missing(self) -> None:
         recorder = self.make_app()
@@ -790,6 +811,7 @@ class SessionStateTests(unittest.TestCase):
     def test_update_output_subtitle_updates_visible_subtitle(self) -> None:
         recorder = self.make_app()
         recorder.session_mode.set("Tek Klasör")
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
 
         recorder.update_output_subtitle()
 
