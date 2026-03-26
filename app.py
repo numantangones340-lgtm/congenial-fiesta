@@ -661,6 +661,7 @@ class GuitarAmpRecorderApp:
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
+        self.source_subtitle_text = StringVar(value="Kayıt kaynağı hazırlanıyor...")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -880,7 +881,7 @@ class GuitarAmpRecorderApp:
         Button(meter_buttons, text="İzleme Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
-        media = self.create_section(title="Kayıt Kaynağı", subtitle="İsterseniz arka plan ekleyin, isterseniz sadece mikrofon kullanın.")
+        media = self.create_section(title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
@@ -1147,6 +1148,7 @@ class GuitarAmpRecorderApp:
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_action_subtitle()
+        self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
         self.update_option_explanation_summary()
@@ -1183,6 +1185,7 @@ class GuitarAmpRecorderApp:
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_action_subtitle()
+        self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
         self.update_option_explanation_summary()
@@ -1307,6 +1310,17 @@ class GuitarAmpRecorderApp:
     def update_recording_prep_summary(self) -> None:
         try:
             self.prep_summary_text.set(self.build_recording_prep_text())
+        except Exception:
+            pass
+
+    def build_source_subtitle_text(self) -> str:
+        if self.backing_file is not None:
+            return f"Arka plan etkin: {self.backing_file.name}. Bu modda tam kayıt kullanılacak."
+        return "Şu an sadece mikrofon etkin. İsterseniz arka plan ekleyebilir veya hızlı kayda geçebilirsiniz."
+
+    def update_source_subtitle(self) -> None:
+        try:
+            self.source_subtitle_text.set(self.build_source_subtitle_text())
         except Exception:
             pass
 
@@ -2918,6 +2932,7 @@ class GuitarAmpRecorderApp:
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_action_subtitle()
+        self.update_source_subtitle()
         self.update_action_button_copy()
 
     def clear_backing_selection(self) -> None:
@@ -2932,6 +2947,7 @@ class GuitarAmpRecorderApp:
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
         self.update_action_subtitle()
+        self.update_source_subtitle()
         self.update_action_button_copy()
         self.set_status("Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 

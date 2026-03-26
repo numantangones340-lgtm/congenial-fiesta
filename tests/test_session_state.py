@@ -47,6 +47,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.action_subtitle_text = FakeVar("")
         recorder.progress_subtitle_text = FakeVar("")
         recorder.preflight_warning_text = FakeVar("")
+        recorder.source_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
@@ -458,6 +459,38 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Hazır olanlar: giriş, çıkış, klasör, kaynak", readiness_text)
         self.assertIn("Kaynak: Arka plan + mikrofon (backing_track.wav)", readiness_text)
         self.assertIn("Take adı: aksam_take", readiness_text)
+
+    def test_build_source_subtitle_text_reports_mic_only_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        subtitle_text = recorder.build_source_subtitle_text()
+
+        self.assertEqual(
+            subtitle_text,
+            "Şu an sadece mikrofon etkin. İsterseniz arka plan ekleyebilir veya hızlı kayda geçebilirsiniz.",
+        )
+
+    def test_build_source_subtitle_text_reports_backing_mode(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_source_subtitle_text()
+
+        self.assertEqual(
+            subtitle_text,
+            "Arka plan etkin: backing.mp3. Bu modda tam kayıt kullanılacak.",
+        )
+
+    def test_update_source_subtitle_updates_visible_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        recorder.update_source_subtitle()
+
+        self.assertEqual(
+            recorder.source_subtitle_text.get(),
+            "Şu an sadece mikrofon etkin. İsterseniz arka plan ekleyebilir veya hızlı kayda geçebilirsiniz.",
+        )
 
     def test_build_readiness_text_flags_missing_items_and_auto_take_name(self) -> None:
         recorder = self.make_app()
