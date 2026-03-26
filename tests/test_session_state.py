@@ -62,6 +62,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.output_subtitle_text = FakeVar("")
         recorder.option_subtitle_text = FakeVar("")
         recorder.prep_subtitle_text = FakeVar("")
+        recorder.merge_subtitle_text = FakeVar("")
+        recorder.merge_summary_text = FakeVar("")
         recorder.tone_subtitle_text = FakeVar("")
         recorder.mix_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
@@ -1059,6 +1061,13 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(subtitle_text, "Önce test yapın, sonra tam kayda geçin. Hızlı kayıt bu modda kapalıdır.")
 
+    def test_build_action_guidance_text_prefers_full_record_when_backing_selected(self) -> None:
+        recorder = self.make_app()
+
+        guidance_text = recorder.build_action_guidance_text()
+
+        self.assertEqual(guidance_text, "Önerilen sıra: 5 saniyelik test ile dengeyi kontrol edin. Denge doğruysa tam kaydı başlatın.")
+
     def test_build_action_subtitle_text_reports_recording_lock_state(self) -> None:
         recorder = self.make_app()
         recorder.recording_active = True
@@ -1438,17 +1447,51 @@ class SessionStateTests(unittest.TestCase):
             "Arka plan %75 | vokal %88 | gürültü azaltma %12 | izleme %95 | kompresör %15 | limiter açık",
         )
 
+    def test_build_merge_summary_text_reports_mic_only_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        merge_text = recorder.build_merge_summary_text()
+
+        self.assertEqual(merge_text, "Kanal: kapalı\nDurum: yalnız mikrofon kaydı\nHızlı Kayıt: açık")
+
+    def test_build_merge_summary_text_reports_backing_mix_mode(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = Path("/tmp/backing_track.wav")
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value="/opt/homebrew/bin/ffmpeg"):
+            merge_text = recorder.build_merge_summary_text()
+
+        self.assertIn("Kanal: arka plan + mikrofon", merge_text)
+        self.assertIn("Dosya: backing_track.wav", merge_text)
+        self.assertIn("Denge: müzik %75 | vokal %88", merge_text)
+        self.assertIn("Çıktı: MP3 (Yüksek VBR), Vokal WAV", merge_text)
+        self.assertIn("Akış: önce test, sonra tam kayıt", merge_text)
+
+    def test_build_merge_subtitle_text_reports_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            subtitle_text = recorder.build_merge_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Arka planlı kayıt hazır. MP3 yerine Mix WAV yazılacak.")
+
     def test_update_tone_and_mix_subtitles_refresh_visible_state(self) -> None:
         recorder = self.make_app()
 
         recorder.update_tone_subtitle()
         recorder.update_mix_subtitle()
+        recorder.update_merge_summary()
 
         self.assertEqual(recorder.tone_subtitle_text.get(), "Kazanç 7 dB | boost 2 dB | temiz/sakin drive | high-pass 80 Hz")
         self.assertEqual(
             recorder.mix_subtitle_text.get(),
             "Arka plan %75 | vokal %88 | gürültü azaltma %12 | izleme %95 | kompresör %15 | limiter açık",
         )
+        self.assertEqual(recorder.merge_subtitle_text.get(), "Arka planlı kayıt hazır. Önce test yapın, sonra tam kayda geçin.")
+        self.assertIn("Dosya: backing.mp3", recorder.merge_summary_text.get())
 
     def test_on_slider_settings_changed_refreshes_dependent_summaries(self) -> None:
         recorder = self.make_app()
@@ -1461,6 +1504,7 @@ class SessionStateTests(unittest.TestCase):
             recorder.mix_subtitle_text.get(),
             "Arka plan %75 | vokal %88 | gürültü azaltma %12 | izleme %95 | kompresör %15 | limiter açık",
         )
+        self.assertIn("Denge: müzik %75 | vokal %88", recorder.merge_summary_text.get())
         recorder.update_option_explanation_summary.assert_called_once_with()
 
     def test_remember_completed_take_name_updates_output_name(self) -> None:

@@ -698,6 +698,8 @@ class GuitarAmpRecorderApp:
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.setup_status_text = StringVar(value="Kurulum özeti hazırlanıyor...")
         self.setup_next_text = StringVar(value="Sıradaki kurulum adımı hazırlanıyor...")
+        self.merge_subtitle_text = StringVar(value="Ses ve müzik birleştirme özeti hazırlanıyor...")
+        self.merge_summary_text = StringVar(value="Birleştirme kanalı burada gösterilecek.")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
         self.clip_text = StringVar(value="Seviye: güvenli")
         self.safety_text = StringVar(value="Durum: seviye analizi bekleniyor")
@@ -980,6 +982,14 @@ class GuitarAmpRecorderApp:
         Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(side="left")
         Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
 
+        merge_box = self.create_section(title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
+        self.merge_summary_label = Label(
+            merge_box,
+            textvariable=self.merge_summary_text,
+            **self.summary_card_style("#1e252d", "#e4edf5"),
+        )
+        self.merge_summary_label.pack(fill="x", padx=14, pady=(10, 10))
+
         export = self.create_section(title="Çıktı", subtitlevariable=self.output_subtitle_text)
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_dir, width=48).pack(anchor="w", padx=14)
@@ -1257,6 +1267,7 @@ class GuitarAmpRecorderApp:
         self.update_action_guidance_summary()
         self.update_action_subtitle()
         self.update_source_subtitle()
+        self.update_merge_summary()
         self.update_action_button_copy()
         self.update_progress_subtitle()
         self.update_mp3_quality_controls()
@@ -1306,6 +1317,7 @@ class GuitarAmpRecorderApp:
         self.update_output_subtitle()
         self.update_tone_subtitle()
         self.update_mix_subtitle()
+        self.update_merge_summary()
         self.update_option_explanation_summary()
         self.update_setup_hint_summary()
 
@@ -1802,7 +1814,7 @@ class GuitarAmpRecorderApp:
             return "Önerilen sıra: Önce 5 saniyelik test yapın. Ses temizse Hızlı Kayıt hızlı yol, tam kayıt ise kontrollü yol olarak hazır."
         if not output_name:
             return "Önerilen sıra: Backing hazır. Önce çıkışı seçin, sonra 5 saniyelik test yapın. Son adımda tam kaydı başlatın."
-        return "Önerilen sıra: 5 saniyelik test ile dengeyi kontrol edin. Kısa deneme istiyorsanız Hızlı Kayıt, final take için tam kayıt kullanın."
+        return "Önerilen sıra: 5 saniyelik test ile dengeyi kontrol edin. Denge doğruysa tam kaydı başlatın."
 
     def update_action_guidance_summary(self) -> None:
         try:
@@ -1976,9 +1988,52 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
 
+    def planned_audio_output_labels(self) -> list[str]:
+        return [label for label in self.planned_output_labels() if label.endswith("WAV") or label.startswith("MP3")]
+
+    def build_merge_subtitle_text(self) -> str:
+        if self.backing_file is None:
+            return "Arka plan eklerseniz ses ve müzik dengesi burada özetlenir."
+        if self.mp3_dependency_missing():
+            return "Arka planlı kayıt hazır. MP3 yerine Mix WAV yazılacak."
+        return "Arka planlı kayıt hazır. Önce test yapın, sonra tam kayda geçin."
+
+    def build_merge_summary_text(self) -> str:
+        if self.backing_file is None:
+            return "\n".join(
+                [
+                    "Kanal: kapalı",
+                    "Durum: yalnız mikrofon kaydı",
+                    "Hızlı Kayıt: açık",
+                ]
+            )
+        backing = int(self.backing_level.get())
+        vocal = int(self.vocal_level.get())
+        monitor = int(self.monitor_level.get())
+        speed = int(self.speed_ratio.get())
+        outputs = ", ".join(self.planned_audio_output_labels())
+        return "\n".join(
+            [
+                "Kanal: arka plan + mikrofon",
+                f"Dosya: {self.backing_file.name}",
+                f"Denge: müzik %{backing} | vokal %{vocal}",
+                f"İzleme / hız: %{monitor} | %{speed}",
+                f"Çıktı: {outputs}",
+                "Akış: önce test, sonra tam kayıt",
+            ]
+        )
+
+    def update_merge_summary(self) -> None:
+        try:
+            self.merge_subtitle_text.set(self.build_merge_subtitle_text())
+            self.merge_summary_text.set(self.build_merge_summary_text())
+        except Exception:
+            pass
+
     def on_slider_settings_changed(self, _value: str = "") -> None:
         self.update_tone_subtitle()
         self.update_mix_subtitle()
+        self.update_merge_summary()
         self.update_option_explanation_summary()
 
     def build_recent_output_summary_text(self) -> str:
@@ -3503,6 +3558,7 @@ class GuitarAmpRecorderApp:
         self.update_action_guidance_summary()
         self.update_action_subtitle()
         self.update_source_subtitle()
+        self.update_merge_summary()
         self.update_action_button_copy()
         self.set_status("Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 
