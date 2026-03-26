@@ -630,6 +630,7 @@ class GuitarAmpRecorderApp:
         self.operation_state_text = StringVar(value="Durum: hazır")
         self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
         self.recent_output_summary_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
+        self.recent_output_subtitle_text = StringVar(value="Son çıktı bölümü hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.meter_text = StringVar(value="Mikrofon seviyesi bekleniyor...")
@@ -984,7 +985,7 @@ class GuitarAmpRecorderApp:
         )
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
 
-        recent_box = self.create_section(title="Son Çıktılar", subtitle="Son dosyaları açın, oynatın veya kopyalayın.")
+        recent_box = self.create_section(title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
         self.recent_output_summary_label = Label(
             recent_box,
             textvariable=self.recent_output_summary_text,
@@ -1567,8 +1568,28 @@ class GuitarAmpRecorderApp:
             return {"bg": "#1f2b22", "fg": "#d8f3dc"}
         return {"bg": "#1b2029", "fg": "#dce6ef"}
 
+    def build_recent_output_subtitle_text(self) -> str:
+        if self.recording_active:
+            return "Kayıt sürerken eski çıktı işlemleri geçici olarak kapalıdır."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return "Sorun yaşandıysa önce kurtarma notunu inceleyin."
+        if self.last_export_path is not None and self.last_export_path.exists():
+            return "Son kayıt hazır. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."
+        if self.last_summary_path is not None and self.last_summary_path.exists():
+            return "Özet hazır. Oturum bilgisini açabilir veya kopyalayabilirsiniz."
+        if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
+            return "Take notu hazır. Notu açabilir veya oturum klasörüne geçebilirsiniz."
+        return "İlk test veya kayıttan sonra son dosyalar burada görünür."
+
+    def update_recent_output_subtitle(self) -> None:
+        try:
+            self.recent_output_subtitle_text.set(self.build_recent_output_subtitle_text())
+        except Exception:
+            pass
+
     def update_recent_output_summary(self) -> None:
         try:
+            self.update_recent_output_subtitle()
             self.recent_output_summary_text.set(self.build_recent_output_summary_text())
             label = getattr(self, "recent_output_summary_label", None)
             if label is not None:

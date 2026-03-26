@@ -34,6 +34,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.compact_status_text = FakeVar("")
         recorder.readiness_text = FakeVar("")
         recorder.recent_output_summary_text = FakeVar("")
+        recorder.recent_output_subtitle_text = FakeVar("")
         recorder.operation_state_label = mock.Mock()
         recorder.readiness_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
@@ -504,6 +505,14 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(summary_text, "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak.")
 
+    def test_build_recent_output_subtitle_text_reports_recording_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        subtitle_text = recorder.build_recent_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kayıt sürerken eski çıktı işlemleri geçici olarak kapalıdır.")
+
     def test_build_recent_output_summary_text_prioritizes_recovery_note(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -518,6 +527,18 @@ class SessionStateTests(unittest.TestCase):
             summary_text = recorder.build_recent_output_summary_text()
 
         self.assertEqual(summary_text, "Kurtarma notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın.")
+
+    def test_build_recent_output_subtitle_text_prioritizes_recovery_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recovery_path = output_dir / "export_recovery_note.txt"
+            recovery_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_path
+
+            subtitle_text = recorder.build_recent_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Sorun yaşandıysa önce kurtarma notunu inceleyin.")
 
     def test_build_recent_output_summary_text_prefers_last_export_actions(self) -> None:
         recorder = self.make_app()
@@ -547,6 +568,7 @@ class SessionStateTests(unittest.TestCase):
 
             recorder.update_recent_output_summary()
 
+        self.assertEqual(recorder.recent_output_subtitle_text.get(), "Özet hazır. Oturum bilgisini açabilir veya kopyalayabilirsiniz.")
         self.assertEqual(recorder.recent_output_summary_text.get(), "Hazır: oturum özeti. Önce özeti açın veya kısa raporu kopyalayın.")
         recorder.recent_output_summary_label.configure.assert_called_once_with(bg="#1f2b22", fg="#d8f3dc")
 
