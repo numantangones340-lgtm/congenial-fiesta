@@ -1181,11 +1181,52 @@ class SessionStateTests(unittest.TestCase):
 
         recorder.start_quick_record_thread()
 
-        recorder.stop_live_monitor.assert_called_once_with()
+        recorder.stop_live_monitor.assert_not_called()
         self.assertEqual(
             recorder.status_messages[-1],
             "Hızlı Kayıt sadece mikrofon modunda kullanılabilir. Arka planı temizleyin veya tam kaydı başlatın.",
         )
+
+    def test_start_test_thread_blocks_when_input_device_is_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.current_input_device_count = 0
+
+        with mock.patch.object(app.threading, "Thread") as thread_mock:
+            recorder.start_test_thread()
+
+        thread_mock.assert_not_called()
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Test başlamadan önce mikrofonu görünür hale getirip yeniden tarayın.",
+        )
+
+    def test_start_recording_thread_blocks_when_output_device_is_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.current_output_device_count = 0
+        recorder.stop_live_monitor = mock.Mock()
+
+        with mock.patch.object(app.threading, "Thread") as thread_mock:
+            recorder.start_recording_thread()
+
+        thread_mock.assert_not_called()
+        recorder.stop_live_monitor.assert_not_called()
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Kayıt başlamadan önce çıkışı görünür hale getirip yeniden tarayın.",
+        )
+
+    def test_start_quick_record_thread_blocks_when_output_dir_is_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+        recorder.output_dir.set("")
+        recorder.stop_live_monitor = mock.Mock()
+
+        with mock.patch.object(app.threading, "Thread") as thread_mock:
+            recorder.start_quick_record_thread()
+
+        thread_mock.assert_not_called()
+        recorder.stop_live_monitor.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Hızlı kayıt öncesi çıkış klasörü seçin.")
 
     def test_build_preflight_warning_text_requires_output_dir_first(self) -> None:
         recorder = self.make_app()

@@ -3124,6 +3124,15 @@ class GuitarAmpRecorderApp:
             return True, "Uyarı: giriş seviyesi düşük. Gerekirse gain artırın."
         return True, ""
 
+    def validate_start_requirements(self, action_label: str) -> tuple[bool, str]:
+        if self.current_input_device_count <= 0:
+            return False, f"{action_label} başlamadan önce mikrofonu görünür hale getirip yeniden tarayın."
+        if self.current_output_device_count <= 0:
+            return False, f"{action_label} başlamadan önce çıkışı görünür hale getirip yeniden tarayın."
+        if not self.output_dir.get().strip():
+            return False, f"{action_label} öncesi çıkış klasörü seçin."
+        return True, ""
+
     def meter_callback(self, indata, _frames, _time_info, status) -> None:
         if status:
             self.meter_error_message = f"Meter uyarısı: {status}"
@@ -3499,6 +3508,10 @@ class GuitarAmpRecorderApp:
         return input_idx, output_idx
 
     def start_test_thread(self) -> None:
+        ready, message = self.validate_start_requirements("Test")
+        if not ready:
+            self.set_status(message)
+            return
         try:
             input_idx, output_idx = self.selected_device_pair()
         except ValueError:
@@ -3644,6 +3657,10 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Test hatası: {exc}")
 
     def start_recording_thread(self) -> None:
+        ready, message = self.validate_start_requirements("Kayıt")
+        if not ready:
+            self.set_status(message)
+            return
         self.stop_live_monitor()
         ok, warning = self.validate_recording_safety()
         if not ok:
@@ -3673,10 +3690,14 @@ class GuitarAmpRecorderApp:
         worker.start()
 
     def start_quick_record_thread(self) -> None:
-        self.stop_live_monitor()
         if self.backing_file is not None:
             self.set_status("Hızlı Kayıt sadece mikrofon modunda kullanılabilir. Arka planı temizleyin veya tam kaydı başlatın.")
             return
+        ready, message = self.validate_start_requirements("Hızlı kayıt")
+        if not ready:
+            self.set_status(message)
+            return
+        self.stop_live_monitor()
         ok, warning = self.validate_recording_safety()
         if not ok:
             self.set_status(warning)
