@@ -381,6 +381,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", "-R", str(note_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], "Take notu Finder'da seçildi: take_notes.txt")
 
+    def test_open_last_session_summary_in_finder_selects_file_and_updates_status(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_session_summary_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(summary_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Özet Finder'da seçildi: session_summary.json")
+
     def test_open_output_dir_in_finder_uses_last_output_dir(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -393,6 +406,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
         recorder.resolve_output_dir.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], f"Klasör açıldı: {output_dir.name}")
 
     def test_notify_success_uses_root_bell(self) -> None:
         recorder = self.make_app()

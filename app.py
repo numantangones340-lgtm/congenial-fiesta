@@ -2200,6 +2200,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", str(output_dir)], check=False)
+            self.set_status(f"Klasör açıldı: {output_dir.name}")
         except Exception as exc:
             self.set_status(f"Klasör açılamadı: {exc}")
 
@@ -2243,6 +2244,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", "-R", str(self.last_summary_path)], check=False)
+            self.set_status(self.finder_selected_status("Özet", self.last_summary_path.name))
         except Exception as exc:
             self.set_status(f"Özet açılamadı: {exc}")
 
