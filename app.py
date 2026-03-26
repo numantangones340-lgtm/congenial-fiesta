@@ -928,8 +928,11 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#11202d", "#d7eefb"),
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
-        Button(prep_box, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white").pack(
-            anchor="w", padx=14, pady=(0, 12)
+        prep_buttons = Frame(prep_box, bg="#151b22")
+        prep_buttons.pack(anchor="w", padx=14, pady=(0, 12))
+        Button(prep_buttons, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white").pack(side="left")
+        Button(prep_buttons, text="Hazırlığı Dosyaya Yaz", command=self.export_current_preparation_file, bg="#2d7d46", fg="white").pack(
+            side="left", padx=(8, 0)
         )
 
         option_box = self.create_section(title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
@@ -1375,6 +1378,19 @@ class GuitarAmpRecorderApp:
             "Hazırlık özeti panoya alındı",
             "Hazırlık özeti kopyalanamadı",
         )
+
+    def export_current_preparation_file(self) -> None:
+        if not self.output_dir.get().strip():
+            self.set_status("Hazırlık özeti için önce kayıt klasörünü seçin.")
+            return
+        try:
+            output_dir = self.resolve_output_dir()
+            output_dir.mkdir(parents=True, exist_ok=True)
+            prep_path = output_dir / "preparation_summary.txt"
+            prep_path.write_text(self.build_current_preparation_brief_text(), encoding="utf-8")
+            self.set_status(f"Hazırlık özeti yazıldı: {prep_path}")
+        except Exception as exc:
+            self.set_status(f"Hazırlık özeti yazılamadı: {exc}")
 
     def build_output_subtitle_text(self) -> str:
         base_dir = self.output_dir.get().strip()

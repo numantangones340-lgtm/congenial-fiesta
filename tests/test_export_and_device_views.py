@@ -349,6 +349,31 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Hazırlık özeti panoya alındı")
 
+    def test_export_current_preparation_file_writes_text_file(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+        recorder.build_current_preparation_brief_text = mock.Mock(return_value="Hazırlık Özeti\nKayıt Planı")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            target_dir = Path(tmpdir) / "Akşam Kaydı"
+            recorder.resolve_output_dir = mock.Mock(return_value=target_dir)
+
+            recorder.export_current_preparation_file()
+
+            prep_path = target_dir / "preparation_summary.txt"
+            self.assertTrue(prep_path.exists())
+            self.assertEqual(prep_path.read_text(encoding="utf-8"), "Hazırlık Özeti\nKayıt Planı")
+            recorder.resolve_output_dir.assert_called_once_with()
+            recorder.build_current_preparation_brief_text.assert_called_once_with()
+            self.assertEqual(recorder.status_messages[-1], f"Hazırlık özeti yazıldı: {prep_path}")
+
+    def test_export_current_preparation_file_requires_output_dir(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("")
+
+        recorder.export_current_preparation_file()
+
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık özeti için önce kayıt klasörünü seçin.")
+
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()
         recorder.output_device_id.set("7")
