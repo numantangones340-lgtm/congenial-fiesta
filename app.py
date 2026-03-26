@@ -85,6 +85,20 @@ def latest_audio_file_in_dir(output_dir: Path) -> Optional[Path]:
     return max(audio_files, key=lambda path: path.stat().st_mtime)
 
 
+def visible_recent_output_file(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    if path.suffix.lower() in {".mp3", ".wav"}:
+        return True
+    return path.name in {
+        "session_summary.json",
+        "take_notes.txt",
+        "export_recovery_note.txt",
+        "preparation_summary.txt",
+        "session_brief.txt",
+    }
+
+
 def format_seconds_short(seconds: float) -> str:
     total_seconds = max(0, int(round(seconds)))
     minutes, secs = divmod(total_seconds, 60)
@@ -2546,10 +2560,10 @@ class GuitarAmpRecorderApp:
             self.update_recent_output_summary()
             return
         recent_files = sorted(
-            [path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}],
+            [path for path in output_dir.iterdir() if visible_recent_output_file(path)],
             key=lambda path: path.stat().st_mtime,
             reverse=True,
-        )[:6]
+        )[:8]
         if not recent_files:
             self.recent_exports_text.set("Henüz çıktı yok.")
             self.update_recent_output_summary()

@@ -84,23 +84,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.update_recent_output_summary = mock.Mock()
         return recorder
 
-    def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
+    def test_refresh_recent_exports_shows_newest_audio_and_artifact_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
             files = []
-            for index in range(7):
+            for index in range(6):
                 suffix = ".mp3" if index % 2 == 0 else ".wav"
                 path = output_dir / f"take_{index}{suffix}"
                 path.write_text("audio", encoding="utf-8")
                 os.utime(path, (time.time() + index, time.time() + index))
+                files.append(path)
+            for offset, name in enumerate(
+                ["session_summary.json", "take_notes.txt", "preparation_summary.txt", "session_brief.txt"]
+            ):
+                path = output_dir / name
+                path.write_text(name, encoding="utf-8")
+                os.utime(path, (time.time() + 10 + offset, time.time() + 10 + offset))
                 files.append(path)
             (output_dir / "ignore.txt").write_text("skip", encoding="utf-8")
 
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.refresh_recent_exports()
             expected = [
-                f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
+                f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:8]
             ]
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
