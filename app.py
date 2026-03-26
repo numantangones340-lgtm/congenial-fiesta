@@ -1695,6 +1695,8 @@ class GuitarAmpRecorderApp:
         if not input_name:
             return "Önerilen sıra: 1. Mikrofonları tara. 2. Girişi seç. 3. Sonra 5 saniyelik testi çalıştır."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Önerilen sıra: Önce kurtarma notunu inceleyin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın."
             return "Önerilen sıra: Önce kurtarma notunu inceleyin. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın."
         if self.backing_file is None:
             if not output_name:

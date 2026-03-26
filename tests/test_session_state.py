@@ -958,13 +958,20 @@ class SessionStateTests(unittest.TestCase):
     def test_build_action_guidance_text_prefers_recovery_before_retry(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
             recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
             recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
             recorder.last_recovery_note_path = recovery_note_path
 
             guidance_text = recorder.build_action_guidance_text()
+            latest_audio = app.recent_audio_status_text(export_path)
 
-        self.assertIn("Önce kurtarma notunu inceleyin.", guidance_text)
+        self.assertEqual(
+            guidance_text,
+            f"Önerilen sıra: Önce kurtarma notunu inceleyin. Son iyi kayıt: {latest_audio}. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın.",
+        )
 
     def test_build_action_guidance_text_during_active_recording_uses_stop_only_message(self) -> None:
         recorder = self.make_app()
