@@ -48,6 +48,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.action_subtitle_text = FakeVar("")
         recorder.progress_subtitle_text = FakeVar("")
         recorder.preflight_warning_text = FakeVar("")
+        recorder.preflight_subtitle_text = FakeVar("")
         recorder.source_subtitle_text = FakeVar("")
         recorder.output_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
@@ -837,6 +838,14 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(warning_text, "Ön uyarı: kayıt klasörü seçilmedi.")
 
+    def test_build_preflight_subtitle_text_requires_output_dir_first(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        subtitle_text = recorder.build_preflight_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Önce kayıt klasörünü seçin.")
+
     def test_build_preflight_warning_text_flags_clipping_risk(self) -> None:
         recorder = self.make_app()
         recorder.last_input_peak = 0.99
@@ -844,6 +853,14 @@ class SessionStateTests(unittest.TestCase):
         warning_text = recorder.build_preflight_warning_text()
 
         self.assertEqual(warning_text, "Ön uyarı: giriş çok yüksek, gain düşürmeden kayda başlamayın.")
+
+    def test_build_preflight_subtitle_text_flags_clipping_risk(self) -> None:
+        recorder = self.make_app()
+        recorder.last_input_peak = 0.99
+
+        subtitle_text = recorder.build_preflight_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Giriş seviyesi fazla yüksek.")
 
     def test_build_preflight_warning_text_flags_very_low_input(self) -> None:
         recorder = self.make_app()
@@ -853,6 +870,14 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(warning_text, "Ön uyarı: giriş çok zayıf, önce kısa test yapın.")
 
+    def test_build_preflight_subtitle_text_flags_very_low_input(self) -> None:
+        recorder = self.make_app()
+        recorder.last_input_peak = 0.005
+
+        subtitle_text = recorder.build_preflight_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Giriş seviyesi neredeyse yok.")
+
     def test_build_preflight_warning_text_reports_ready_when_level_is_good(self) -> None:
         recorder = self.make_app()
         recorder.last_input_peak = 0.32
@@ -860,6 +885,33 @@ class SessionStateTests(unittest.TestCase):
         warning_text = recorder.build_preflight_warning_text()
 
         self.assertEqual(warning_text, "Hazır: seviye uygun görünüyor, kısa testten sonra kayda geçebilirsiniz.")
+
+    def test_build_preflight_subtitle_text_reports_ready_state(self) -> None:
+        recorder = self.make_app()
+        recorder.last_input_peak = 0.32
+
+        subtitle_text = recorder.build_preflight_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Ön kontrol temiz görünüyor.")
+
+    def test_build_preflight_subtitle_text_prioritizes_recovery_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_note_path
+
+            subtitle_text = recorder.build_preflight_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Son hatayı incelemeden yeni kayıt başlatmayın.")
+
+    def test_update_preflight_warning_summary_updates_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        recorder.update_preflight_warning_summary()
+
+        self.assertEqual(recorder.preflight_subtitle_text.get(), "Önce kayıt klasörünü seçin.")
 
     def test_build_option_explanation_text_summarizes_selected_behaviors(self) -> None:
         recorder = self.make_app()

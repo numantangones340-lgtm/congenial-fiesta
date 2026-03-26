@@ -659,6 +659,7 @@ class GuitarAmpRecorderApp:
         self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
         self.action_subtitle_text = StringVar(value="İşlem akışı hazırlanıyor...")
         self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
+        self.preflight_subtitle_text = StringVar(value="Ön kontrol özeti hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
@@ -766,7 +767,7 @@ class GuitarAmpRecorderApp:
         )
         self.readiness_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitle="Kayda basmadan önce kısa riski görün.")
+        preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitlevariable=self.preflight_subtitle_text)
         self.preflight_warning_label = Label(
             preflight_box,
             textvariable=self.preflight_warning_text,
@@ -1450,10 +1451,30 @@ class GuitarAmpRecorderApp:
         try:
             text = self.build_preflight_warning_text()
             self.preflight_warning_text.set(text)
+            self.update_preflight_subtitle()
             if text.startswith("Hazır:"):
                 self.preflight_warning_label.configure(bg="#1f2b22", fg="#d8f3dc")
             else:
                 self.preflight_warning_label.configure(bg="#2a1c1c", fg="#f6e7cb")
+        except Exception:
+            pass
+
+    def build_preflight_subtitle_text(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Önce kayıt klasörünü seçin."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return "Son hatayı incelemeden yeni kayıt başlatmayın."
+        if self.last_input_peak >= 0.985:
+            return "Giriş seviyesi fazla yüksek."
+        if self.last_input_peak < 0.01:
+            return "Giriş seviyesi neredeyse yok."
+        if self.last_input_peak < 0.05:
+            return "Giriş seviyesi düşük."
+        return "Ön kontrol temiz görünüyor."
+
+    def update_preflight_subtitle(self) -> None:
+        try:
+            self.preflight_subtitle_text.set(self.build_preflight_subtitle_text())
         except Exception:
             pass
 
