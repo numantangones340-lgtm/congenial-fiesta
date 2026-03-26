@@ -327,15 +327,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
             recovery_path = Path(tmpdir) / "export_recovery_note.txt"
-            recovery_path.write_text("Export Recovery Note", encoding="utf-8")
+            recovery_path.write_text("Kurtarma Notu", encoding="utf-8")
             recorder.last_recovery_note_path = recovery_path
 
             recorder.copy_last_recovery_note_to_clipboard()
 
         recorder.root.clipboard_clear.assert_called_once_with()
-        recorder.root.clipboard_append.assert_called_once_with("Export Recovery Note")
+        recorder.root.clipboard_append.assert_called_once_with("Kurtarma Notu")
         recorder.root.update.assert_called_once_with()
-        self.assertEqual(recorder.status_messages[-1], "Recovery notu panoya alındı: export_recovery_note.txt")
+        self.assertEqual(recorder.status_messages[-1], "Kurtarma notu panoya alındı: export_recovery_note.txt")
 
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()

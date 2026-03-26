@@ -192,7 +192,7 @@ class SessionStateTests(unittest.TestCase):
 
         note_text = app.build_export_recovery_note(output_dir, "take_007", RuntimeError("ffmpeg failed"))
 
-        self.assertIn("Export Recovery Note", note_text)
+        self.assertIn("Kurtarma Notu", note_text)
         self.assertIn("Take: take_007", note_text)
         self.assertIn("Hata: ffmpeg failed", note_text)
         self.assertIn("- take_007.mp3", note_text)
@@ -216,7 +216,7 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Take/Hedef: aksam_take | /tmp/out/Canli Set", prep_text)
         self.assertIn("Dosyalar: MP3 (Yuksek VBR), Vocal WAV, session_summary.json, take_notes.txt", prep_text)
         self.assertIn("Cihazlar: Built-in Mic -> Built-in Output", prep_text)
-        self.assertIn(f"Recovery: {recovery_note_path.name} hazır", prep_text)
+        self.assertIn(f"Kurtarma: {recovery_note_path.name} hazır", prep_text)
 
     def test_build_compact_status_text_summarizes_core_state_on_one_line(self) -> None:
         recorder = self.make_app()
@@ -417,7 +417,7 @@ class SessionStateTests(unittest.TestCase):
 
             next_step = recorder.build_next_step_text()
 
-        self.assertIn("Recovery notunu inceleyin", next_step)
+        self.assertIn("Kurtarma notunu inceleyin", next_step)
 
     def test_build_next_step_text_guides_microphone_mode_when_no_backing(self) -> None:
         recorder = self.make_app()
@@ -504,7 +504,7 @@ class SessionStateTests(unittest.TestCase):
 
             summary_text = recorder.build_recent_output_summary_text()
 
-        self.assertEqual(summary_text, "Recovery notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın.")
+        self.assertEqual(summary_text, "Kurtarma notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın.")
 
     def test_build_recent_output_summary_text_prefers_last_export_actions(self) -> None:
         recorder = self.make_app()
@@ -566,7 +566,7 @@ class SessionStateTests(unittest.TestCase):
 
             guidance_text = recorder.build_action_guidance_text()
 
-        self.assertIn("Önce recovery notunu inceleyin.", guidance_text)
+        self.assertIn("Önce kurtarma notunu inceleyin.", guidance_text)
 
     def test_build_action_guidance_text_during_active_recording_uses_stop_only_message(self) -> None:
         recorder = self.make_app()

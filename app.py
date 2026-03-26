@@ -121,7 +121,7 @@ def release_take_name_lock(directory: Path, name: str) -> None:
 def build_export_recovery_note(output_dir: Path, base_name: str, exc: Exception) -> str:
     return "\n".join(
         [
-            "Export Recovery Note",
+            "Kurtarma Notu",
             f"Tarih: {time.strftime('%Y-%m-%d %H:%M:%S')}",
             f"Klasör: {output_dir}",
             f"Take: {base_name}",
@@ -641,7 +641,7 @@ class GuitarAmpRecorderApp:
         self.last_summary_path: Optional[Path] = None
         self.last_take_notes_path: Optional[Path] = None
         self.last_recovery_note_path: Optional[Path] = None
-        self.recent_exports_text = StringVar(value="Henuz export yok.")
+        self.recent_exports_text = StringVar(value="Henüz çıktı yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
         self.output_device_options = ["Varsayılan macOS çıkışı"]
@@ -679,7 +679,7 @@ class GuitarAmpRecorderApp:
         ).pack(anchor="w", padx=14, pady=(0, 14))
         Label(
             hero,
-            text=f"Sürüm {self.app_version} | Kayıt, export ve oturum takibi",
+            text=f"Sürüm {self.app_version} | Kayıt, dışa aktarım ve oturum takibi",
             bg="#182028",
             fg="#9fb0c2",
             justify="left",
@@ -842,7 +842,7 @@ class GuitarAmpRecorderApp:
         Button(meter_buttons, text="İzleme Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
-        media = self.create_section(title="Kayıt Kaynağı", subtitle="İsterseniz backing ekleyin, isterseniz sadece mikrofon kullanın.")
+        media = self.create_section(title="Kayıt Kaynağı", subtitle="İsterseniz arka plan ekleyin, isterseniz sadece mikrofon kullanın.")
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
@@ -904,7 +904,7 @@ class GuitarAmpRecorderApp:
         self.vocal_level = self.make_slider(mix, "Vokal Seviye (%)", 0, 200, 85)
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
         self.noise_gate_threshold = self.make_slider(mix, "Noise Gate Eşigi (%)", 0, 100, 25)
-        self.monitor_level = self.make_slider(mix, "Canlı Monitor Seviye (%)", 0, 200, 100)
+        self.monitor_level = self.make_slider(mix, "Canlı İzleme Seviyesi (%)", 0, 200, 100)
         self.compressor_amount = self.make_slider(mix, "Kompresor Miktari (%)", 0, 100, 35)
         self.compressor_threshold = self.make_slider(mix, "Kompresor Threshold (dB)", -36, -6, -18)
         self.compressor_makeup = self.make_slider(mix, "Makeup Gain (dB)", 0, 18, 4)
@@ -1181,7 +1181,7 @@ class GuitarAmpRecorderApp:
             f"Hedef: {target_text}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            parts.append("Recovery: var")
+            parts.append("Kurtarma: var")
         return " | ".join(parts)
 
     def update_compact_status_summary(self) -> None:
@@ -1245,7 +1245,7 @@ class GuitarAmpRecorderApp:
             f"Cihazlar: {self.input_device_choice.get()} -> {self.output_device_choice.get()}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            lines.append(f"Recovery: {self.last_recovery_note_path.name} hazır")
+            lines.append(f"Kurtarma: {self.last_recovery_note_path.name} hazır")
         return "\n".join(lines)
 
     def update_recording_prep_summary(self) -> None:
@@ -1260,7 +1260,7 @@ class GuitarAmpRecorderApp:
         if not input_ready:
             return "1. Mikrofonları yeniden tara. 2. Bir giriş seç. 3. Test kaydı al."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            return "Son export hata verdi. Recovery notunu inceleyin, sonra ayarları değiştirip kaydı yeniden başlatın."
+            return "Son çıktı alma denemesi hata verdi. Kurtarma notunu inceleyin, sonra ayarları değiştirip kaydı yeniden başlatın."
         if self.backing_file is None:
             return "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın."
         if not output_ready:
@@ -1307,7 +1307,7 @@ class GuitarAmpRecorderApp:
                 take_line,
             ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            lines.append(f"Recovery: {self.last_recovery_note_path.name} incelenebilir")
+            lines.append(f"Kurtarma: {self.last_recovery_note_path.name} incelenebilir")
         return "\n".join(lines)
 
     def build_readiness_palette(self) -> dict[str, str]:
@@ -1330,7 +1330,7 @@ class GuitarAmpRecorderApp:
         if not self.output_dir.get().strip():
             return "Ön uyarı: kayıt klasörü seçilmedi."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            return f"Ön uyarı: son export için recovery notu var ({self.last_recovery_note_path.name})."
+            return f"Ön uyarı: son çıktı için kurtarma notu var ({self.last_recovery_note_path.name})."
         if self.last_input_peak >= 0.985:
             return "Ön uyarı: giriş çok yüksek, gain düşürmeden kayda başlamayın."
         if self.last_input_peak < 0.01:
@@ -1360,7 +1360,7 @@ class GuitarAmpRecorderApp:
         if not input_name:
             return "Önerilen sıra: 1. Mikrofonları tara. 2. Girişi seç. 3. Sonra 5 saniyelik testi çalıştır."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            return "Önerilen sıra: Önce recovery notunu inceleyin. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın."
+            return "Önerilen sıra: Önce kurtarma notunu inceleyin. Ardından kısa test yapın, sonra tam kaydı yeniden başlatın."
         if self.backing_file is None:
             if not output_name:
                 return "Önerilen sıra: Çıkışı seçin. Ardından 5 saniyelik test yapın. Sorunsuzsa Hızlı Kayıt ile hızlıca kayıt alın."
@@ -1433,8 +1433,8 @@ class GuitarAmpRecorderApp:
             return "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             if self.last_export_path is not None and self.last_export_path.exists():
-                return "Recovery notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
-            return "Recovery notu hazır. Önce notu kopyalayın, sonra klasörü açın."
+                return "Kurtarma notu hazır. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
+            return "Kurtarma notu hazır. Önce notu kopyalayın, sonra klasörü açın."
         if self.last_export_path is not None and self.last_export_path.exists():
             ready_items = ["son kayıt"]
             if self.last_summary_path is not None and self.last_summary_path.exists():
@@ -1552,7 +1552,7 @@ class GuitarAmpRecorderApp:
 
     def show_about(self) -> None:
         self.set_status(
-            f"Gitar Amfi Kaydedici {self.app_version} | Canlı izleme, kompresör/limiter, oturum klasörleri, oturum özeti ve son oturum yükleme desteklenir."
+            f"Gitar Amfi Kaydedici {self.app_version} | Canlı izleme, kompresör/limiter, oturum klasörleri, oturum özeti ve son oturum geri yükleme desteklenir."
         )
 
     def clear_device_selection(self) -> None:
@@ -2128,7 +2128,7 @@ class GuitarAmpRecorderApp:
             reverse=True,
         )[:6]
         if not recent_files:
-            self.recent_exports_text.set("Henuz export yok.")
+            self.recent_exports_text.set("Henüz çıktı yok.")
             self.update_recent_output_summary()
             return
         lines = [f"- {path.name}" for path in recent_files]
@@ -2317,17 +2317,17 @@ class GuitarAmpRecorderApp:
 
     def copy_last_recovery_note_to_clipboard(self) -> None:
         if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
-            self.set_status(self.missing_item_status("Recovery notu"))
+            self.set_status(self.missing_item_status("Kurtarma notu"))
             return
         try:
             content = self.last_recovery_note_path.read_text(encoding="utf-8")
             self.copy_text_to_clipboard(
                 content,
-                self.copied_item_status("Recovery notu", self.last_recovery_note_path.name),
-                "Recovery notu kopyalanamadı",
+                self.copied_item_status("Kurtarma notu", self.last_recovery_note_path.name),
+                "Kurtarma notu kopyalanamadı",
             )
         except Exception as exc:
-            self.set_status(f"Recovery notu kopyalanamadı: {exc}")
+            self.set_status(f"Kurtarma notu kopyalanamadı: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -2459,7 +2459,7 @@ class GuitarAmpRecorderApp:
 
     def monitor_callback(self, indata, outdata, _frames, _time_info, status) -> None:
         if status:
-            self.meter_error_message = f"Monitor uyarısı: {status}"
+            self.meter_error_message = f"İzleme uyarısı: {status}"
         if indata is None or len(indata) == 0:
             outdata.fill(0)
             return
@@ -2565,13 +2565,13 @@ class GuitarAmpRecorderApp:
         try:
             input_idx, output_idx = self.selected_device_pair()
         except ValueError:
-            self.set_status("Monitor açılamadı: aygıt kimliği sayısal olmalı.")
+            self.set_status("İzleme açılamadı: aygıt kimliği sayısal olmalı.")
             return
         self.stop_input_meter()
         self.stop_live_monitor()
         input_count, output_count = describe_device_state()
         if input_count == 0 or output_count == 0:
-            self.set_status("Monitor açılamadı: giriş veya çıkış aygıtı bulunamadı.")
+            self.set_status("İzleme açılamadı: giriş veya çıkış aygıtı bulunamadı.")
             return
         try:
             self.monitor_stream = sd.Stream(
@@ -3035,7 +3035,7 @@ class GuitarAmpRecorderApp:
                 backing = ensure_stereo(backing)
 
                 if backing_sr != target_sr:
-                    self.set_status(f"Sample rate {backing_sr} -> {target_sr} dönüştürülüyor...")
+                    self.set_status(f"Örnekleme hızı {backing_sr} -> {target_sr} dönüştürülüyor...")
                     backing = resample_linear(backing, backing_sr, target_sr)
 
                 max_frames = sr * limit_seconds
@@ -3217,7 +3217,7 @@ class GuitarAmpRecorderApp:
             self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-                self.set_status(f"Hata: {exc} | Recovery notu: {self.last_recovery_note_path}")
+                self.set_status(f"Hata: {exc} | Kurtarma notu: {self.last_recovery_note_path}")
             else:
                 self.set_status(f"Hata: {exc}")
         finally:
