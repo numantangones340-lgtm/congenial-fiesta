@@ -788,6 +788,21 @@ class SessionStateTests(unittest.TestCase):
             f"Hazır: son kayıt {latest_audio}, özet, take notu, hazırlık dosyası. Önce son kaydı açın veya oynatın.",
         )
 
+    def test_build_recent_output_subtitle_text_includes_latest_audio_summary(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            subtitle_text = recorder.build_recent_output_subtitle_text()
+
+        self.assertEqual(
+            subtitle_text,
+            f"Son kayıt hazır: {app.recent_audio_status_text(export_path)}. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz.",
+        )
+
     def test_update_recent_output_summary_updates_text_and_label_style(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

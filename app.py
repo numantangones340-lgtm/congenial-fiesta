@@ -1920,7 +1920,7 @@ class GuitarAmpRecorderApp:
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             return "Sorun yaşandıysa önce kurtarma notunu inceleyin."
         if self.last_export_path is not None and self.last_export_path.exists():
-            return "Son kayıt hazır. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."
+            return f"Son kayıt hazır: {recent_audio_status_text(self.last_export_path)}. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."
         if self.last_summary_path is not None and self.last_summary_path.exists():
             return "Özet hazır. Oturum bilgisini açabilir veya kopyalayabilirsiniz."
         if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
