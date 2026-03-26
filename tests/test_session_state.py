@@ -316,6 +316,20 @@ class SessionStateTests(unittest.TestCase):
         self.assertIn("Take: otomatik", compact_text)
         self.assertIn("Hedef: klasör seçilmedi", compact_text)
 
+    def test_build_compact_status_text_mentions_last_good_take_when_recovery_exists(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            recovery_note_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_note_path.write_text("recovery", encoding="utf-8")
+            recorder.last_export_path = export_path
+            recorder.last_recovery_note_path = recovery_note_path
+
+            compact_text = recorder.build_compact_status_text()
+
+        self.assertIn(f"Kurtarma: var | Son iyi kayıt: {app.recent_audio_status_text(export_path)}", compact_text)
+
     def test_build_completion_status_text_summarizes_primary_file_and_output_dir(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/out/Canlı Set")

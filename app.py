@@ -1336,7 +1336,10 @@ class GuitarAmpRecorderApp:
             f"Hedef: {target_text}",
         ]
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
-            parts.append("Kurtarma: var")
+            if self.last_export_path is not None and self.last_export_path.exists():
+                parts.append(f"Kurtarma: var | Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}")
+            else:
+                parts.append("Kurtarma: var")
         return " | ".join(parts)
 
     def update_compact_status_summary(self) -> None:
