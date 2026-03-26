@@ -928,6 +928,9 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#11202d", "#d7eefb"),
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
+        Button(prep_box, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white").pack(
+            anchor="w", padx=14, pady=(0, 12)
+        )
 
         option_box = self.create_section(title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
         self.option_summary_label = Label(
@@ -1343,6 +1346,35 @@ class GuitarAmpRecorderApp:
             self.prep_subtitle_text.set(self.build_recording_prep_subtitle_text())
         except Exception:
             pass
+
+    def build_current_preparation_brief_text(self) -> str:
+        sections = [
+            "Hazırlık Özeti",
+            self.build_compact_status_text(),
+            "",
+            f"Sonraki Adım: {self.build_next_step_subtitle_text()}",
+            self.build_next_step_text(),
+            "",
+            f"Hazırlık: {self.build_readiness_subtitle_text()}",
+            self.build_readiness_text(),
+            "",
+            f"Kayıt Planı: {self.build_recording_prep_subtitle_text()}",
+            self.build_recording_prep_text(),
+            "",
+            f"Seçenekler: {self.build_option_subtitle_text()}",
+            self.build_option_explanation_text(),
+            "",
+            f"Ton: {self.build_tone_subtitle_text()}",
+            f"Mix: {self.build_mix_subtitle_text()}",
+        ]
+        return "\n".join(sections)
+
+    def copy_current_preparation_to_clipboard(self) -> None:
+        self.copy_text_to_clipboard(
+            self.build_current_preparation_brief_text(),
+            "Hazırlık özeti panoya alındı",
+            "Hazırlık özeti kopyalanamadı",
+        )
 
     def build_output_subtitle_text(self) -> str:
         base_dir = self.output_dir.get().strip()

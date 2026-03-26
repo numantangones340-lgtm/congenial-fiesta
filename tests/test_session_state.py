@@ -265,6 +265,19 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(recorder.prep_subtitle_text.get(), "Planı netleştirmek için önce kayıt klasörünü seçin.")
 
+    def test_build_current_preparation_brief_text_includes_core_sections(self) -> None:
+        recorder = self.make_app()
+
+        brief_text = recorder.build_current_preparation_brief_text()
+
+        self.assertIn("Hazırlık Özeti", brief_text)
+        self.assertIn("Sonraki Adım:", brief_text)
+        self.assertIn("Hazırlık:", brief_text)
+        self.assertIn("Kayıt Planı:", brief_text)
+        self.assertIn("Seçenekler:", brief_text)
+        self.assertIn("Ton: Kazanç 7 dB", brief_text)
+        self.assertIn("Mix: Arka plan %75", brief_text)
+
     def test_build_compact_status_text_summarizes_core_state_on_one_line(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing_track.wav")

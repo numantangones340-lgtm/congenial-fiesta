@@ -337,6 +337,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Kurtarma notu panoya alındı: export_recovery_note.txt")
 
+    def test_copy_current_preparation_to_clipboard_copies_live_preparation_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.build_current_preparation_brief_text = mock.Mock(return_value="Hazırlık Özeti\nKayıt Planı")
+
+        recorder.copy_current_preparation_to_clipboard()
+
+        recorder.build_current_preparation_brief_text.assert_called_once_with()
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("Hazırlık Özeti\nKayıt Planı")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık özeti panoya alındı")
+
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()
         recorder.output_device_id.set("7")
