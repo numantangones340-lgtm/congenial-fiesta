@@ -579,6 +579,26 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(subtitle_text, "Sadece mikrofon akışı hazır.")
 
+    def test_build_next_step_text_reports_missing_ffmpeg_when_mp3_enabled(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            next_step = recorder.build_next_step_text()
+
+        self.assertEqual(next_step, "MP3 için ffmpeg eksik. ffmpeg kurun veya bu tur WAV ile devam edip önce kısa test alın.")
+
+    def test_build_next_step_subtitle_text_reports_missing_ffmpeg_when_mp3_enabled(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            subtitle_text = recorder.build_next_step_subtitle_text()
+
+        self.assertEqual(subtitle_text, "MP3 için ffmpeg eksik; kayıt WAV olarak devam edecek.")
+
     def test_build_next_step_text_guides_full_recording_when_backing_ready(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing_track.wav")
@@ -746,6 +766,24 @@ class SessionStateTests(unittest.TestCase):
             subtitle_text,
             f"Hazırlık tamamlanmadan önce kurtarma notunu kontrol edin. Son iyi kayıt: {latest_audio}.",
         )
+
+    def test_build_readiness_text_mentions_missing_ffmpeg_when_mp3_enabled(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            readiness_text = recorder.build_readiness_text()
+
+        self.assertIn("MP3 durumu: ffmpeg eksik, çıktı WAV olarak kalacak", readiness_text)
+
+    def test_build_readiness_subtitle_text_mentions_missing_ffmpeg_when_mp3_enabled(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            subtitle_text = recorder.build_readiness_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Temel hazırlık tamam. MP3 için ffmpeg eksik.")
 
     def test_build_readiness_palette_reports_ready_colors(self) -> None:
         recorder = self.make_app()

@@ -1556,6 +1556,8 @@ class GuitarAmpRecorderApp:
             if self.last_export_path is not None and self.last_export_path.exists():
                 return f"Son çıktı alma denemesi hata verdi. Kurtarma notunu inceleyin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}. Sonra ayarları değiştirip kaydı yeniden başlatın."
             return "Son çıktı alma denemesi hata verdi. Kurtarma notunu inceleyin, sonra ayarları değiştirip kaydı yeniden başlatın."
+        if self.mp3_dependency_missing():
+            return "MP3 için ffmpeg eksik. ffmpeg kurun veya bu tur WAV ile devam edip önce kısa test alın."
         if self.backing_file is None:
             return "Mikrofon modu hazır. Test kaydı alın, sonra doğrudan kaydı başlatın."
         if not output_ready:
@@ -1582,6 +1584,8 @@ class GuitarAmpRecorderApp:
             if self.last_export_path is not None and self.last_export_path.exists():
                 return f"Yeniden denemeden önce kurtarma notu kontrol edilmeli. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
             return "Yeniden denemeden önce kurtarma notu kontrol edilmeli."
+        if self.mp3_dependency_missing():
+            return "MP3 için ffmpeg eksik; kayıt WAV olarak devam edecek."
         if self.backing_file is None:
             return "Sadece mikrofon akışı hazır."
         if not output_ready:
@@ -1627,6 +1631,8 @@ class GuitarAmpRecorderApp:
                 source_line,
                 take_line,
             ]
+        if self.mp3_dependency_missing():
+            lines.append("MP3 durumu: ffmpeg eksik, çıktı WAV olarak kalacak")
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             lines.append(f"Kurtarma: {self.last_recovery_note_path.name} incelenebilir")
         return "\n".join(lines)
@@ -1646,6 +1652,8 @@ class GuitarAmpRecorderApp:
         missing_items = self.missing_readiness_items()
         if missing_items:
             return f"Eksik seçimler: {', '.join(missing_items)}"
+        if self.mp3_dependency_missing():
+            return "Temel hazırlık tamam. MP3 için ffmpeg eksik."
         return "Giriş, çıkış, klasör ve kaynak hazır görünüyor."
 
     def update_readiness_subtitle(self) -> None:
