@@ -43,6 +43,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.action_guidance_text = FakeVar("")
+        recorder.action_subtitle_text = FakeVar("")
         recorder.preflight_warning_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
@@ -556,6 +557,37 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertIn("Önce 5 saniyelik test yapın.", guidance_text)
         self.assertIn("Hızlı Kayıt hızlı yol", guidance_text)
+
+    def test_build_action_subtitle_text_prefers_mic_only_flow(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        subtitle_text = recorder.build_action_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Önce test yapın, sonra hızlı kayıt veya tam kayıt seçin.")
+
+    def test_build_action_subtitle_text_prefers_full_record_when_backing_selected(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_action_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Önce test yapın, sonra tam kayda geçin. Hızlı kayıt bu modda kapalıdır.")
+
+    def test_build_action_subtitle_text_reports_recording_lock_state(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        subtitle_text = recorder.build_action_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kayıt sürüyor. Bu bölüm geçici olarak kilitli.")
+
+    def test_update_action_subtitle_updates_visible_subtitle(self) -> None:
+        recorder = self.make_app()
+        recorder.backing_file = None
+
+        recorder.update_action_subtitle()
+
+        self.assertEqual(recorder.action_subtitle_text.get(), "Önce test yapın, sonra hızlı kayıt veya tam kayıt seçin.")
 
     def test_build_quick_record_button_text_reports_mic_only_mode(self) -> None:
         recorder = self.make_app()

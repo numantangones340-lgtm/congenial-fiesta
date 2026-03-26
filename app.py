@@ -654,6 +654,7 @@ class GuitarAmpRecorderApp:
         self.monitor_status_text = StringVar(value="Canlı monitor kapalı")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
         self.action_guidance_text = StringVar(value="İşlem önerisi hazırlanıyor...")
+        self.action_subtitle_text = StringVar(value="İşlem akışı hazırlanıyor...")
         self.preflight_warning_text = StringVar(value="Ön kontrol hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
@@ -949,7 +950,7 @@ class GuitarAmpRecorderApp:
         self.speed_ratio = self.make_slider(mix, "Hız (%)", 50, 150, 100)
         self.output_gain = self.make_slider(mix, "Çıkış Kazancı (dB)", -12, 12, 0)
 
-        actions = self.create_section(title="İşlem", subtitle="Önce test, sonra quick veya tam kayıt.")
+        actions = self.create_section(title="İşlem", subtitlevariable=self.action_subtitle_text)
         self.action_guidance_label = Label(
             actions,
             textvariable=self.action_guidance_text,
@@ -1143,6 +1144,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_subtitle()
         self.update_action_button_copy()
         self.update_option_explanation_summary()
         self.update_recent_output_summary()
@@ -1177,6 +1179,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_subtitle()
         self.update_action_button_copy()
         self.update_option_explanation_summary()
 
@@ -1421,6 +1424,21 @@ class GuitarAmpRecorderApp:
     def update_action_guidance_summary(self) -> None:
         try:
             self.action_guidance_text.set(self.build_action_guidance_text())
+        except Exception:
+            pass
+
+    def build_action_subtitle_text(self) -> str:
+        if self.recording_active:
+            if self.stop_recording_requested:
+                return "Kayıt durduruluyor. Yeni işlem başlatmayın."
+            return "Kayıt sürüyor. Bu bölüm geçici olarak kilitli."
+        if self.backing_file is not None:
+            return "Önce test yapın, sonra tam kayda geçin. Hızlı kayıt bu modda kapalıdır."
+        return "Önce test yapın, sonra hızlı kayıt veya tam kayıt seçin."
+
+    def update_action_subtitle(self) -> None:
+        try:
+            self.action_subtitle_text.set(self.build_action_subtitle_text())
         except Exception:
             pass
 
@@ -2740,6 +2758,7 @@ class GuitarAmpRecorderApp:
             self.set_recording_action_button_states(recording_active=True)
             self.set_recent_output_button_states(enabled=False)
             self.update_action_guidance_summary()
+            self.update_action_subtitle()
             self.update_operation_state_summary()
             self.update_recent_output_summary()
         except TclError:
@@ -2755,6 +2774,7 @@ class GuitarAmpRecorderApp:
         try:
             self.set_recording_action_button_states(recording_active=False)
             self.update_action_guidance_summary()
+            self.update_action_subtitle()
             self.update_operation_state_summary()
             if self.last_export_path is not None and self.last_export_path.exists():
                 self.open_last_export_button.configure(state="normal")
@@ -2817,6 +2837,7 @@ class GuitarAmpRecorderApp:
         try:
             self.stop_recording_button.configure(state="disabled")
             self.update_action_guidance_summary()
+            self.update_action_subtitle()
             self.update_operation_state_summary()
         except TclError:
             pass
@@ -2856,6 +2877,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_subtitle()
         self.update_action_button_copy()
 
     def clear_backing_selection(self) -> None:
@@ -2869,6 +2891,7 @@ class GuitarAmpRecorderApp:
         self.update_readiness_summary()
         self.update_preflight_warning_summary()
         self.update_action_guidance_summary()
+        self.update_action_subtitle()
         self.update_action_button_copy()
         self.set_status("Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 
@@ -3275,6 +3298,7 @@ class GuitarAmpRecorderApp:
             self.update_readiness_summary()
             self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
+            self.update_action_subtitle()
             self.finish_recording_progress(f"Hazır | Dosyalar hazır | Klasör: {output_dir}")
         except Exception as exc:
             self.restore_previous_success_paths(
@@ -3292,6 +3316,7 @@ class GuitarAmpRecorderApp:
             self.update_readiness_summary()
             self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
+            self.update_action_subtitle()
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.set_status(f"Hata: {exc} | Kurtarma notu: {self.last_recovery_note_path}")
             else:
