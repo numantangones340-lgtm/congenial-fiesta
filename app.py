@@ -1385,6 +1385,12 @@ class GuitarAmpRecorderApp:
         parts.append(f"Klasör: {output_dir}")
         return " | ".join(parts)
 
+    def build_ready_recording_progress_text(self, output_dir: Path) -> str:
+        parts = ["Hazır", "Dosyalar hazır", f"Klasör: {output_dir}"]
+        if self.last_export_path is not None and self.last_export_path.exists():
+            parts.append(f"Son kayıt: {recent_audio_status_text(self.last_export_path)}")
+        return " | ".join(parts)
+
     def build_recording_prep_text(self) -> str:
         output_dir = self.resolve_output_dir()
         source_text = (
@@ -3713,7 +3719,7 @@ class GuitarAmpRecorderApp:
             self.update_preflight_warning_summary()
             self.update_action_guidance_summary()
             self.update_action_subtitle()
-            self.finish_recording_progress(f"Hazır | Dosyalar hazır | Klasör: {output_dir}")
+            self.finish_recording_progress(self.build_ready_recording_progress_text(output_dir))
         except Exception as exc:
             self.restore_previous_success_paths(
                 previous_last_output_dir,

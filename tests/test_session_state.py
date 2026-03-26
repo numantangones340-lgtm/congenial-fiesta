@@ -47,6 +47,7 @@ class SessionStateTests(unittest.TestCase):
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.action_guidance_text = FakeVar("")
         recorder.action_subtitle_text = FakeVar("")
+        recorder.record_progress_text = FakeVar("")
         recorder.progress_subtitle_text = FakeVar("")
         recorder.preflight_warning_text = FakeVar("")
         recorder.preflight_subtitle_text = FakeVar("")
@@ -324,6 +325,19 @@ class SessionStateTests(unittest.TestCase):
         status_text = recorder.build_completion_status_text("Test", output_dir, None, [])
 
         self.assertEqual(status_text, "Test hazır | Klasör: /tmp/out/Test")
+
+    def test_build_ready_recording_progress_text_includes_latest_audio_summary(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "Canlı Set"
+            output_dir.mkdir()
+            recorder.last_export_path = output_dir / "take.mp3"
+            recorder.last_export_path.write_text("audio", encoding="utf-8")
+
+            progress_text = recorder.build_ready_recording_progress_text(output_dir)
+
+        self.assertIn("Hazır | Dosyalar hazır | Klasör:", progress_text)
+        self.assertIn("Son kayıt: take.mp3 (MP3 | Canlı Set)", progress_text)
 
     def test_build_operation_state_text_reports_idle_state(self) -> None:
         recorder = self.make_app()
