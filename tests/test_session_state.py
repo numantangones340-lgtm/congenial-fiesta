@@ -738,6 +738,24 @@ class SessionStateTests(unittest.TestCase):
 
         self.assertEqual(subtitle_text, "Önce bir klasör seçin. MP3 ve WAV dosyaları seçtiğiniz yere yazılacak.")
 
+    def test_build_output_subtitle_text_mentions_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            subtitle_text = recorder.build_output_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Dosyalar /tmp/out içinde Akşam Kaydı klasörüne yazılacak. MP3 yerine Mix WAV yazılacak.")
+
+    def test_build_output_name_label_text_mentions_wav_fallback_when_ffmpeg_missing(self) -> None:
+        recorder = self.make_app()
+        recorder.wav_export_mode.set("Sadece Vokal WAV")
+
+        with mock.patch.object(app.shutil, "which", return_value=None):
+            label_text = recorder.build_output_name_label_text()
+
+        self.assertEqual(label_text, "Çıkış Dosya Adı (WAV fallback)")
+
     def test_update_output_subtitle_updates_visible_subtitle(self) -> None:
         recorder = self.make_app()
         recorder.session_mode.set("Tek Klasör")

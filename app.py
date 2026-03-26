@@ -731,6 +731,7 @@ class GuitarAmpRecorderApp:
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
         self.option_subtitle_text = StringVar(value="Seçenek özeti hazırlanıyor...")
         self.source_subtitle_text = StringVar(value="Kayıt kaynağı hazırlanıyor...")
+        self.output_name_label_text = StringVar(value="Çıkış Dosya Adı")
         self.output_subtitle_text = StringVar(value="Çıktı hedefi hazırlanıyor...")
         self.tone_subtitle_text = StringVar(value="Ton özeti hazırlanıyor...")
         self.mix_subtitle_text = StringVar(value="Mix özeti hazırlanıyor...")
@@ -980,7 +981,7 @@ class GuitarAmpRecorderApp:
         session_mode_menu.pack(anchor="w", padx=14)
         Label(export, text="Oturum Adı", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(8, 2))
         Entry(export, textvariable=self.session_name, width=32).pack(anchor="w", padx=14)
-        Label(export, text="Çıkış Dosya Adı (MP3)", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
+        Label(export, textvariable=self.output_name_label_text, bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_name, width=48).pack(anchor="w", padx=14)
         Label(export, text="MP3 Kalitesi", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(10, 2))
         mp3_quality_menu = OptionMenu(export, self.mp3_quality, "Yüksek VBR", "320 kbps", "192 kbps", "128 kbps")
@@ -1250,6 +1251,7 @@ class GuitarAmpRecorderApp:
         self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
+        self.update_output_name_label()
         self.update_output_subtitle()
         self.update_tone_subtitle()
         self.update_mix_subtitle()
@@ -1290,6 +1292,7 @@ class GuitarAmpRecorderApp:
         self.update_source_subtitle()
         self.update_action_button_copy()
         self.update_progress_subtitle()
+        self.update_output_name_label()
         self.update_output_subtitle()
         self.update_tone_subtitle()
         self.update_mix_subtitle()
@@ -1523,14 +1526,33 @@ class GuitarAmpRecorderApp:
     def build_output_subtitle_text(self) -> str:
         base_dir = self.output_dir.get().strip()
         if not base_dir:
+            if self.mp3_dependency_missing():
+                return "Önce bir klasör seçin. Bu tur MP3 yerine WAV dosyaları seçtiğiniz yere yazılacak."
             return "Önce bir klasör seçin. MP3 ve WAV dosyaları seçtiğiniz yere yazılacak."
         mode = self.session_mode_value()
         if mode == "İsimli Oturum":
             session_name = self.session_name.get().strip() or "session"
-            return f"Dosyalar {base_dir} içinde {session_name} klasörüne yazılacak."
-        if mode == "Tarihli Oturum":
-            return f"Dosyalar {base_dir} içinde tarihli bir klasöre yazılacak."
-        return f"Dosyalar doğrudan {base_dir} klasörüne yazılacak."
+            subtitle = f"Dosyalar {base_dir} içinde {session_name} klasörüne yazılacak."
+        elif mode == "Tarihli Oturum":
+            subtitle = f"Dosyalar {base_dir} içinde tarihli bir klasöre yazılacak."
+        else:
+            subtitle = f"Dosyalar doğrudan {base_dir} klasörüne yazılacak."
+        if self.mp3_dependency_missing():
+            subtitle += " MP3 yerine Mix WAV yazılacak."
+        return subtitle
+
+    def build_output_name_label_text(self) -> str:
+        if self.mp3_dependency_missing():
+            return "Çıkış Dosya Adı (WAV fallback)"
+        if self.should_export_mp3():
+            return "Çıkış Dosya Adı (MP3)"
+        return "Çıkış Dosya Adı (WAV)"
+
+    def update_output_name_label(self) -> None:
+        try:
+            self.output_name_label_text.set(self.build_output_name_label_text())
+        except Exception:
+            pass
 
     def update_output_subtitle(self) -> None:
         try:
