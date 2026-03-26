@@ -53,6 +53,8 @@ class SessionStateTests(unittest.TestCase):
         recorder.source_subtitle_text = FakeVar("")
         recorder.output_subtitle_text = FakeVar("")
         recorder.option_subtitle_text = FakeVar("")
+        recorder.tone_subtitle_text = FakeVar("")
+        recorder.mix_subtitle_text = FakeVar("")
         recorder.input_device_id = FakeVar("1")
         recorder.output_device_id = FakeVar("2")
         recorder.backing_file = Path("/tmp/backing.mp3")
@@ -1005,6 +1007,56 @@ class SessionStateTests(unittest.TestCase):
         recorder.update_option_explanation_summary()
 
         self.assertEqual(recorder.option_subtitle_text.get(), "MP3 açık | yalnız vokal WAV | limiter açık")
+
+    def test_build_tone_subtitle_text_reports_default_tone_summary(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_tone_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kazanç 7 dB | boost 2 dB | temiz/sakin drive | high-pass 80 Hz")
+
+    def test_build_tone_subtitle_text_reports_high_drive(self) -> None:
+        recorder = self.make_app()
+        recorder.distortion.set(70)
+
+        subtitle_text = recorder.build_tone_subtitle_text()
+
+        self.assertEqual(subtitle_text, "Kazanç 7 dB | boost 2 dB | yüksek drive | high-pass 80 Hz")
+
+    def test_build_mix_subtitle_text_reports_mix_summary(self) -> None:
+        recorder = self.make_app()
+
+        subtitle_text = recorder.build_mix_subtitle_text()
+
+        self.assertEqual(
+            subtitle_text,
+            "Arka plan %75 | vokal %88 | gürültü azaltma %12 | izleme %95 | kompresör %15 | limiter açık",
+        )
+
+    def test_update_tone_and_mix_subtitles_refresh_visible_state(self) -> None:
+        recorder = self.make_app()
+
+        recorder.update_tone_subtitle()
+        recorder.update_mix_subtitle()
+
+        self.assertEqual(recorder.tone_subtitle_text.get(), "Kazanç 7 dB | boost 2 dB | temiz/sakin drive | high-pass 80 Hz")
+        self.assertEqual(
+            recorder.mix_subtitle_text.get(),
+            "Arka plan %75 | vokal %88 | gürültü azaltma %12 | izleme %95 | kompresör %15 | limiter açık",
+        )
+
+    def test_on_slider_settings_changed_refreshes_dependent_summaries(self) -> None:
+        recorder = self.make_app()
+        recorder.update_option_explanation_summary = mock.Mock()
+
+        recorder.on_slider_settings_changed("85")
+
+        self.assertEqual(recorder.tone_subtitle_text.get(), "Kazanç 7 dB | boost 2 dB | temiz/sakin drive | high-pass 80 Hz")
+        self.assertEqual(
+            recorder.mix_subtitle_text.get(),
+            "Arka plan %75 | vokal %88 | gürültü azaltma %12 | izleme %95 | kompresör %15 | limiter açık",
+        )
+        recorder.update_option_explanation_summary.assert_called_once_with()
 
     def test_remember_completed_take_name_updates_output_name(self) -> None:
         recorder = self.make_app()

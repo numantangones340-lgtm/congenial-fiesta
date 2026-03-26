@@ -667,6 +667,8 @@ class GuitarAmpRecorderApp:
         self.option_subtitle_text = StringVar(value="Seçenek özeti hazırlanıyor...")
         self.source_subtitle_text = StringVar(value="Kayıt kaynağı hazırlanıyor...")
         self.output_subtitle_text = StringVar(value="Çıktı hedefi hazırlanıyor...")
+        self.tone_subtitle_text = StringVar(value="Ton özeti hazırlanıyor...")
+        self.mix_subtitle_text = StringVar(value="Mix özeti hazırlanıyor...")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -934,7 +936,7 @@ class GuitarAmpRecorderApp:
         )
         self.option_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        tone = self.create_section(title="Ton Ayarları", subtitle="Amfi tonu ve distorsiyonu buradan ayarlayın.")
+        tone = self.create_section(title="Ton Ayarları", subtitlevariable=self.tone_subtitle_text)
         self.gain = self.make_slider(tone, "Kazanç (dB)", -12, 24, 6)
         self.boost = self.make_slider(tone, "Güçlendirme (dB)", 0, 18, 6)
         self.high_pass_hz = self.make_slider(tone, "High-Pass (Hz)", 0, 240, 70)
@@ -943,7 +945,7 @@ class GuitarAmpRecorderApp:
         self.treble = self.make_slider(tone, "Tiz (dB)", -12, 12, 2)
         self.distortion = self.make_slider(tone, "Distorsiyon (%)", 0, 100, 25)
 
-        mix = self.create_section(title="Mix ve Temizlik", subtitle="Seviyeleri ve temizleme ayarlarını yönetin.")
+        mix = self.create_section(title="Mix ve Temizlik", subtitlevariable=self.mix_subtitle_text)
         self.backing_level = self.make_slider(mix, "Arka Plan Seviye (%)", 0, 200, 100)
         self.vocal_level = self.make_slider(mix, "Vokal Seviye (%)", 0, 200, 85)
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
@@ -1157,6 +1159,8 @@ class GuitarAmpRecorderApp:
         self.update_action_button_copy()
         self.update_progress_subtitle()
         self.update_output_subtitle()
+        self.update_tone_subtitle()
+        self.update_mix_subtitle()
         self.update_option_explanation_summary()
         self.update_recent_output_summary()
 
@@ -1195,6 +1199,8 @@ class GuitarAmpRecorderApp:
         self.update_action_button_copy()
         self.update_progress_subtitle()
         self.update_output_subtitle()
+        self.update_tone_subtitle()
+        self.update_mix_subtitle()
         self.update_option_explanation_summary()
 
     def session_mode_value(self) -> str:
@@ -1653,6 +1659,48 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
 
+    def build_tone_subtitle_text(self) -> str:
+        gain = int(self.gain.get())
+        boost = int(self.boost.get())
+        distortion = int(self.distortion.get())
+        high_pass = int(self.high_pass_hz.get())
+        if distortion >= 60:
+            drive_text = "yüksek drive"
+        elif distortion >= 25:
+            drive_text = "orta drive"
+        else:
+            drive_text = "temiz/sakin drive"
+        return f"Kazanç {gain} dB | boost {boost} dB | {drive_text} | high-pass {high_pass} Hz"
+
+    def update_tone_subtitle(self) -> None:
+        try:
+            self.tone_subtitle_text.set(self.build_tone_subtitle_text())
+        except Exception:
+            pass
+
+    def build_mix_subtitle_text(self) -> str:
+        backing = int(self.backing_level.get())
+        vocal = int(self.vocal_level.get())
+        noise = int(self.noise_reduction.get())
+        monitor = int(self.monitor_level.get())
+        compressor = int(self.compressor_amount.get())
+        limiter = "açık" if self.limiter_enabled_value() == "Açık" else "kapalı"
+        return (
+            f"Arka plan %{backing} | vokal %{vocal} | gürültü azaltma %{noise} | "
+            f"izleme %{monitor} | kompresör %{compressor} | limiter {limiter}"
+        )
+
+    def update_mix_subtitle(self) -> None:
+        try:
+            self.mix_subtitle_text.set(self.build_mix_subtitle_text())
+        except Exception:
+            pass
+
+    def on_slider_settings_changed(self, _value: str = "") -> None:
+        self.update_tone_subtitle()
+        self.update_mix_subtitle()
+        self.update_option_explanation_summary()
+
     def build_recent_output_summary_text(self) -> str:
         if self.recording_active:
             return "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak."
@@ -1731,7 +1779,17 @@ class GuitarAmpRecorderApp:
 
     def make_slider(self, parent: Frame, label: str, min_v: int, max_v: int, default: int) -> Scale:
         Label(parent, text=label, bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14)
-        slider = Scale(parent, from_=min_v, to=max_v, orient=HORIZONTAL, length=620, resolution=1, bg="#151b22", fg="#dce6ef")
+        slider = Scale(
+            parent,
+            from_=min_v,
+            to=max_v,
+            orient=HORIZONTAL,
+            length=620,
+            resolution=1,
+            bg="#151b22",
+            fg="#dce6ef",
+            command=self.on_slider_settings_changed,
+        )
         slider.set(default)
         slider.pack(anchor="w", padx=14, pady=(0, 8))
         return slider
