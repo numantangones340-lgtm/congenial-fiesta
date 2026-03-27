@@ -1019,17 +1019,23 @@ class GuitarAmpRecorderApp:
         meter_buttons = Frame(setup, bg="#151b22")
         meter_buttons.pack(fill="x", padx=14, pady=(0, 12))
         self.start_meter_button = Button(meter_buttons, text="Meter Başlat", command=self.start_input_meter, bg="#2d7d46", fg="white")
-        self.start_meter_button.pack(side="left")
         self.apply_button_style(self.start_meter_button, role="success")
         self.stop_meter_button = Button(meter_buttons, text="Meter Durdur", command=self.stop_input_meter, bg="#7f8c8d", fg="white")
-        self.stop_meter_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.stop_meter_button, role="secondary")
         self.open_monitor_button = Button(meter_buttons, text="İzleme Aç", command=self.start_live_monitor, bg="#16a085", fg="white")
-        self.open_monitor_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.open_monitor_button, role="success")
         self.close_monitor_button = Button(meter_buttons, text="İzleme Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white")
-        self.close_monitor_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.close_monitor_button, role="accent")
+        self.layout_button_flow(
+            meter_buttons,
+            [
+                self.start_meter_button,
+                self.stop_meter_button,
+                self.open_monitor_button,
+                self.close_monitor_button,
+            ],
+            columns=2,
+        )
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
         media = self.create_section(title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
@@ -1037,13 +1043,19 @@ class GuitarAmpRecorderApp:
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
         media_buttons = Frame(media, bg="#151b22")
-        media_buttons.pack(anchor="w", padx=14, pady=10)
+        media_buttons.pack(fill="x", padx=14, pady=10)
         self.select_backing_button = Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white")
-        self.select_backing_button.pack(side="left")
         self.apply_button_style(self.select_backing_button, role="success")
         self.clear_backing_button = Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white")
-        self.clear_backing_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.clear_backing_button, role="secondary")
+        self.layout_button_flow(
+            media_buttons,
+            [
+                self.select_backing_button,
+                self.clear_backing_button,
+            ],
+            columns=2,
+        )
 
         merge_box = self.create_section(title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
         self.merge_summary_label = Label(
@@ -1086,16 +1098,22 @@ class GuitarAmpRecorderApp:
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
         prep_buttons = Frame(prep_box, bg="#151b22")
-        prep_buttons.pack(anchor="w", padx=14, pady=(0, 12))
+        prep_buttons.pack(fill="x", padx=14, pady=(0, 12))
         self.copy_preparation_button = Button(prep_buttons, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white")
-        self.copy_preparation_button.pack(side="left")
         self.apply_button_style(self.copy_preparation_button, role="secondary")
         self.export_preparation_button = Button(prep_buttons, text="Hazırlığı Dosyaya Yaz", command=self.export_current_preparation_file, bg="#2d7d46", fg="white")
-        self.export_preparation_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.export_preparation_button, role="success")
         self.open_preparation_button = Button(prep_buttons, text="Hazırlık Dosyasını Aç", command=self.open_preparation_summary_in_finder, bg="#1f6feb", fg="white")
-        self.open_preparation_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.open_preparation_button, role="primary")
+        self.layout_button_flow(
+            prep_buttons,
+            [
+                self.copy_preparation_button,
+                self.export_preparation_button,
+                self.open_preparation_button,
+            ],
+            columns=2,
+        )
 
         option_box = self.create_section(title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
         self.option_summary_label = Label(
