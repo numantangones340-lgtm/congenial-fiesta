@@ -755,6 +755,7 @@ class GuitarAmpRecorderApp:
         self.output_subtitle_text = StringVar(value="Çıktı hedefi hazırlanıyor...")
         self.tone_subtitle_text = StringVar(value="Ton özeti hazırlanıyor...")
         self.mix_subtitle_text = StringVar(value="Mix özeti hazırlanıyor...")
+        self.advanced_audio_button_text = StringVar(value="Ton ve Mix Ayarlarını Göster")
         self.meter_level = 0.0
         self.meter_peak_level = 0.0
         self.last_input_peak = 0.0
@@ -1171,7 +1172,23 @@ class GuitarAmpRecorderApp:
         )
         self.option_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        tone = self.create_section(parent=self.right_column, title="Ton Ayarları", subtitlevariable=self.tone_subtitle_text)
+        advanced_audio_box = self.create_section(
+            parent=self.right_column,
+            title="Gelişmiş Ses Ayarları",
+            subtitle="Gerekirse açın. İlk kullanım için kapalı kalabilir.",
+        )
+        self.advanced_audio_button = Button(
+            advanced_audio_box,
+            textvariable=self.advanced_audio_button_text,
+            command=self.toggle_advanced_audio_section,
+            bg="#34495e",
+            fg="white",
+        )
+        self.advanced_audio_button.pack(anchor="w", padx=14, pady=(10, 10))
+        self.apply_button_style(self.advanced_audio_button, role="secondary")
+        self.advanced_audio_body = Frame(advanced_audio_box, bg="#151b22")
+
+        tone = self.create_section(parent=self.advanced_audio_body, title="Ton Ayarları", subtitlevariable=self.tone_subtitle_text, pady=(0, 10))
         self.gain = self.make_slider(tone, "Kazanç (dB)", -12, 24, 6)
         self.boost = self.make_slider(tone, "Güçlendirme (dB)", 0, 18, 6)
         self.high_pass_hz = self.make_slider(tone, "High-Pass (Hz)", 0, 240, 70)
@@ -1180,7 +1197,7 @@ class GuitarAmpRecorderApp:
         self.treble = self.make_slider(tone, "Tiz (dB)", -12, 12, 2)
         self.distortion = self.make_slider(tone, "Distorsiyon (%)", 0, 100, 25)
 
-        mix = self.create_section(parent=self.right_column, title="Mix ve Temizlik", subtitlevariable=self.mix_subtitle_text)
+        mix = self.create_section(parent=self.advanced_audio_body, title="Mix ve Temizlik", subtitlevariable=self.mix_subtitle_text, pady=(0, 12))
         self.backing_level = self.make_slider(mix, "Arka Plan Seviye (%)", 0, 200, 100)
         self.vocal_level = self.make_slider(mix, "Vokal Seviye (%)", 0, 200, 85)
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
@@ -1194,6 +1211,8 @@ class GuitarAmpRecorderApp:
         limiter_menu.pack(anchor="w", padx=14)
         self.speed_ratio = self.make_slider(mix, "Hız (%)", 50, 150, 100)
         self.output_gain = self.make_slider(mix, "Çıkış Kazancı (dB)", -12, 12, 0)
+        self.advanced_audio_expanded = False
+        self.set_advanced_audio_expanded(False)
 
         actions = self.create_section(parent=self.left_column, title="İşlem", subtitlevariable=self.action_subtitle_text)
         self.action_guidance_label = Label(
@@ -1511,6 +1530,18 @@ class GuitarAmpRecorderApp:
             pady=8,
         ).pack(fill="x")
         return card
+
+    def set_advanced_audio_expanded(self, expanded: bool) -> None:
+        self.advanced_audio_expanded = expanded
+        if expanded:
+            self.advanced_audio_button_text.set("Ton ve Mix Ayarlarını Gizle")
+            self.advanced_audio_body.pack(fill="x", padx=14, pady=(0, 12))
+        else:
+            self.advanced_audio_button_text.set("Ton ve Mix Ayarlarını Göster")
+            self.advanced_audio_body.pack_forget()
+
+    def toggle_advanced_audio_section(self) -> None:
+        self.set_advanced_audio_expanded(not getattr(self, "advanced_audio_expanded", False))
 
     def button_palette(self, role: str) -> dict[str, str]:
         palettes = {
