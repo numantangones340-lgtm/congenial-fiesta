@@ -708,12 +708,16 @@ class GuitarAmpRecorderApp:
         self.status_text = StringVar(value="Hazır")
         self.operation_state_text = StringVar(value="Durum: hazır")
         self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
+        self.hero_status_card_text = StringVar(value="Kayıt özeti hazırlanıyor...")
         self.workspace_tab = StringVar(value="Kayıt")
+        self.workspace_hint_text = StringVar(value="Ana kayıt akışı burada gösterilecek.")
         self.recent_output_summary_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
+        self.hero_output_card_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
         self.recent_output_subtitle_text = StringVar(value="Son çıktı bölümü hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.setup_status_text = StringVar(value="Kurulum özeti hazırlanıyor...")
+        self.hero_setup_card_text = StringVar(value="Kurulum özeti hazırlanıyor...")
         self.setup_next_text = StringVar(value="Sıradaki kurulum adımı hazırlanıyor...")
         self.merge_subtitle_text = StringVar(value="Ses ve müzik birleştirme özeti hazırlanıyor...")
         self.merge_summary_text = StringVar(value="Birleştirme kanalı burada gösterilecek.")
@@ -865,7 +869,7 @@ class GuitarAmpRecorderApp:
             hero_overview,
             column=0,
             title="Canlı Durum",
-            textvariable=self.compact_status_text,
+            textvariable=self.hero_status_card_text,
             bg="#13202b",
             fg="#d7eefb",
         )
@@ -873,7 +877,7 @@ class GuitarAmpRecorderApp:
             hero_overview,
             column=1,
             title="Kurulum",
-            textvariable=self.setup_status_text,
+            textvariable=self.hero_setup_card_text,
             bg="#1b241d",
             fg="#d8f3dc",
         )
@@ -881,7 +885,7 @@ class GuitarAmpRecorderApp:
             hero_overview,
             column=2,
             title="Son Çıktı",
-            textvariable=self.recent_output_summary_text,
+            textvariable=self.hero_output_card_text,
             bg="#241d15",
             fg="#f6e7cb",
         )
@@ -919,6 +923,16 @@ class GuitarAmpRecorderApp:
             ],
             columns=4,
         )
+        self.workspace_hint_label = Label(
+            self.content,
+            textvariable=self.workspace_hint_text,
+            bg="#101418",
+            fg="#9fb0c2",
+            justify="left",
+            font=("Helvetica", 10),
+            wraplength=self.section_wraplength,
+        )
+        self.workspace_hint_label.pack(fill="x", padx=18, pady=(0, 10))
 
         self.workspace_body = Frame(self.content, bg="#101418")
         self.workspace_body.pack(fill="x", padx=18, pady=(0, 12))
@@ -1619,6 +1633,13 @@ class GuitarAmpRecorderApp:
         ).pack(fill="x")
         return card
 
+    def compact_home_path(self, value: str) -> str:
+        path = Path(value).expanduser()
+        try:
+            return f"~/{path.relative_to(Path.home())}"
+        except Exception:
+            return str(path)
+
     def create_click_chip(
         self,
         parent: Frame,
@@ -1709,6 +1730,7 @@ class GuitarAmpRecorderApp:
             (self.outputs_tab_button, "Son Çıktılar"),
         ):
             self.apply_nav_chip_style(label, active=(tab_name == name))
+        self.workspace_hint_text.set(self.build_workspace_hint_text(name))
         if name == "Ses Düzenleme":
             self.set_advanced_audio_expanded(True)
 
@@ -1859,6 +1881,58 @@ class GuitarAmpRecorderApp:
     def update_compact_status_summary(self) -> None:
         try:
             self.compact_status_text.set(self.build_compact_status_text())
+            self.update_hero_overview_cards()
+        except Exception:
+            pass
+
+    def build_hero_status_card_text(self) -> str:
+        preset = self.preset_name.get().strip() or "Varsayılan"
+        source = "Müzik + mikrofon" if self.backing_file is not None else "Sadece mikrofon"
+        target = self.compact_home_path(str(self.resolve_output_dir())) if self.output_dir.get().strip() else "Klasör seçilmedi"
+        return f"{preset}\n{source} | {self.plan_session_hint()}\nHedef: {target}"
+
+    def build_hero_setup_card_text(self) -> str:
+        parts = [
+            "Giriş hazır" if self.current_input_device_count > 0 else "Giriş yok",
+            "Çıkış hazır" if self.current_output_device_count > 0 else "Çıkış yok",
+        ]
+        if self.should_export_mp3():
+            parts.append("ffmpeg hazır" if not self.mp3_dependency_missing() else "ffmpeg eksik")
+        else:
+            parts.append("MP3 kapalı")
+        parts.append("Klasör hazır" if self.output_dir.get().strip() else "Klasör seçilmedi")
+        return " | ".join(parts[:2]) + "\n" + " | ".join(parts[2:])
+
+    def build_hero_output_card_text(self) -> str:
+        if self.recording_active:
+            return "Kayıt sürüyor\nSon çıktı işlemleri kayıt bitince açılacak."
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            if self.last_export_path is not None and self.last_export_path.exists():
+                return f"Kurtarma notu var\nSon iyi kayıt: {recent_audio_hint_text(self.last_export_path)}"
+            return "Kurtarma notu var\nÖnce notu inceleyin."
+        if self.last_export_path is not None and self.last_export_path.exists():
+            return f"Son kayıt hazır\n{recent_audio_status_text(self.last_export_path)}"
+        if self.last_summary_path is not None and self.last_summary_path.exists():
+            return "Oturum özeti hazır\nKlasörü açabilir veya listeyi yenileyebilirsiniz."
+        return "Henüz çıktı yok\nİlk testten sonra burada görünecek."
+
+    def build_workspace_hint_text(self, name: str) -> str:
+        hints = {
+            "Kayıt": "Test, hızlı kayıt ve tam kayıt bu alanda.",
+            "Kurulum": "Giriş, çıkış, preset ve cihaz seçimi burada.",
+            "Müzik": "Arka plan müziği seçimi ve kaynak akışı burada.",
+            "Birleştirme": "İki ses kanalı dengesini ve birleştirme özetini burada görün.",
+            "Ayarlar": "Çıktı klasörü, oturum ve format ayarları burada.",
+            "Ses Düzenleme": "Ton, mix ve gelişmiş ses düzenleme burada.",
+            "Son Çıktılar": "Son kayıt, özet, not ve dışa aktarımlar burada.",
+        }
+        return hints.get(name, "")
+
+    def update_hero_overview_cards(self) -> None:
+        try:
+            self.hero_status_card_text.set(self.build_hero_status_card_text())
+            self.hero_setup_card_text.set(self.build_hero_setup_card_text())
+            self.hero_output_card_text.set(self.build_hero_output_card_text())
         except Exception:
             pass
 
@@ -2605,6 +2679,7 @@ class GuitarAmpRecorderApp:
         try:
             self.update_recent_output_subtitle()
             self.recent_output_summary_text.set(self.build_recent_output_summary_text())
+            self.update_hero_overview_cards()
             label = getattr(self, "recent_output_summary_label", None)
             if label is not None:
                 label.configure(**self.build_recent_output_summary_palette())
@@ -3562,6 +3637,7 @@ class GuitarAmpRecorderApp:
             self.setup_hint_text.set(self.build_setup_hint_text(self.current_input_device_count, self.current_output_device_count))
             self.setup_status_text.set(self.build_setup_status_text(self.current_input_device_count, self.current_output_device_count))
             self.setup_next_text.set(self.build_setup_next_text(self.current_input_device_count, self.current_output_device_count))
+            self.update_hero_overview_cards()
             if hasattr(self, "start_test_button"):
                 self.set_recording_action_button_states(recording_active=self.recording_active)
             self.set_hero_action_button_states()
