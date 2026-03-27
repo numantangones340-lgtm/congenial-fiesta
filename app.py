@@ -1132,7 +1132,7 @@ class GuitarAmpRecorderApp:
             textvariable=self.record_progress_text,
             bg="#151b22",
             fg="#dce6ef",
-            wraplength=640,
+            wraplength=self.content_wraplength,
             justify="left",
         )
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
@@ -1275,7 +1275,7 @@ class GuitarAmpRecorderApp:
             textvariable=self.recent_exports_text,
             bg="#151b22",
             fg="#dce6ef",
-            wraplength=640,
+            wraplength=self.content_wraplength,
             justify="left",
         )
         self.recent_exports_label.pack(anchor="w", padx=14, pady=(0, 14))
@@ -1286,7 +1286,7 @@ class GuitarAmpRecorderApp:
             textvariable=self.status_text,
             bg="#151b22",
             fg="#dce6ef",
-            wraplength=640,
+            wraplength=self.content_wraplength,
             justify="left",
         )
         self.status_label.pack(anchor="w", padx=14, pady=(12, 14))
