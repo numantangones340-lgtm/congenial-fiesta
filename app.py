@@ -680,13 +680,20 @@ class GuitarAmpRecorderApp:
         self.root.title("Gitar Amfi Kaydedici")
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
-        width = min(1080, max(920, screen_w - 110))
+        width = min(1440, max(1180, screen_w - 80))
         height = min(940, max(720, screen_h - 110))
         self.root.geometry(f"{width}x{height}")
-        self.root.minsize(880, 700)
+        self.root.minsize(1120, 700)
         self.root.configure(bg="#101418")
-        self.content_wraplength = max(620, min(920, width - 110))
-        self.control_length = max(620, min(880, width - 140))
+        self.desktop_two_column = width >= 1180
+        self.hero_wraplength = max(720, min(1180, width - 140))
+        if self.desktop_two_column:
+            self.section_wraplength = max(430, min(560, ((width - 110) // 2) - 70))
+            self.control_length = max(430, min(560, ((width - 110) // 2) - 90))
+        else:
+            self.section_wraplength = max(620, min(920, width - 110))
+            self.control_length = max(620, min(880, width - 140))
+        self.content_wraplength = self.section_wraplength
         self.app_version = read_app_version()
 
         self.backing_file: Optional[Path] = None
@@ -796,7 +803,7 @@ class GuitarAmpRecorderApp:
             bg="#182028",
             fg="#c7d2de",
             justify="left",
-            wraplength=self.content_wraplength,
+            wraplength=self.hero_wraplength,
         ).pack(anchor="w", padx=14, pady=(0, 14))
         Label(
             hero,
@@ -804,7 +811,7 @@ class GuitarAmpRecorderApp:
             bg="#182028",
             fg="#9fb0c2",
             justify="left",
-            wraplength=self.content_wraplength,
+            wraplength=self.hero_wraplength,
         ).pack(anchor="w", padx=14, pady=(0, 10))
         Label(
             hero,
@@ -835,7 +842,7 @@ class GuitarAmpRecorderApp:
             bg="#0f1720",
             fg="#d7eefb",
             justify="left",
-            wraplength=self.content_wraplength,
+            wraplength=self.hero_wraplength,
             padx=10,
             pady=8,
         )
@@ -846,7 +853,7 @@ class GuitarAmpRecorderApp:
             bg="#182028",
             fg="#9fb0c2",
             justify="left",
-            wraplength=self.content_wraplength,
+            wraplength=self.hero_wraplength,
             padx=10,
             pady=6,
         )
@@ -855,7 +862,16 @@ class GuitarAmpRecorderApp:
         self.about_button.pack(anchor="w", padx=14, pady=(0, 14))
         self.apply_button_style(self.about_button, role="secondary")
 
-        next_step_box = self.create_section(title="Sonraki Adım", subtitlevariable=self.next_step_subtitle_text)
+        self.desktop_columns = Frame(self.content, bg="#101418")
+        self.desktop_columns.pack(fill="x", padx=14, pady=(0, 10))
+        self.desktop_columns.grid_columnconfigure(0, weight=1)
+        self.desktop_columns.grid_columnconfigure(1, weight=1)
+        self.left_column = Frame(self.desktop_columns, bg="#101418")
+        self.right_column = Frame(self.desktop_columns, bg="#101418")
+        self.left_column.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        self.right_column.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+
+        next_step_box = self.create_section(parent=self.left_column, title="Sonraki Adım", subtitlevariable=self.next_step_subtitle_text)
         self.next_step_label = Label(
             next_step_box,
             textvariable=self.next_step_text,
@@ -863,7 +879,7 @@ class GuitarAmpRecorderApp:
         )
         self.next_step_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        readiness_box = self.create_section(title="Hazırlık Durumu", subtitlevariable=self.readiness_subtitle_text)
+        readiness_box = self.create_section(parent=self.left_column, title="Hazırlık Durumu", subtitlevariable=self.readiness_subtitle_text)
         self.readiness_label = Label(
             readiness_box,
             textvariable=self.readiness_text,
@@ -871,7 +887,7 @@ class GuitarAmpRecorderApp:
         )
         self.readiness_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        preflight_box = self.create_section(title="Kayıt Öncesi Uyarı", subtitlevariable=self.preflight_subtitle_text)
+        preflight_box = self.create_section(parent=self.left_column, title="Kayıt Öncesi Uyarı", subtitlevariable=self.preflight_subtitle_text)
         self.preflight_warning_label = Label(
             preflight_box,
             textvariable=self.preflight_warning_text,
@@ -879,7 +895,7 @@ class GuitarAmpRecorderApp:
         )
         self.preflight_warning_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        setup = self.create_section(title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
+        setup = self.create_section(parent=self.left_column, title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         self.setup_status_label = Label(
             setup,
             textvariable=self.setup_status_text,
@@ -912,7 +928,7 @@ class GuitarAmpRecorderApp:
             bg="#0f141a",
             fg="#dce6ef",
             justify="left",
-            wraplength=self.content_wraplength,
+            wraplength=self.section_wraplength,
             padx=10,
             pady=10,
         )
@@ -924,7 +940,7 @@ class GuitarAmpRecorderApp:
             bg="#11202d",
             fg="#d7eefb",
             justify="left",
-            wraplength=self.content_wraplength,
+            wraplength=self.section_wraplength,
             padx=10,
             pady=8,
         )
@@ -1042,7 +1058,7 @@ class GuitarAmpRecorderApp:
         )
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
-        media = self.create_section(title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
+        media = self.create_section(parent=self.left_column, title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
@@ -1061,7 +1077,7 @@ class GuitarAmpRecorderApp:
             columns=2,
         )
 
-        merge_box = self.create_section(title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
+        merge_box = self.create_section(parent=self.left_column, title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
         self.merge_summary_label = Label(
             merge_box,
             textvariable=self.merge_summary_text,
@@ -1069,7 +1085,7 @@ class GuitarAmpRecorderApp:
         )
         self.merge_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        export = self.create_section(title="Çıktı", subtitlevariable=self.output_subtitle_text)
+        export = self.create_section(parent=self.right_column, title="Çıktı", subtitlevariable=self.output_subtitle_text)
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_dir, width=48).pack(fill="x", padx=14)
         self.select_output_dir_button = Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white")
@@ -1094,7 +1110,7 @@ class GuitarAmpRecorderApp:
         limit_menu = OptionMenu(export, self.record_limit_hours, "1", "2")
         limit_menu.pack(anchor="w", padx=14, pady=(0, 12))
 
-        prep_box = self.create_section(title="Kayıt Planı", subtitlevariable=self.prep_subtitle_text)
+        prep_box = self.create_section(parent=self.right_column, title="Kayıt Planı", subtitlevariable=self.prep_subtitle_text)
         self.prep_summary_label = Label(
             prep_box,
             textvariable=self.prep_summary_text,
@@ -1119,7 +1135,7 @@ class GuitarAmpRecorderApp:
             columns=2,
         )
 
-        option_box = self.create_section(title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
+        option_box = self.create_section(parent=self.right_column, title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
         self.option_summary_label = Label(
             option_box,
             textvariable=self.option_summary_text,
@@ -1127,7 +1143,7 @@ class GuitarAmpRecorderApp:
         )
         self.option_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        tone = self.create_section(title="Ton Ayarları", subtitlevariable=self.tone_subtitle_text)
+        tone = self.create_section(parent=self.right_column, title="Ton Ayarları", subtitlevariable=self.tone_subtitle_text)
         self.gain = self.make_slider(tone, "Kazanç (dB)", -12, 24, 6)
         self.boost = self.make_slider(tone, "Güçlendirme (dB)", 0, 18, 6)
         self.high_pass_hz = self.make_slider(tone, "High-Pass (Hz)", 0, 240, 70)
@@ -1136,7 +1152,7 @@ class GuitarAmpRecorderApp:
         self.treble = self.make_slider(tone, "Tiz (dB)", -12, 12, 2)
         self.distortion = self.make_slider(tone, "Distorsiyon (%)", 0, 100, 25)
 
-        mix = self.create_section(title="Mix ve Temizlik", subtitlevariable=self.mix_subtitle_text)
+        mix = self.create_section(parent=self.right_column, title="Mix ve Temizlik", subtitlevariable=self.mix_subtitle_text)
         self.backing_level = self.make_slider(mix, "Arka Plan Seviye (%)", 0, 200, 100)
         self.vocal_level = self.make_slider(mix, "Vokal Seviye (%)", 0, 200, 85)
         self.noise_reduction = self.make_slider(mix, "Gürültü Azaltma (%)", 0, 100, 25)
@@ -1151,7 +1167,7 @@ class GuitarAmpRecorderApp:
         self.speed_ratio = self.make_slider(mix, "Hız (%)", 50, 150, 100)
         self.output_gain = self.make_slider(mix, "Çıkış Kazancı (dB)", -12, 12, 0)
 
-        actions = self.create_section(title="İşlem", subtitlevariable=self.action_subtitle_text)
+        actions = self.create_section(parent=self.left_column, title="İşlem", subtitlevariable=self.action_subtitle_text)
         self.action_guidance_label = Label(
             actions,
             textvariable=self.action_guidance_text,
@@ -1177,18 +1193,18 @@ class GuitarAmpRecorderApp:
         self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
         self.apply_button_style(self.stop_recording_button, role="danger", compact=False)
 
-        progress_box = self.create_section(title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
+        progress_box = self.create_section(parent=self.left_column, title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
         self.progress_label = Label(
             progress_box,
             textvariable=self.record_progress_text,
             bg="#151b22",
             fg="#dce6ef",
-            wraplength=self.content_wraplength,
+            wraplength=self.section_wraplength,
             justify="left",
         )
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
 
-        recent_box = self.create_section(title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
+        recent_box = self.create_section(parent=self.right_column, title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
         self.recent_output_summary_label = Label(
             recent_box,
             textvariable=self.recent_output_summary_text,
@@ -1345,18 +1361,18 @@ class GuitarAmpRecorderApp:
             textvariable=self.recent_exports_text,
             bg="#151b22",
             fg="#dce6ef",
-            wraplength=self.content_wraplength,
+            wraplength=self.section_wraplength,
             justify="left",
         )
         self.recent_exports_label.pack(anchor="w", padx=14, pady=(0, 14))
 
-        status_box = self.create_section(title="Durum")
+        status_box = self.create_section(parent=self.left_column, title="Durum")
         self.status_label = Label(
             status_box,
             textvariable=self.status_text,
             bg="#151b22",
             fg="#dce6ef",
-            wraplength=self.content_wraplength,
+            wraplength=self.section_wraplength,
             justify="left",
         )
         self.status_label.pack(anchor="w", padx=14, pady=(12, 14))
@@ -1405,16 +1421,18 @@ class GuitarAmpRecorderApp:
 
     def create_section(
         self,
+        parent: Optional[Frame] = None,
         title: Optional[str] = None,
         subtitle: Optional[str] = None,
         subtitlevariable: Optional[StringVar] = None,
-        padx: int = 12,
+        padx: Optional[int] = None,
         pady: tuple[int, int] = (0, 10),
         bg: str = "#151b22",
         border: str = "#24303c",
     ) -> Frame:
-        section = Frame(self.content, bg=bg, highlightbackground=border, highlightthickness=1)
-        section.pack(fill="x", padx=padx, pady=pady)
+        container = parent if parent is not None else self.content
+        section = Frame(container, bg=bg, highlightbackground=border, highlightthickness=1)
+        section.pack(fill="x", padx=(14 if parent is None else 0) if padx is None else padx, pady=pady)
         Frame(section, bg=border, height=3).pack(fill="x")
         if title:
             Label(section, text=title, bg=bg, fg="#f4f7fb", font=("Helvetica", 15, "bold")).pack(anchor="w", padx=14, pady=(12, 3))
@@ -1426,7 +1444,7 @@ class GuitarAmpRecorderApp:
                 fg="#9fb0c2",
                 justify="left",
                 font=("Helvetica", 11),
-                wraplength=getattr(self, "content_wraplength", 620),
+                wraplength=getattr(self, "section_wraplength", getattr(self, "content_wraplength", 620)),
             ).pack(anchor="w", padx=14, pady=(0, 10))
         elif subtitlevariable is not None:
             Label(
@@ -1436,7 +1454,7 @@ class GuitarAmpRecorderApp:
                 fg="#9fb0c2",
                 justify="left",
                 font=("Helvetica", 11),
-                wraplength=getattr(self, "content_wraplength", 620),
+                wraplength=getattr(self, "section_wraplength", getattr(self, "content_wraplength", 620)),
             ).pack(
                 anchor="w", padx=14, pady=(0, 10)
             )
@@ -2316,7 +2334,7 @@ class GuitarAmpRecorderApp:
             "bg": bg,
             "fg": fg,
             "justify": "left",
-            "wraplength": getattr(self, "content_wraplength", 620),
+            "wraplength": getattr(self, "section_wraplength", getattr(self, "content_wraplength", 620)),
             "padx": 9,
             "pady": 7,
         }
@@ -2347,7 +2365,7 @@ class GuitarAmpRecorderApp:
     def _on_canvas_configure(self, event) -> None:
         try:
             self.canvas.itemconfigure(self.canvas_window, width=event.width)
-            self.status_label.configure(wraplength=max(320, event.width - 36))
+            self.status_label.configure(wraplength=getattr(self, "section_wraplength", max(320, event.width - 36)))
         except TclError:
             pass
 
