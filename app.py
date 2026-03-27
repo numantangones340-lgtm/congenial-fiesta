@@ -806,14 +806,29 @@ class GuitarAmpRecorderApp:
             justify="left",
             wraplength=self.content_wraplength,
         ).pack(anchor="w", padx=14, pady=(0, 10))
+        Label(
+            hero,
+            text="Hazır Akış  Tara -> Test -> Kaydet -> Dışa Aktar",
+            bg="#233142",
+            fg="#d7eefb",
+            font=("Helvetica", 10, "bold"),
+            padx=10,
+            pady=5,
+        ).pack(anchor="w", padx=14, pady=(0, 10))
         hero_actions = Frame(hero, bg="#182028")
         hero_actions.pack(fill="x", padx=14, pady=(0, 10))
-        Button(hero_actions, text="Aygıtları Tara", command=self.inspect_devices, bg="#1f6feb", fg="white").pack(side="left")
-        Button(hero_actions, text="Önerilenleri Doldur", command=self.fill_recommended_devices, bg="#2d7d46", fg="white").pack(
-            side="left", padx=(8, 0)
-        )
-        Button(hero_actions, text="5 sn Test", command=self.start_test_thread, bg="#34495e", fg="white").pack(side="left", padx=(8, 0))
-        Button(hero_actions, text="Müzik Seç", command=self.select_backing, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
+        self.hero_scan_button = Button(hero_actions, text="Aygıtları Tara", command=self.inspect_devices, bg="#1f6feb", fg="white")
+        self.hero_scan_button.pack(side="left")
+        self.apply_button_style(self.hero_scan_button, role="primary")
+        self.hero_fill_button = Button(hero_actions, text="Önerilenleri Doldur", command=self.fill_recommended_devices, bg="#2d7d46", fg="white")
+        self.hero_fill_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.hero_fill_button, role="success")
+        self.hero_test_button = Button(hero_actions, text="5 sn Test", command=self.start_test_thread, bg="#34495e", fg="white")
+        self.hero_test_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.hero_test_button, role="secondary")
+        self.hero_backing_button = Button(hero_actions, text="Müzik Seç", command=self.select_backing, bg="#8e44ad", fg="white")
+        self.hero_backing_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.hero_backing_button, role="accent")
         self.compact_status_label = Label(
             hero,
             textvariable=self.compact_status_text,
@@ -836,7 +851,9 @@ class GuitarAmpRecorderApp:
             pady=6,
         )
         self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
-        Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(0, 14))
+        self.about_button = Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white")
+        self.about_button.pack(anchor="w", padx=14, pady=(0, 14))
+        self.apply_button_style(self.about_button, role="secondary")
 
         next_step_box = self.create_section(title="Sonraki Adım", subtitlevariable=self.next_step_subtitle_text)
         self.next_step_label = Label(
@@ -1083,16 +1100,20 @@ class GuitarAmpRecorderApp:
         self.start_test_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
+        self.apply_button_style(self.start_test_button, role="primary", compact=False)
         self.start_quick_record_button = Button(actions, text="Hızlı Kayıt (Sadece Mikrofon)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
         self.start_quick_record_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
+        self.apply_button_style(self.start_quick_record_button, role="accent", compact=False)
         self.start_recording_button = Button(actions, text="Tam Kayıt (Mikrofon)", command=self.start_recording_thread, bg="#27ae60", fg="white")
         self.start_recording_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
+        self.apply_button_style(self.start_recording_button, role="success", compact=False)
         self.stop_recording_button = Button(actions, text="Kaydı Durdur ve Kaydet", command=self.request_stop_recording, bg="#c0392b", fg="white", state="disabled")
         self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
+        self.apply_button_style(self.stop_recording_button, role="danger", compact=False)
 
         progress_box = self.create_section(title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
         self.progress_label = Label(
@@ -1300,8 +1321,9 @@ class GuitarAmpRecorderApp:
     ) -> Frame:
         section = Frame(self.content, bg=bg, highlightbackground=border, highlightthickness=1)
         section.pack(fill="x", padx=padx, pady=pady)
+        Frame(section, bg=border, height=3).pack(fill="x")
         if title:
-            Label(section, text=title, bg=bg, fg="#f4f7fb", font=("Helvetica", 14, "bold")).pack(anchor="w", padx=14, pady=(12, 2))
+            Label(section, text=title, bg=bg, fg="#f4f7fb", font=("Helvetica", 15, "bold")).pack(anchor="w", padx=14, pady=(12, 3))
         if subtitle is not None:
             Label(
                 section,
@@ -1309,6 +1331,7 @@ class GuitarAmpRecorderApp:
                 bg=bg,
                 fg="#9fb0c2",
                 justify="left",
+                font=("Helvetica", 11),
                 wraplength=getattr(self, "content_wraplength", 620),
             ).pack(anchor="w", padx=14, pady=(0, 10))
         elif subtitlevariable is not None:
@@ -1318,11 +1341,37 @@ class GuitarAmpRecorderApp:
                 bg=bg,
                 fg="#9fb0c2",
                 justify="left",
+                font=("Helvetica", 11),
                 wraplength=getattr(self, "content_wraplength", 620),
             ).pack(
                 anchor="w", padx=14, pady=(0, 10)
             )
         return section
+
+    def button_palette(self, role: str) -> dict[str, str]:
+        palettes = {
+            "primary": {"bg": "#1f6feb", "activebackground": "#2f81f7"},
+            "success": {"bg": "#238636", "activebackground": "#2ea043"},
+            "secondary": {"bg": "#34495e", "activebackground": "#415a72"},
+            "accent": {"bg": "#8e44ad", "activebackground": "#9b59b6"},
+            "danger": {"bg": "#c0392b", "activebackground": "#d84a3b"},
+        }
+        return palettes.get(role, palettes["secondary"])
+
+    def apply_button_style(self, button: Button, role: str = "secondary", compact: bool = True) -> None:
+        palette = self.button_palette(role)
+        button.configure(
+            bg=palette["bg"],
+            fg="white",
+            activebackground=palette["activebackground"],
+            activeforeground="white",
+            bd=0,
+            highlightthickness=0,
+            padx=12 if compact else 14,
+            pady=7 if compact else 9,
+            font=("Helvetica", 10, "bold"),
+            cursor="hand2",
+        )
 
     def on_plan_inputs_changed(self, *_args) -> None:
         self.update_operation_state_summary()
