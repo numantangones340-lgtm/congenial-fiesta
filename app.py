@@ -828,7 +828,7 @@ class GuitarAmpRecorderApp:
             fg="#9fb0c2",
             justify="left",
             wraplength=self.hero_wraplength,
-        ).pack(anchor="w", padx=14, pady=(0, 10))
+        ).pack(anchor="w", padx=14, pady=(0, 8))
         Label(
             hero,
             text="Hazır Akış  Tara -> Test -> Kaydet -> Dışa Aktar",
@@ -836,10 +836,10 @@ class GuitarAmpRecorderApp:
             fg="#d7eefb",
             font=("Helvetica", 10, "bold"),
             padx=10,
-            pady=5,
-        ).pack(anchor="w", padx=14, pady=(0, 10))
+            pady=4,
+        ).pack(anchor="w", padx=14, pady=(0, 8))
         hero_actions = Frame(hero, bg="#182028")
-        hero_actions.pack(fill="x", padx=14, pady=(0, 10))
+        hero_actions.pack(fill="x", padx=14, pady=(0, 8))
         self.hero_scan_button = self.create_click_chip(hero_actions, "Aygıtları Tara", self.inspect_devices, role="primary")
         self.hero_scan_button.pack(side="left")
         self.hero_fill_button = self.create_click_chip(hero_actions, "Önerilenleri Doldur", self.fill_recommended_devices, role="success")
@@ -860,7 +860,7 @@ class GuitarAmpRecorderApp:
             padx=10,
             pady=6,
         )
-        self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 14))
+        self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
 
         self.hero_summary_label = Label(
             self.content,
@@ -871,14 +871,14 @@ class GuitarAmpRecorderApp:
             anchor="w",
             wraplength=self.section_wraplength,
             padx=14,
-            pady=10,
+            pady=8,
             highlightbackground="#2a3644",
             highlightthickness=1,
         )
-        self.hero_summary_label.pack(fill="x", padx=18, pady=(0, 12))
+        self.hero_summary_label.pack(fill="x", padx=18, pady=(0, 8))
 
         self.workspace_tabs = Frame(self.content, bg="#101418")
-        self.workspace_tabs.pack(fill="x", padx=18, pady=(0, 10))
+        self.workspace_tabs.pack(fill="x", padx=18, pady=(0, 6))
         self.record_tab_button = Label(self.workspace_tabs, text="Kayıt")
         self.setup_tab_button = Label(self.workspace_tabs, text="Kurulum")
         self.music_tab_button = Label(self.workspace_tabs, text="Müzik")
@@ -908,7 +908,7 @@ class GuitarAmpRecorderApp:
                 self.audio_tab_button,
                 self.outputs_tab_button,
             ],
-            columns=4,
+            columns=7,
         )
         self.workspace_hint_label = Label(
             self.content,
@@ -920,7 +920,7 @@ class GuitarAmpRecorderApp:
             font=("Helvetica", 10),
             wraplength=self.section_wraplength,
         )
-        self.workspace_hint_label.pack(fill="x", padx=18, pady=(0, 10))
+        self.workspace_hint_label.pack(fill="x", padx=18, pady=(0, 8))
 
         self.workspace_body = Frame(self.content, bg="#101418")
         self.workspace_body.pack(fill="x", padx=18, pady=(0, 12))
@@ -1744,9 +1744,9 @@ class GuitarAmpRecorderApp:
             highlightbackground=border,
             highlightthickness=1,
             bd=0,
-            padx=14,
-            pady=9,
-            font=("Helvetica", 11, "bold"),
+            padx=10,
+            pady=7,
+            font=("Helvetica", 10, "bold"),
             cursor="hand2",
         )
 
