@@ -964,6 +964,11 @@ class GuitarAmpRecorderApp:
             button_row, text="Harici Mikrofon Preset", command=self.apply_external_mic_preset, bg="#8e44ad", fg="white"
         )
         self.reset_devices_button = Button(button_row, text="Varsayılana Dön", command=self.clear_device_selection, bg="#5d6d7e", fg="white")
+        self.apply_button_style(self.scan_devices_button, role="secondary")
+        self.apply_button_style(self.fill_devices_button, role="primary")
+        self.apply_button_style(self.clean_macbook_button, role="success")
+        self.apply_button_style(self.external_mic_button, role="accent")
+        self.apply_button_style(self.reset_devices_button, role="secondary")
         self.layout_button_flow(
             button_row,
             [
@@ -984,10 +989,18 @@ class GuitarAmpRecorderApp:
         self.preset_menu = OptionMenu(preset_row, self.preset_name, *self.preset_names)
         self.preset_menu.configure(width=20, bg="#24303c", fg="white", highlightthickness=0)
         self.preset_menu.grid(row=1, column=1, sticky="w", padx=(18, 0), pady=(2, 8))
-        Button(preset_row, text="Preset Kaydet", command=self.save_current_preset, bg="#16a085", fg="white").grid(row=1, column=2, sticky="w", padx=(18, 0))
-        Button(preset_row, text="Preset Yükle", command=self.load_saved_preset, bg="#2980b9", fg="white").grid(row=1, column=3, sticky="w", padx=(8, 0))
-        Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white").grid(row=1, column=4, sticky="w", padx=(8, 0))
-        Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white").grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.save_preset_button = Button(preset_row, text="Preset Kaydet", command=self.save_current_preset, bg="#16a085", fg="white")
+        self.save_preset_button.grid(row=1, column=2, sticky="w", padx=(18, 0))
+        self.apply_button_style(self.save_preset_button, role="success")
+        self.load_preset_button = Button(preset_row, text="Preset Yükle", command=self.load_saved_preset, bg="#2980b9", fg="white")
+        self.load_preset_button.grid(row=1, column=3, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.load_preset_button, role="primary")
+        self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
+        self.delete_preset_button.grid(row=1, column=4, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.delete_preset_button, role="danger")
+        self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
+        self.reload_session_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.reload_session_button, role="accent")
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
             anchor="w", padx=14, pady=(0, 4)
@@ -1005,10 +1018,18 @@ class GuitarAmpRecorderApp:
 
         meter_buttons = Frame(setup, bg="#151b22")
         meter_buttons.pack(fill="x", padx=14, pady=(0, 12))
-        Button(meter_buttons, text="Meter Başlat", command=self.start_input_meter, bg="#2d7d46", fg="white").pack(side="left")
-        Button(meter_buttons, text="Meter Durdur", command=self.stop_input_meter, bg="#7f8c8d", fg="white").pack(side="left", padx=(8, 0))
-        Button(meter_buttons, text="İzleme Aç", command=self.start_live_monitor, bg="#16a085", fg="white").pack(side="left", padx=(8, 0))
-        Button(meter_buttons, text="İzleme Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
+        self.start_meter_button = Button(meter_buttons, text="Meter Başlat", command=self.start_input_meter, bg="#2d7d46", fg="white")
+        self.start_meter_button.pack(side="left")
+        self.apply_button_style(self.start_meter_button, role="success")
+        self.stop_meter_button = Button(meter_buttons, text="Meter Durdur", command=self.stop_input_meter, bg="#7f8c8d", fg="white")
+        self.stop_meter_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.stop_meter_button, role="secondary")
+        self.open_monitor_button = Button(meter_buttons, text="İzleme Aç", command=self.start_live_monitor, bg="#16a085", fg="white")
+        self.open_monitor_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.open_monitor_button, role="success")
+        self.close_monitor_button = Button(meter_buttons, text="İzleme Kapat", command=self.stop_live_monitor, bg="#8e44ad", fg="white")
+        self.close_monitor_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.close_monitor_button, role="accent")
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
         media = self.create_section(title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
@@ -1017,8 +1038,12 @@ class GuitarAmpRecorderApp:
         self.backing_label.pack(anchor="w", padx=14)
         media_buttons = Frame(media, bg="#151b22")
         media_buttons.pack(anchor="w", padx=14, pady=10)
-        Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(side="left")
-        Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
+        self.select_backing_button = Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white")
+        self.select_backing_button.pack(side="left")
+        self.apply_button_style(self.select_backing_button, role="success")
+        self.clear_backing_button = Button(media_buttons, text="Sadece Mikrofon Modu", command=self.clear_backing_selection, bg="#5d6d7e", fg="white")
+        self.clear_backing_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.clear_backing_button, role="secondary")
 
         merge_box = self.create_section(title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
         self.merge_summary_label = Label(
@@ -1031,7 +1056,9 @@ class GuitarAmpRecorderApp:
         export = self.create_section(title="Çıktı", subtitlevariable=self.output_subtitle_text)
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_dir, width=48).pack(anchor="w", padx=14)
-        Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white").pack(anchor="w", padx=14, pady=(8, 10))
+        self.select_output_dir_button = Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white")
+        self.select_output_dir_button.pack(anchor="w", padx=14, pady=(8, 10))
+        self.apply_button_style(self.select_output_dir_button, role="secondary")
         Label(export, text="Oturum Modu", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(8, 2))
         session_mode_menu = OptionMenu(export, self.session_mode, "Tek Klasör", "Tarihli Oturum", "İsimli Oturum")
         session_mode_menu.pack(anchor="w", padx=14)
@@ -1060,13 +1087,15 @@ class GuitarAmpRecorderApp:
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
         prep_buttons = Frame(prep_box, bg="#151b22")
         prep_buttons.pack(anchor="w", padx=14, pady=(0, 12))
-        Button(prep_buttons, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white").pack(side="left")
-        Button(prep_buttons, text="Hazırlığı Dosyaya Yaz", command=self.export_current_preparation_file, bg="#2d7d46", fg="white").pack(
-            side="left", padx=(8, 0)
-        )
-        Button(prep_buttons, text="Hazırlık Dosyasını Aç", command=self.open_preparation_summary_in_finder, bg="#1f6feb", fg="white").pack(
-            side="left", padx=(8, 0)
-        )
+        self.copy_preparation_button = Button(prep_buttons, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white")
+        self.copy_preparation_button.pack(side="left")
+        self.apply_button_style(self.copy_preparation_button, role="secondary")
+        self.export_preparation_button = Button(prep_buttons, text="Hazırlığı Dosyaya Yaz", command=self.export_current_preparation_file, bg="#2d7d46", fg="white")
+        self.export_preparation_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.export_preparation_button, role="success")
+        self.open_preparation_button = Button(prep_buttons, text="Hazırlık Dosyasını Aç", command=self.open_preparation_summary_in_finder, bg="#1f6feb", fg="white")
+        self.open_preparation_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.open_preparation_button, role="primary")
 
         option_box = self.create_section(title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
         self.option_summary_label = Label(
@@ -1208,6 +1237,16 @@ class GuitarAmpRecorderApp:
             ],
             columns=3,
         )
+        for button, role in (
+            (self.open_last_export_button, "primary"),
+            (self.play_last_export_button, "success"),
+            (self.open_last_summary_button, "accent"),
+            (self.open_last_take_notes_button, "accent"),
+            (self.open_last_output_dir_button, "secondary"),
+            (self.open_last_preparation_button, "primary"),
+            (self.refresh_recent_button, "success"),
+        ):
+            self.apply_button_style(button, role=role)
         recent_copy_buttons = Frame(recent_box, bg="#151b22")
         recent_copy_buttons.pack(fill="x", padx=14, pady=(0, 8))
         self.copy_last_export_path_button = Button(
@@ -1270,6 +1309,15 @@ class GuitarAmpRecorderApp:
             ],
             columns=3,
         )
+        for button, role in (
+            (self.copy_last_export_path_button, "primary"),
+            (self.copy_last_summary_button, "accent"),
+            (self.copy_last_summary_path_button, "accent"),
+            (self.copy_last_brief_button, "success"),
+            (self.export_last_brief_button, "success"),
+            (self.copy_last_recovery_note_button, "danger"),
+        ):
+            self.apply_button_style(button, role=role)
         self.recent_exports_label = Label(
             recent_box,
             textvariable=self.recent_exports_text,
