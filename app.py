@@ -838,8 +838,10 @@ class GuitarAmpRecorderApp:
             padx=10,
             pady=4,
         ).pack(anchor="w", padx=14, pady=(0, 8))
-        hero_actions = Frame(hero, bg="#182028")
-        hero_actions.pack(fill="x", padx=14, pady=(0, 8))
+        hero_toolbar = Frame(hero, bg="#16212b", highlightbackground="#2a3644", highlightthickness=1)
+        hero_toolbar.pack(fill="x", padx=14, pady=(0, 10))
+        hero_actions = Frame(hero_toolbar, bg="#16212b")
+        hero_actions.pack(side="left", padx=10, pady=8)
         self.hero_scan_button = self.create_click_chip(hero_actions, "Aygıtları Tara", self.inspect_devices, role="primary")
         self.hero_scan_button.pack(side="left")
         self.hero_fill_button = self.create_click_chip(hero_actions, "Önerilenleri Doldur", self.fill_recommended_devices, role="success")
@@ -851,16 +853,18 @@ class GuitarAmpRecorderApp:
         self.about_button = self.create_click_chip(hero_actions, "Hakkında", self.show_about, role="secondary")
         self.about_button.pack(side="left", padx=(8, 0))
         self.operation_state_label = Label(
-            hero,
+            hero_toolbar,
             textvariable=self.operation_state_text,
-            bg="#182028",
-            fg="#9fb0c2",
+            bg="#203041",
+            fg="#d7eefb",
             justify="left",
             wraplength=self.hero_wraplength,
             padx=10,
             pady=6,
+            highlightbackground="#2f81f7",
+            highlightthickness=1,
         )
-        self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
+        self.operation_state_label.pack(side="right", padx=10, pady=8)
 
         self.hero_summary_label = Label(
             self.content,
