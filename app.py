@@ -742,6 +742,7 @@ class GuitarAmpRecorderApp:
         self.record_limit_hours = StringVar(value="1")
         self.mic_record_seconds = StringVar(value="60")
         self.monitor_status_text = StringVar(value="Canlı monitor kapalı")
+        self.quick_control_text = StringVar(value="Hızlı kontrol özeti hazırlanıyor...")
         self.readiness_text = StringVar(value="Hazırlık durumu hesaplanıyor...")
         self.readiness_subtitle_text = StringVar(value="Hazırlık özeti hazırlanıyor...")
         self.next_step_subtitle_text = StringVar(value="Sonraki adım özeti hazırlanıyor...")
@@ -968,38 +969,13 @@ class GuitarAmpRecorderApp:
         self.outputs_column = Frame(self.outputs_tab, bg="#101418")
         self.outputs_column.pack(fill="x")
 
-        focus_box = self.create_section(parent=self.record_left_column, title="Hızlı Kontrol", subtitle="Üstte yalnız kritik özetler gösterilir.")
-        Label(focus_box, text="Sonraki Adım", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(10, 4))
-        self.next_step_label = Label(
+        focus_box = self.create_section(parent=self.record_left_column, title="Hızlı Kontrol", subtitle="Tek kartta kayıt öncesi genel durum.")
+        self.quick_control_label = Label(
             focus_box,
-            textvariable=self.next_step_text,
-            **self.summary_card_style("#1c2a1f", "#d8f3dc"),
-        )
-        self.next_step_label.pack(fill="x", padx=14, pady=(0, 10))
-
-        Label(focus_box, text="Hazırlık Durumu", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(0, 4))
-        self.readiness_label = Label(
-            focus_box,
-            textvariable=self.readiness_text,
+            textvariable=self.quick_control_text,
             **self.summary_card_style("#1b2029", "#dce6ef"),
         )
-        self.readiness_label.pack(fill="x", padx=14, pady=(0, 10))
-
-        Label(focus_box, text="Kayıt Öncesi Uyarı", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(0, 4))
-        self.preflight_warning_label = Label(
-            focus_box,
-            textvariable=self.preflight_warning_text,
-            **self.summary_card_style("#2a1c1c", "#f6e7cb"),
-        )
-        self.preflight_warning_label.pack(fill="x", padx=14, pady=(0, 12))
-
-        status_box = self.create_section(parent=self.record_left_column, title="Durum", subtitle="Anlık hazır durumu ve son oturum burada görünür.")
-        self.status_label = Label(
-            status_box,
-            textvariable=self.status_text,
-            **self.summary_card_style("#1b2029", "#dce6ef"),
-        )
-        self.status_label.pack(fill="x", padx=14, pady=(10, 12))
+        self.quick_control_label.pack(fill="x", padx=14, pady=(10, 12))
 
         setup = self.create_section(parent=self.setup_column, title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         self.setup_status_label = Label(
@@ -1346,6 +1322,12 @@ class GuitarAmpRecorderApp:
         self.apply_click_chip_style(self.stop_recording_button, role="danger", enabled=False, compact=False)
 
         progress_box = self.create_section(parent=self.record_left_column, title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
+        self.status_label = Label(
+            progress_box,
+            textvariable=self.status_text,
+            **self.summary_card_style("#1b2029", "#dce6ef"),
+        )
+        self.status_label.pack(fill="x", padx=14, pady=(10, 8))
         self.progress_label = Label(
             progress_box,
             textvariable=self.record_progress_text,
@@ -1354,7 +1336,7 @@ class GuitarAmpRecorderApp:
             wraplength=self.section_wraplength,
             justify="left",
         )
-        self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
+        self.progress_label.pack(anchor="w", padx=14, pady=(0, 14))
 
         recent_box = self.create_section(parent=self.outputs_column, title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
         self.recent_output_summary_label = Label(
@@ -2177,10 +2159,41 @@ class GuitarAmpRecorderApp:
             return "Backing seçili. Çıkışı kontrol edin, kısa test yapın, sonra tam kayda geçin."
         return "Backing ve cihazlar hazır. Test kaydı iyi ise tam kaydı başlatabilirsiniz."
 
+    def build_quick_control_text(self) -> str:
+        next_step = self.build_next_step_text()
+        readiness = self.build_readiness_text().replace("\n", " | ")
+        warning = self.build_preflight_warning_text()
+        return "\n".join(
+            [
+                f"Sıradaki: {next_step}",
+                f"Hazırlık: {readiness}",
+                f"Uyarı: {warning}",
+            ]
+        )
+
+    def build_quick_control_palette(self) -> dict[str, str]:
+        if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
+            return {"bg": "#2c2418", "fg": "#ffe7b3"}
+        if not self.output_dir.get().strip() or self.last_input_peak >= 0.985 or self.last_input_peak < 0.05:
+            return {"bg": "#2a1c1c", "fg": "#f6e7cb"}
+        if self.missing_readiness_items():
+            return {"bg": "#2c2418", "fg": "#ffe7b3"}
+        return {"bg": "#1f2b22", "fg": "#d8f3dc"}
+
+    def update_quick_control_summary(self) -> None:
+        try:
+            self.quick_control_text.set(self.build_quick_control_text())
+            label = getattr(self, "quick_control_label", None)
+            if label is not None:
+                label.configure(**self.build_quick_control_palette())
+        except Exception:
+            pass
+
     def update_next_step_summary(self) -> None:
         try:
             self.update_next_step_subtitle()
             self.next_step_text.set(self.build_next_step_text())
+            self.update_quick_control_summary()
         except Exception:
             pass
 
@@ -2279,9 +2292,10 @@ class GuitarAmpRecorderApp:
         try:
             self.update_readiness_subtitle()
             self.readiness_text.set(self.build_readiness_text())
-            label = getattr(self, "readiness_label", None)
-            if label is not None:
-                label.configure(**self.build_readiness_palette())
+            legacy_label = getattr(self, "readiness_label", None)
+            if legacy_label is not None:
+                legacy_label.configure(**self.build_readiness_palette())
+            self.update_quick_control_summary()
         except Exception:
             pass
 
@@ -2307,10 +2321,13 @@ class GuitarAmpRecorderApp:
             text = self.build_preflight_warning_text()
             self.preflight_warning_text.set(text)
             self.update_preflight_subtitle()
-            if text.startswith("Hazır:"):
-                self.preflight_warning_label.configure(bg="#1f2b22", fg="#d8f3dc")
-            else:
-                self.preflight_warning_label.configure(bg="#2a1c1c", fg="#f6e7cb")
+            legacy_label = getattr(self, "preflight_warning_label", None)
+            if legacy_label is not None:
+                if text.startswith("Hazır:"):
+                    legacy_label.configure(bg="#1f2b22", fg="#d8f3dc")
+                else:
+                    legacy_label.configure(bg="#2a1c1c", fg="#f6e7cb")
+            self.update_quick_control_summary()
         except Exception:
             pass
 
