@@ -953,17 +953,28 @@ class GuitarAmpRecorderApp:
 
         button_row = Frame(setup, bg="#151b22")
         button_row.pack(fill="x", padx=14, pady=(0, 12))
-        Button(button_row, text="Mikrofonları Yeniden Tara", command=self.inspect_devices, bg="#34495e", fg="white").pack(side="left")
-        Button(button_row, text="Önerilen Aygıtları Doldur", command=self.fill_recommended_devices, bg="#1f6feb", fg="white").pack(
-            side="left", padx=(8, 0)
+        self.scan_devices_button = Button(button_row, text="Mikrofonları Yeniden Tara", command=self.inspect_devices, bg="#34495e", fg="white")
+        self.fill_devices_button = Button(
+            button_row, text="Önerilen Aygıtları Doldur", command=self.fill_recommended_devices, bg="#1f6feb", fg="white"
         )
-        Button(button_row, text="Temiz MacBook Preset", command=self.apply_clean_macbook_preset, bg="#2d7d46", fg="white").pack(
-            side="left", padx=(8, 0)
+        self.clean_macbook_button = Button(
+            button_row, text="Temiz MacBook Preset", command=self.apply_clean_macbook_preset, bg="#2d7d46", fg="white"
         )
-        Button(button_row, text="Harici Mikrofon Preset", command=self.apply_external_mic_preset, bg="#8e44ad", fg="white").pack(
-            side="left", padx=(8, 0)
+        self.external_mic_button = Button(
+            button_row, text="Harici Mikrofon Preset", command=self.apply_external_mic_preset, bg="#8e44ad", fg="white"
         )
-        Button(button_row, text="Varsayılana Dön", command=self.clear_device_selection, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
+        self.reset_devices_button = Button(button_row, text="Varsayılana Dön", command=self.clear_device_selection, bg="#5d6d7e", fg="white")
+        self.layout_button_flow(
+            button_row,
+            [
+                self.scan_devices_button,
+                self.fill_devices_button,
+                self.clean_macbook_button,
+                self.external_mic_button,
+                self.reset_devices_button,
+            ],
+            columns=3,
+        )
 
         preset_row = Frame(setup, bg="#151b22")
         preset_row.pack(fill="x", padx=14, pady=(0, 12))
@@ -1143,7 +1154,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.open_last_export_button.pack(side="left")
         self.play_last_export_button = Button(
             recent_buttons,
             text="Son Kaydı Oynat",
@@ -1152,7 +1162,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.play_last_export_button.pack(side="left", padx=(8, 0))
         self.open_last_summary_button = Button(
             recent_buttons,
             text="Oturum Özetini Aç",
@@ -1161,7 +1170,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.open_last_summary_button.pack(side="left", padx=(8, 0))
         self.open_last_take_notes_button = Button(
             recent_buttons,
             text="Take Notunu Aç",
@@ -1170,7 +1178,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.open_last_take_notes_button.pack(side="left", padx=(8, 0))
         self.open_last_output_dir_button = Button(
             recent_buttons,
             text="Son Oturum Klasörünü Aç",
@@ -1179,7 +1186,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.open_last_output_dir_button.pack(side="left", padx=(8, 0))
         self.open_last_preparation_button = Button(
             recent_buttons,
             text="Hazırlık Dosyasını Aç",
@@ -1188,8 +1194,20 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.open_last_preparation_button.pack(side="left", padx=(8, 0))
-        Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
+        self.refresh_recent_button = Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white")
+        self.layout_button_flow(
+            recent_buttons,
+            [
+                self.open_last_export_button,
+                self.play_last_export_button,
+                self.open_last_summary_button,
+                self.open_last_take_notes_button,
+                self.open_last_output_dir_button,
+                self.open_last_preparation_button,
+                self.refresh_recent_button,
+            ],
+            columns=3,
+        )
         recent_copy_buttons = Frame(recent_box, bg="#151b22")
         recent_copy_buttons.pack(fill="x", padx=14, pady=(0, 8))
         self.copy_last_export_path_button = Button(
@@ -1200,7 +1218,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.copy_last_export_path_button.pack(side="left")
         self.copy_last_summary_button = Button(
             recent_copy_buttons,
             text="Özet İçeriğini Kopyala",
@@ -1209,7 +1226,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.copy_last_summary_button.pack(side="left", padx=(8, 0))
         self.copy_last_summary_path_button = Button(
             recent_copy_buttons,
             text="Özet Yolunu Kopyala",
@@ -1218,7 +1234,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.copy_last_summary_path_button.pack(side="left", padx=(8, 0))
         self.copy_last_brief_button = Button(
             recent_copy_buttons,
             text="Kısa Rapor Kopyala",
@@ -1227,7 +1242,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.copy_last_brief_button.pack(side="left", padx=(8, 0))
         self.export_last_brief_button = Button(
             recent_copy_buttons,
             text="Raporu Dosyaya Yaz",
@@ -1236,7 +1250,6 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.export_last_brief_button.pack(side="left", padx=(8, 0))
         self.copy_last_recovery_note_button = Button(
             recent_copy_buttons,
             text="Kurtarma Notunu Kopyala",
@@ -1245,7 +1258,18 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
-        self.copy_last_recovery_note_button.pack(side="left", padx=(8, 0))
+        self.layout_button_flow(
+            recent_copy_buttons,
+            [
+                self.copy_last_export_path_button,
+                self.copy_last_summary_button,
+                self.copy_last_summary_path_button,
+                self.copy_last_brief_button,
+                self.export_last_brief_button,
+                self.copy_last_recovery_note_button,
+            ],
+            columns=3,
+        )
         self.recent_exports_label = Label(
             recent_box,
             textvariable=self.recent_exports_text,
@@ -1372,6 +1396,13 @@ class GuitarAmpRecorderApp:
             font=("Helvetica", 10, "bold"),
             cursor="hand2",
         )
+
+    def layout_button_flow(self, parent: Frame, buttons: list[Button], columns: int = 3) -> None:
+        for index, button in enumerate(buttons):
+            row = index // columns
+            column = index % columns
+            parent.grid_columnconfigure(column, weight=1)
+            button.grid(row=row, column=column, sticky="ew", padx=(0 if column == 0 else 8, 0), pady=(0, 8))
 
     def on_plan_inputs_changed(self, *_args) -> None:
         self.update_operation_state_summary()
