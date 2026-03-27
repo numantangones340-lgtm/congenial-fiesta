@@ -834,21 +834,16 @@ class GuitarAmpRecorderApp:
         ).pack(anchor="w", padx=14, pady=(0, 10))
         hero_actions = Frame(hero, bg="#182028")
         hero_actions.pack(fill="x", padx=14, pady=(0, 10))
-        self.hero_scan_button = Button(hero_actions, text="Aygıtları Tara", command=self.inspect_devices, bg="#1f6feb", fg="white")
+        self.hero_scan_button = self.create_click_chip(hero_actions, "Aygıtları Tara", self.inspect_devices, role="primary")
         self.hero_scan_button.pack(side="left")
-        self.apply_button_style(self.hero_scan_button, role="primary")
-        self.hero_fill_button = Button(hero_actions, text="Önerilenleri Doldur", command=self.fill_recommended_devices, bg="#2d7d46", fg="white")
+        self.hero_fill_button = self.create_click_chip(hero_actions, "Önerilenleri Doldur", self.fill_recommended_devices, role="success")
         self.hero_fill_button.pack(side="left", padx=(8, 0))
-        self.apply_button_style(self.hero_fill_button, role="success")
-        self.hero_test_button = Button(hero_actions, text="5 sn Test", command=self.start_test_thread, bg="#34495e", fg="white")
+        self.hero_test_button = self.create_click_chip(hero_actions, "5 sn Test", self.start_test_thread, role="secondary")
         self.hero_test_button.pack(side="left", padx=(8, 0))
-        self.apply_button_style(self.hero_test_button, role="secondary")
-        self.hero_backing_button = Button(hero_actions, text="Müzik Seç", command=self.select_backing, bg="#8e44ad", fg="white")
+        self.hero_backing_button = self.create_click_chip(hero_actions, "Müzik Seç", self.select_backing, role="accent")
         self.hero_backing_button.pack(side="left", padx=(8, 0))
-        self.apply_button_style(self.hero_backing_button, role="accent")
-        self.about_button = Button(hero_actions, text="Hakkında", command=self.show_about, bg="#34495e", fg="white")
+        self.about_button = self.create_click_chip(hero_actions, "Hakkında", self.show_about, role="secondary")
         self.about_button.pack(side="left", padx=(8, 0))
-        self.apply_button_style(self.about_button, role="secondary")
         self.operation_state_label = Label(
             hero,
             textvariable=self.operation_state_text,
@@ -1285,24 +1280,52 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#1b2230", "#dfe9f5"),
         )
         self.action_guidance_label.pack(fill="x", padx=14, pady=(10, 6))
-        self.start_test_button = Button(actions, text="Mikrofon/Ses Kartı Testi (5 sn)", command=self.start_test_thread, bg="#1f6feb", fg="white")
+        self.start_test_button = self.create_click_chip(
+            actions,
+            "Mikrofon/Ses Kartı Testi (5 sn)",
+            self.start_test_thread,
+            role="primary",
+            compact=False,
+        )
         self.start_test_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        self.apply_button_style(self.start_test_button, role="primary", compact=False)
-        self.start_quick_record_button = Button(actions, text="Hızlı Kayıt (Sadece Mikrofon)", command=self.start_quick_record_thread, bg="#8e44ad", fg="white")
+        self.start_quick_record_button = self.create_click_chip(
+            actions,
+            "Hızlı Kayıt (Sadece Mikrofon)",
+            self.start_quick_record_thread,
+            role="accent",
+            compact=False,
+        )
         self.start_quick_record_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        self.apply_button_style(self.start_quick_record_button, role="accent", compact=False)
-        self.start_recording_button = Button(actions, text="Tam Kayıt (Mikrofon)", command=self.start_recording_thread, bg="#27ae60", fg="white")
+        self.start_recording_button = self.create_click_chip(
+            actions,
+            "Tam Kayıt (Mikrofon)",
+            self.start_recording_thread,
+            role="success",
+            compact=False,
+        )
         self.start_recording_button.pack(
             fill="x", padx=14, pady=(0, 6)
         )
-        self.apply_button_style(self.start_recording_button, role="success", compact=False)
-        self.stop_recording_button = Button(actions, text="Kaydı Durdur ve Kaydet", command=self.request_stop_recording, bg="#c0392b", fg="white", state="disabled")
+        self.start_test_button._chip_enabled = False
+        self.start_quick_record_button._chip_enabled = False
+        self.start_recording_button._chip_enabled = False
+        self.apply_click_chip_style(self.start_test_button, role="primary", enabled=False, compact=False)
+        self.apply_click_chip_style(self.start_quick_record_button, role="accent", enabled=False, compact=False)
+        self.apply_click_chip_style(self.start_recording_button, role="success", enabled=False, compact=False)
+        self.stop_recording_button = self.create_click_chip(
+            actions,
+            "Kaydı Durdur ve Kaydet",
+            self.request_stop_recording,
+            role="danger",
+            compact=False,
+        )
         self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
-        self.apply_button_style(self.stop_recording_button, role="danger", compact=False)
+        self.stop_recording_button._chip_enabled = False
+        self.apply_click_chip_style(self.stop_recording_button, role="danger", enabled=False, compact=False)
 
         progress_box = self.create_section(parent=self.record_left_column, title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
         self.progress_label = Label(
@@ -1595,6 +1618,70 @@ class GuitarAmpRecorderApp:
             pady=8,
         ).pack(fill="x")
         return card
+
+    def create_click_chip(
+        self,
+        parent: Frame,
+        text: str,
+        command,
+        role: str = "secondary",
+        compact: bool = True,
+    ) -> Label:
+        chip = Label(parent, text=text)
+        chip._chip_command = command
+        chip._chip_role = role
+        chip._chip_compact = compact
+        chip._chip_enabled = True
+        chip.bind("<Button-1>", lambda _event, target=chip: self.on_click_chip(target))
+        self.apply_click_chip_style(chip, role=role, enabled=True, compact=compact)
+        return chip
+
+    def is_click_chip(self, widget) -> bool:
+        return "_chip_command" in getattr(widget, "__dict__", {})
+
+    def on_click_chip(self, chip: Label) -> None:
+        if not getattr(chip, "_chip_enabled", True):
+            return
+        command = getattr(chip, "_chip_command", None)
+        if callable(command):
+            command()
+
+    def apply_click_chip_style(self, chip: Label, role: str = "secondary", enabled: bool = True, compact: bool = True) -> None:
+        palette = self.button_palette(role)
+        bg = palette["bg"] if enabled else "#2a313a"
+        fg = "white" if enabled else "#8b98a7"
+        border = palette["activebackground"] if enabled else "#38414c"
+        chip.configure(
+            bg=bg,
+            fg=fg,
+            highlightbackground=border,
+            highlightthickness=1,
+            bd=0,
+            padx=12 if compact else 14,
+            pady=7 if compact else 9,
+            font=("Helvetica", 10, "bold"),
+            cursor="hand2" if enabled else "arrow",
+        )
+        chip._chip_enabled = enabled
+        chip._chip_role = role
+        chip._chip_compact = compact
+
+    def set_click_widget_state(self, widget, state: str, role: Optional[str] = None) -> None:
+        if self.is_click_chip(widget):
+            self.apply_click_chip_style(
+                widget,
+                role=role or getattr(widget, "_chip_role", "secondary"),
+                enabled=(state != "disabled"),
+                compact=getattr(widget, "_chip_compact", True),
+            )
+        else:
+            widget.configure(state=state)
+
+    def set_click_widget_text(self, widget, text: str) -> None:
+        if self.is_click_chip(widget):
+            widget.configure(text=text)
+        else:
+            widget.configure(text=text)
 
     def set_workspace_tab(self, name: str) -> None:
         self.workspace_tab.set(name)
@@ -2249,8 +2336,8 @@ class GuitarAmpRecorderApp:
 
     def update_action_button_copy(self) -> None:
         try:
-            self.start_quick_record_button.configure(text=self.build_quick_record_button_text())
-            self.start_recording_button.configure(text=self.build_main_record_button_text())
+            self.set_click_widget_text(self.start_quick_record_button, self.build_quick_record_button_text())
+            self.set_click_widget_text(self.start_recording_button, self.build_main_record_button_text())
         except Exception:
             pass
 
@@ -3627,15 +3714,15 @@ class GuitarAmpRecorderApp:
         scan_state = "disabled" if recording_active else "normal"
         test_state = "disabled" if recording_active or not setup_ready else "normal"
         backing_state = "disabled" if recording_active else "normal"
-        for name, state in (
-            ("hero_scan_button", scan_state),
-            ("hero_fill_button", scan_state),
-            ("hero_test_button", test_state),
-            ("hero_backing_button", backing_state),
+        for name, state, role in (
+            ("hero_scan_button", scan_state, "primary"),
+            ("hero_fill_button", scan_state, "success"),
+            ("hero_test_button", test_state, "secondary"),
+            ("hero_backing_button", backing_state, "accent"),
         ):
-            button = getattr(self, name, None)
-            if button is not None:
-                button.configure(state=state)
+            widget = getattr(self, name, None)
+            if widget is not None:
+                self.set_click_widget_state(widget, state, role=role)
 
     def meter_callback(self, indata, _frames, _time_info, status) -> None:
         if status:
@@ -3829,10 +3916,10 @@ class GuitarAmpRecorderApp:
         start_state = "disabled" if recording_active or not setup_ready else "normal"
         stop_state = "normal" if recording_active else "disabled"
         quick_state = "disabled" if recording_active or not setup_ready or self.backing_file is not None else "normal"
-        self.start_test_button.configure(state=start_state)
-        self.start_quick_record_button.configure(state=quick_state)
-        self.start_recording_button.configure(state=start_state)
-        self.stop_recording_button.configure(state=stop_state)
+        self.set_click_widget_state(self.start_test_button, start_state, role="primary")
+        self.set_click_widget_state(self.start_quick_record_button, quick_state, role="accent")
+        self.set_click_widget_state(self.start_recording_button, start_state, role="success")
+        self.set_click_widget_state(self.stop_recording_button, stop_state, role="danger")
 
     def set_recent_output_button_states(self, enabled: bool) -> None:
         state = "normal" if enabled else "disabled"
