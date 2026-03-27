@@ -961,6 +961,7 @@ class GuitarAmpRecorderApp:
             focus_box,
             textvariable=self.quick_control_text,
             **self.summary_card_style("#1b2029", "#dce6ef"),
+            anchor="w",
         )
         self.quick_control_label.pack(fill="x", padx=14, pady=(10, 12))
 
@@ -1259,6 +1260,7 @@ class GuitarAmpRecorderApp:
             actions,
             textvariable=self.action_guidance_text,
             **self.summary_card_style("#1b2230", "#dfe9f5"),
+            anchor="w",
         )
         self.action_guidance_label.pack(fill="x", padx=14, pady=(10, 6))
         action_buttons = Frame(actions, bg="#151b22")
@@ -1311,6 +1313,7 @@ class GuitarAmpRecorderApp:
             progress_box,
             textvariable=self.status_text,
             **self.summary_card_style("#1b2029", "#dce6ef"),
+            anchor="w",
         )
         self.status_label.pack(fill="x", padx=14, pady=(10, 8))
         self.progress_label = Label(
@@ -1318,16 +1321,20 @@ class GuitarAmpRecorderApp:
             textvariable=self.record_progress_text,
             bg="#151b22",
             fg="#dce6ef",
+            anchor="w",
             wraplength=self.section_wraplength,
             justify="left",
+            padx=10,
+            pady=6,
         )
-        self.progress_label.pack(anchor="w", padx=14, pady=(0, 14))
+        self.progress_label.pack(fill="x", padx=14, pady=(0, 10))
 
         recent_box = self.create_section(parent=self.outputs_column, title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
         self.recent_output_summary_label = Label(
             recent_box,
             textvariable=self.recent_output_summary_text,
             **self.summary_card_style("#1b2029", "#dce6ef"),
+            anchor="w",
         )
         self.recent_output_summary_label.pack(fill="x", padx=14, pady=(10, 8))
         recent_buttons = Frame(recent_box, bg="#151b22")
