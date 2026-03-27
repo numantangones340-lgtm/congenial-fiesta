@@ -708,6 +708,7 @@ class GuitarAmpRecorderApp:
         self.status_text = StringVar(value="Hazır")
         self.operation_state_text = StringVar(value="Durum: hazır")
         self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
+        self.workspace_tab = StringVar(value="Ana Kontrol")
         self.recent_output_summary_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
         self.recent_output_subtitle_text = StringVar(value="Son çıktı bölümü hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
@@ -890,16 +891,59 @@ class GuitarAmpRecorderApp:
             fg="#f6e7cb",
         )
 
-        self.desktop_columns = Frame(self.content, bg="#101418")
-        self.desktop_columns.pack(fill="x", padx=18, pady=(0, 12))
-        self.desktop_columns.grid_columnconfigure(0, weight=1)
-        self.desktop_columns.grid_columnconfigure(1, weight=1)
-        self.left_column = Frame(self.desktop_columns, bg="#101418")
-        self.right_column = Frame(self.desktop_columns, bg="#101418")
-        self.left_column.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        self.right_column.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        self.workspace_tabs = Frame(self.content, bg="#101418")
+        self.workspace_tabs.pack(fill="x", padx=18, pady=(0, 10))
+        self.main_tab_button = Button(
+            self.workspace_tabs,
+            text="Ana Kontrol",
+            command=lambda: self.set_workspace_tab("Ana Kontrol"),
+            bg="#1f6feb",
+            fg="white",
+        )
+        self.main_tab_button.pack(side="left")
+        self.apply_button_style(self.main_tab_button, role="primary")
+        self.setup_tab_button = Button(
+            self.workspace_tabs,
+            text="Kurulum",
+            command=lambda: self.set_workspace_tab("Kurulum"),
+            bg="#34495e",
+            fg="white",
+        )
+        self.setup_tab_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.setup_tab_button, role="secondary")
+        self.outputs_tab_button = Button(
+            self.workspace_tabs,
+            text="Son Çıktılar",
+            command=lambda: self.set_workspace_tab("Son Çıktılar"),
+            bg="#34495e",
+            fg="white",
+        )
+        self.outputs_tab_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.outputs_tab_button, role="secondary")
 
-        focus_box = self.create_section(parent=self.left_column, title="Hızlı Kontrol", subtitle="Üstte yalnız kritik özetler gösterilir.")
+        self.workspace_body = Frame(self.content, bg="#101418")
+        self.workspace_body.pack(fill="x", padx=18, pady=(0, 12))
+
+        self.main_tab = Frame(self.workspace_body, bg="#101418")
+        self.setup_tab = Frame(self.workspace_body, bg="#101418")
+        self.outputs_tab = Frame(self.workspace_body, bg="#101418")
+
+        self.main_columns = Frame(self.main_tab, bg="#101418")
+        self.main_columns.pack(fill="x")
+        self.main_columns.grid_columnconfigure(0, weight=1)
+        self.main_columns.grid_columnconfigure(1, weight=1)
+        self.main_left_column = Frame(self.main_columns, bg="#101418")
+        self.main_right_column = Frame(self.main_columns, bg="#101418")
+        self.main_left_column.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        self.main_right_column.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+
+        self.setup_column = Frame(self.setup_tab, bg="#101418")
+        self.setup_column.pack(fill="x")
+
+        self.outputs_column = Frame(self.outputs_tab, bg="#101418")
+        self.outputs_column.pack(fill="x")
+
+        focus_box = self.create_section(parent=self.main_left_column, title="Hızlı Kontrol", subtitle="Üstte yalnız kritik özetler gösterilir.")
         Label(focus_box, text="Sonraki Adım", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(10, 4))
         self.next_step_label = Label(
             focus_box,
@@ -924,7 +968,7 @@ class GuitarAmpRecorderApp:
         )
         self.preflight_warning_label.pack(fill="x", padx=14, pady=(0, 12))
 
-        setup = self.create_section(parent=self.left_column, title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
+        setup = self.create_section(parent=self.setup_column, title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         self.setup_status_label = Label(
             setup,
             textvariable=self.setup_status_text,
@@ -1087,7 +1131,7 @@ class GuitarAmpRecorderApp:
         )
         Label(setup, textvariable=self.monitor_status_text, bg="#151b22", fg="#9fb0c2", justify="left").pack(anchor="w", padx=14, pady=(0, 12))
 
-        media = self.create_section(parent=self.left_column, title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
+        media = self.create_section(parent=self.main_left_column, title="Kayıt Kaynağı", subtitlevariable=self.source_subtitle_text)
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
@@ -1106,7 +1150,7 @@ class GuitarAmpRecorderApp:
             columns=2,
         )
 
-        merge_box = self.create_section(parent=self.left_column, title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
+        merge_box = self.create_section(parent=self.main_left_column, title="Birleştirme Kanalı", subtitlevariable=self.merge_subtitle_text)
         self.merge_summary_label = Label(
             merge_box,
             textvariable=self.merge_summary_text,
@@ -1114,7 +1158,7 @@ class GuitarAmpRecorderApp:
         )
         self.merge_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
-        export = self.create_section(parent=self.right_column, title="Çıktı", subtitlevariable=self.output_subtitle_text)
+        export = self.create_section(parent=self.main_right_column, title="Çıktı", subtitlevariable=self.output_subtitle_text)
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
         Entry(export, textvariable=self.output_dir, width=48).pack(fill="x", padx=14)
         self.select_output_dir_button = Button(export, text="Klasör Seç", command=self.select_output_dir, bg="#34495e", fg="white")
@@ -1139,7 +1183,7 @@ class GuitarAmpRecorderApp:
         limit_menu = OptionMenu(export, self.record_limit_hours, "1", "2")
         limit_menu.pack(anchor="w", padx=14, pady=(0, 12))
 
-        prep_box = self.create_section(parent=self.right_column, title="Kayıt Planı", subtitlevariable=self.prep_subtitle_text)
+        prep_box = self.create_section(parent=self.main_right_column, title="Kayıt Planı", subtitlevariable=self.prep_subtitle_text)
         self.prep_summary_label = Label(
             prep_box,
             textvariable=self.prep_summary_text,
@@ -1164,7 +1208,7 @@ class GuitarAmpRecorderApp:
             columns=2,
         )
 
-        option_box = self.create_section(parent=self.right_column, title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
+        option_box = self.create_section(parent=self.main_right_column, title="Seçenek Özeti", subtitlevariable=self.option_subtitle_text)
         self.option_summary_label = Label(
             option_box,
             textvariable=self.option_summary_text,
@@ -1173,7 +1217,7 @@ class GuitarAmpRecorderApp:
         self.option_summary_label.pack(fill="x", padx=14, pady=(10, 10))
 
         advanced_audio_box = self.create_section(
-            parent=self.right_column,
+            parent=self.main_right_column,
             title="Gelişmiş Ses Ayarları",
             subtitle="Gerekirse açın. İlk kullanım için kapalı kalabilir.",
         )
@@ -1214,7 +1258,7 @@ class GuitarAmpRecorderApp:
         self.advanced_audio_expanded = False
         self.set_advanced_audio_expanded(False)
 
-        actions = self.create_section(parent=self.left_column, title="İşlem", subtitlevariable=self.action_subtitle_text)
+        actions = self.create_section(parent=self.main_left_column, title="İşlem", subtitlevariable=self.action_subtitle_text)
         self.action_guidance_label = Label(
             actions,
             textvariable=self.action_guidance_text,
@@ -1240,7 +1284,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
         self.apply_button_style(self.stop_recording_button, role="danger", compact=False)
 
-        progress_box = self.create_section(parent=self.left_column, title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
+        progress_box = self.create_section(parent=self.main_left_column, title="Kayıt Durumu", subtitlevariable=self.progress_subtitle_text)
         self.progress_label = Label(
             progress_box,
             textvariable=self.record_progress_text,
@@ -1251,7 +1295,7 @@ class GuitarAmpRecorderApp:
         )
         self.progress_label.pack(anchor="w", padx=14, pady=(12, 14))
 
-        recent_box = self.create_section(parent=self.right_column, title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
+        recent_box = self.create_section(parent=self.outputs_column, title="Son Çıktılar", subtitlevariable=self.recent_output_subtitle_text)
         self.recent_output_summary_label = Label(
             recent_box,
             textvariable=self.recent_output_summary_text,
@@ -1413,7 +1457,7 @@ class GuitarAmpRecorderApp:
         )
         self.recent_exports_label.pack(anchor="w", padx=14, pady=(0, 14))
 
-        status_box = self.create_section(parent=self.left_column, title="Durum")
+        status_box = self.create_section(parent=self.main_left_column, title="Durum")
         self.status_label = Label(
             status_box,
             textvariable=self.status_text,
@@ -1465,6 +1509,7 @@ class GuitarAmpRecorderApp:
         self.update_mix_subtitle()
         self.update_option_explanation_summary()
         self.update_recent_output_summary()
+        self.set_workspace_tab("Ana Kontrol")
 
     def create_section(
         self,
@@ -1530,6 +1575,27 @@ class GuitarAmpRecorderApp:
             pady=8,
         ).pack(fill="x")
         return card
+
+    def set_workspace_tab(self, name: str) -> None:
+        self.workspace_tab.set(name)
+        tabs = {
+            "Ana Kontrol": self.main_tab,
+            "Kurulum": self.setup_tab,
+            "Son Çıktılar": self.outputs_tab,
+        }
+        for tab_name, frame in tabs.items():
+            if tab_name == name:
+                frame.pack(fill="x")
+            else:
+                frame.pack_forget()
+        button_roles = {
+            "Ana Kontrol": "primary" if name == "Ana Kontrol" else "secondary",
+            "Kurulum": "primary" if name == "Kurulum" else "secondary",
+            "Son Çıktılar": "primary" if name == "Son Çıktılar" else "secondary",
+        }
+        self.apply_button_style(self.main_tab_button, role=button_roles["Ana Kontrol"])
+        self.apply_button_style(self.setup_tab_button, role=button_roles["Kurulum"])
+        self.apply_button_style(self.outputs_tab_button, role=button_roles["Son Çıktılar"])
 
     def set_advanced_audio_expanded(self, expanded: bool) -> None:
         self.advanced_audio_expanded = expanded
