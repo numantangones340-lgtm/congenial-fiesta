@@ -881,8 +881,17 @@ class GuitarAmpRecorderApp:
         )
         self.hero_summary_label.pack(fill="x", padx=18, pady=(0, 8))
 
-        self.workspace_tabs = Frame(self.content, bg="#101418")
-        self.workspace_tabs.pack(fill="x", padx=18, pady=(0, 6))
+        self.workspace_navbar = Frame(self.content, bg="#141c25", highlightbackground="#2a3644", highlightthickness=1)
+        self.workspace_navbar.pack(fill="x", padx=18, pady=(0, 6))
+        Label(
+            self.workspace_navbar,
+            text="Bölümler",
+            bg="#141c25",
+            fg="#9fb0c2",
+            font=("Helvetica", 9, "bold"),
+        ).pack(anchor="w", padx=12, pady=(8, 4))
+        self.workspace_tabs = Frame(self.workspace_navbar, bg="#141c25")
+        self.workspace_tabs.pack(fill="x", padx=10, pady=(0, 4))
         self.record_tab_button = Label(self.workspace_tabs, text="Kayıt")
         self.setup_tab_button = Label(self.workspace_tabs, text="Kurulum")
         self.music_tab_button = Label(self.workspace_tabs, text="Müzik")
@@ -915,16 +924,16 @@ class GuitarAmpRecorderApp:
             columns=7,
         )
         self.workspace_hint_label = Label(
-            self.content,
+            self.workspace_navbar,
             textvariable=self.workspace_hint_text,
-            bg="#101418",
+            bg="#141c25",
             fg="#9fb0c2",
             justify="left",
             anchor="w",
             font=("Helvetica", 10),
             wraplength=self.section_wraplength,
         )
-        self.workspace_hint_label.pack(fill="x", padx=18, pady=(0, 8))
+        self.workspace_hint_label.pack(fill="x", padx=12, pady=(0, 8))
 
         self.workspace_body = Frame(self.content, bg="#101418")
         self.workspace_body.pack(fill="x", padx=18, pady=(0, 12))
@@ -1744,9 +1753,9 @@ class GuitarAmpRecorderApp:
         )
 
     def apply_nav_chip_style(self, label: Label, active: bool = False) -> None:
-        bg = "#1f6feb" if active else "#1a2430"
-        fg = "#f4f7fb" if active else "#c7d2de"
-        border = "#2f81f7" if active else "#2a3644"
+        bg = "#2b6df2" if active else "#1a2430"
+        fg = "#ffffff" if active else "#c7d2de"
+        border = "#7fb0ff" if active else "#2a3644"
         label.configure(
             bg=bg,
             fg=fg,
@@ -1756,7 +1765,7 @@ class GuitarAmpRecorderApp:
             highlightthickness=1,
             bd=0,
             padx=10,
-            pady=7,
+            pady=6,
             font=("Helvetica", 10, "bold"),
             cursor="hand2",
         )
