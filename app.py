@@ -708,6 +708,7 @@ class GuitarAmpRecorderApp:
         self.status_text = StringVar(value="Hazır")
         self.operation_state_text = StringVar(value="Durum: hazır")
         self.compact_status_text = StringVar(value="Kısa özet hazırlanıyor...")
+        self.hero_summary_text = StringVar(value="Üst özet hazırlanıyor...")
         self.hero_status_card_text = StringVar(value="Kayıt özeti hazırlanıyor...")
         self.workspace_tab = StringVar(value="Kayıt")
         self.workspace_hint_text = StringVar(value="Ana kayıt akışı burada gösterilecek.")
@@ -861,35 +862,19 @@ class GuitarAmpRecorderApp:
         )
         self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 14))
 
-        hero_overview = Frame(self.content, bg="#101418")
-        hero_overview.pack(fill="x", padx=18, pady=(0, 12))
-        hero_overview.grid_columnconfigure(0, weight=1)
-        hero_overview.grid_columnconfigure(1, weight=1)
-        hero_overview.grid_columnconfigure(2, weight=1)
-        self.hero_status_card = self.create_overview_card(
-            hero_overview,
-            column=0,
-            title="Canlı Durum",
-            textvariable=self.hero_status_card_text,
-            bg="#13202b",
-            fg="#d7eefb",
+        self.hero_summary_label = Label(
+            self.content,
+            textvariable=self.hero_summary_text,
+            bg="#16212b",
+            fg="#dfe9f5",
+            justify="left",
+            wraplength=self.section_wraplength,
+            padx=14,
+            pady=10,
+            highlightbackground="#2a3644",
+            highlightthickness=1,
         )
-        self.hero_setup_card = self.create_overview_card(
-            hero_overview,
-            column=1,
-            title="Kurulum",
-            textvariable=self.hero_setup_card_text,
-            bg="#1b241d",
-            fg="#d8f3dc",
-        )
-        self.hero_output_card = self.create_overview_card(
-            hero_overview,
-            column=2,
-            title="Son Çıktı",
-            textvariable=self.hero_output_card_text,
-            bg="#241d15",
-            fg="#f6e7cb",
-        )
+        self.hero_summary_label.pack(fill="x", padx=18, pady=(0, 12))
 
         self.workspace_tabs = Frame(self.content, bg="#101418")
         self.workspace_tabs.pack(fill="x", padx=18, pady=(0, 10))
@@ -1892,6 +1877,12 @@ class GuitarAmpRecorderApp:
             return "Oturum özeti hazır\nKlasörü açabilir veya listeyi yenileyebilirsiniz."
         return "Henüz çıktı yok\nİlk testten sonra burada görünecek."
 
+    def build_hero_summary_text(self) -> str:
+        status = self.build_hero_status_card_text().replace("\n", " | ")
+        setup = self.build_hero_setup_card_text().replace("\n", " | ")
+        output = self.build_hero_output_card_text().replace("\n", " | ")
+        return f"Canlı Durum: {status}    •    Kurulum: {setup}    •    Son Çıktı: {output}"
+
     def build_workspace_hint_text(self, name: str) -> str:
         hints = {
             "Kayıt": "Test, hızlı kayıt ve tam kayıt bu alanda.",
@@ -1909,6 +1900,7 @@ class GuitarAmpRecorderApp:
             self.hero_status_card_text.set(self.build_hero_status_card_text())
             self.hero_setup_card_text.set(self.build_hero_setup_card_text())
             self.hero_output_card_text.set(self.build_hero_output_card_text())
+            self.hero_summary_text.set(self.build_hero_summary_text())
         except Exception:
             pass
 
