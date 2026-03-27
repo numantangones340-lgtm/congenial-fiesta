@@ -893,65 +893,24 @@ class GuitarAmpRecorderApp:
 
         self.workspace_tabs = Frame(self.content, bg="#101418")
         self.workspace_tabs.pack(fill="x", padx=18, pady=(0, 10))
-        self.record_tab_button = Button(
-            self.workspace_tabs,
-            text="Kayıt",
-            command=lambda: self.set_workspace_tab("Kayıt"),
-            bg="#1f6feb",
-            fg="white",
-        )
-        self.setup_tab_button = Button(
-            self.workspace_tabs,
-            text="Kurulum",
-            command=lambda: self.set_workspace_tab("Kurulum"),
-            bg="#34495e",
-            fg="white",
-        )
-        self.music_tab_button = Button(
-            self.workspace_tabs,
-            text="Müzik",
-            command=lambda: self.set_workspace_tab("Müzik"),
-            bg="#34495e",
-            fg="white",
-        )
-        self.merge_tab_button = Button(
-            self.workspace_tabs,
-            text="Birleştirme",
-            command=lambda: self.set_workspace_tab("Birleştirme"),
-            bg="#34495e",
-            fg="white",
-        )
-        self.settings_tab_button = Button(
-            self.workspace_tabs,
-            text="Ayarlar",
-            command=lambda: self.set_workspace_tab("Ayarlar"),
-            bg="#34495e",
-            fg="white",
-        )
-        self.audio_tab_button = Button(
-            self.workspace_tabs,
-            text="Ses Düzenleme",
-            command=lambda: self.set_workspace_tab("Ses Düzenleme"),
-            bg="#34495e",
-            fg="white",
-        )
-        self.outputs_tab_button = Button(
-            self.workspace_tabs,
-            text="Son Çıktılar",
-            command=lambda: self.set_workspace_tab("Son Çıktılar"),
-            bg="#34495e",
-            fg="white",
-        )
-        for button, role in (
-            (self.record_tab_button, "primary"),
-            (self.setup_tab_button, "secondary"),
-            (self.music_tab_button, "secondary"),
-            (self.merge_tab_button, "secondary"),
-            (self.settings_tab_button, "secondary"),
-            (self.audio_tab_button, "secondary"),
-            (self.outputs_tab_button, "secondary"),
+        self.record_tab_button = Label(self.workspace_tabs, text="Kayıt")
+        self.setup_tab_button = Label(self.workspace_tabs, text="Kurulum")
+        self.music_tab_button = Label(self.workspace_tabs, text="Müzik")
+        self.merge_tab_button = Label(self.workspace_tabs, text="Birleştirme")
+        self.settings_tab_button = Label(self.workspace_tabs, text="Ayarlar")
+        self.audio_tab_button = Label(self.workspace_tabs, text="Ses Düzenleme")
+        self.outputs_tab_button = Label(self.workspace_tabs, text="Son Çıktılar")
+        for label, tab_name in (
+            (self.record_tab_button, "Kayıt"),
+            (self.setup_tab_button, "Kurulum"),
+            (self.music_tab_button, "Müzik"),
+            (self.merge_tab_button, "Birleştirme"),
+            (self.settings_tab_button, "Ayarlar"),
+            (self.audio_tab_button, "Ses Düzenleme"),
+            (self.outputs_tab_button, "Son Çıktılar"),
         ):
-            self.apply_button_style(button, role=role)
+            label.bind("<Button-1>", lambda _event, target=tab_name: self.set_workspace_tab(target))
+            self.apply_nav_chip_style(label, active=(tab_name == "Kayıt"))
         self.layout_button_flow(
             self.workspace_tabs,
             [
@@ -1653,22 +1612,16 @@ class GuitarAmpRecorderApp:
                 frame.pack(fill="x")
             else:
                 frame.pack_forget()
-        button_roles = {
-            "Kayıt": "primary" if name == "Kayıt" else "secondary",
-            "Kurulum": "primary" if name == "Kurulum" else "secondary",
-            "Müzik": "primary" if name == "Müzik" else "secondary",
-            "Birleştirme": "primary" if name == "Birleştirme" else "secondary",
-            "Ayarlar": "primary" if name == "Ayarlar" else "secondary",
-            "Ses Düzenleme": "primary" if name == "Ses Düzenleme" else "secondary",
-            "Son Çıktılar": "primary" if name == "Son Çıktılar" else "secondary",
-        }
-        self.apply_button_style(self.record_tab_button, role=button_roles["Kayıt"])
-        self.apply_button_style(self.setup_tab_button, role=button_roles["Kurulum"])
-        self.apply_button_style(self.music_tab_button, role=button_roles["Müzik"])
-        self.apply_button_style(self.merge_tab_button, role=button_roles["Birleştirme"])
-        self.apply_button_style(self.settings_tab_button, role=button_roles["Ayarlar"])
-        self.apply_button_style(self.audio_tab_button, role=button_roles["Ses Düzenleme"])
-        self.apply_button_style(self.outputs_tab_button, role=button_roles["Son Çıktılar"])
+        for label, tab_name in (
+            (self.record_tab_button, "Kayıt"),
+            (self.setup_tab_button, "Kurulum"),
+            (self.music_tab_button, "Müzik"),
+            (self.merge_tab_button, "Birleştirme"),
+            (self.settings_tab_button, "Ayarlar"),
+            (self.audio_tab_button, "Ses Düzenleme"),
+            (self.outputs_tab_button, "Son Çıktılar"),
+        ):
+            self.apply_nav_chip_style(label, active=(tab_name == name))
         if name == "Ses Düzenleme":
             self.set_advanced_audio_expanded(True)
 
@@ -1706,6 +1659,24 @@ class GuitarAmpRecorderApp:
             padx=12 if compact else 14,
             pady=7 if compact else 9,
             font=("Helvetica", 10, "bold"),
+            cursor="hand2",
+        )
+
+    def apply_nav_chip_style(self, label: Label, active: bool = False) -> None:
+        bg = "#1f6feb" if active else "#1a2430"
+        fg = "#f4f7fb" if active else "#c7d2de"
+        border = "#2f81f7" if active else "#2a3644"
+        label.configure(
+            bg=bg,
+            fg=fg,
+            activebackground=bg,
+            activeforeground=fg,
+            highlightbackground=border,
+            highlightthickness=1,
+            bd=0,
+            padx=14,
+            pady=9,
+            font=("Helvetica", 11, "bold"),
             cursor="hand2",
         )
 
