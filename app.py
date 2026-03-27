@@ -680,16 +680,22 @@ class GuitarAmpRecorderApp:
         self.root.title("Gitar Amfi Kaydedici")
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
-        width = min(1440, max(1180, screen_w - 80))
-        height = min(940, max(720, screen_h - 110))
-        self.root.geometry(f"{width}x{height}")
-        self.root.minsize(1120, 700)
+        width = min(1560, max(1280, screen_w - 60))
+        height = min(980, max(760, screen_h - 90))
+        x = max(18, (screen_w - width) // 2)
+        y = max(20, (screen_h - height) // 2 - 12)
+        self.initial_window_width = width
+        self.initial_window_height = height
+        self.initial_window_x = x
+        self.initial_window_y = y
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
+        self.root.minsize(1180, 720)
         self.root.configure(bg="#101418")
         self.desktop_two_column = width >= 1180
-        self.hero_wraplength = max(720, min(1180, width - 140))
+        self.hero_wraplength = max(820, min(1280, width - 160))
         if self.desktop_two_column:
-            self.section_wraplength = max(430, min(560, ((width - 110) // 2) - 70))
-            self.control_length = max(430, min(560, ((width - 110) // 2) - 90))
+            self.section_wraplength = max(460, min(620, ((width - 110) // 2) - 70))
+            self.control_length = max(460, min(620, ((width - 110) // 2) - 88))
         else:
             self.section_wraplength = max(620, min(920, width - 110))
             self.control_length = max(620, min(880, width - 140))
@@ -785,6 +791,7 @@ class GuitarAmpRecorderApp:
         self.scrollbar.pack(side="right", fill="y")
         self.canvas_window = self.canvas.create_window((0, 0), window=self.content, anchor="nw")
         self.canvas.bind("<Configure>", self._on_canvas_configure)
+        self.root.after(120, self.ensure_desktop_geometry)
 
         for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
             self.root.bind_all(sequence, self._on_mousewheel, add="+")
@@ -861,6 +868,36 @@ class GuitarAmpRecorderApp:
         self.about_button = Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white")
         self.about_button.pack(anchor="w", padx=14, pady=(0, 14))
         self.apply_button_style(self.about_button, role="secondary")
+
+        hero_overview = Frame(self.content, bg="#101418")
+        hero_overview.pack(fill="x", padx=14, pady=(0, 10))
+        hero_overview.grid_columnconfigure(0, weight=1)
+        hero_overview.grid_columnconfigure(1, weight=1)
+        hero_overview.grid_columnconfigure(2, weight=1)
+        self.hero_status_card = self.create_overview_card(
+            hero_overview,
+            column=0,
+            title="Canlı Durum",
+            textvariable=self.compact_status_text,
+            bg="#13202b",
+            fg="#d7eefb",
+        )
+        self.hero_setup_card = self.create_overview_card(
+            hero_overview,
+            column=1,
+            title="Kurulum",
+            textvariable=self.setup_status_text,
+            bg="#1b241d",
+            fg="#d8f3dc",
+        )
+        self.hero_output_card = self.create_overview_card(
+            hero_overview,
+            column=2,
+            title="Son Çıktı",
+            textvariable=self.recent_output_summary_text,
+            bg="#241d15",
+            fg="#f6e7cb",
+        )
 
         self.desktop_columns = Frame(self.content, bg="#101418")
         self.desktop_columns.pack(fill="x", padx=14, pady=(0, 10))
@@ -1459,6 +1496,30 @@ class GuitarAmpRecorderApp:
                 anchor="w", padx=14, pady=(0, 10)
             )
         return section
+
+    def create_overview_card(
+        self,
+        parent: Frame,
+        column: int,
+        title: str,
+        textvariable: StringVar,
+        bg: str,
+        fg: str,
+    ) -> Frame:
+        card = Frame(parent, bg=bg, highlightbackground="#2a3644", highlightthickness=1)
+        card.grid(row=0, column=column, sticky="nsew", padx=(0 if column == 0 else 8, 0))
+        Label(card, text=title, bg=bg, fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=12, pady=(10, 4))
+        Label(
+            card,
+            textvariable=textvariable,
+            bg=bg,
+            fg=fg,
+            justify="left",
+            wraplength=max(260, self.section_wraplength - 40),
+            padx=12,
+            pady=8,
+        ).pack(fill="x")
+        return card
 
     def button_palette(self, role: str) -> dict[str, str]:
         palettes = {
@@ -2359,6 +2420,17 @@ class GuitarAmpRecorderApp:
     def _on_content_configure(self, _event=None) -> None:
         try:
             self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        except TclError:
+            pass
+
+    def ensure_desktop_geometry(self) -> None:
+        try:
+            current_w = self.root.winfo_width()
+            current_h = self.root.winfo_height()
+            if current_w < self.initial_window_width - 40 or current_h < self.initial_window_height - 40:
+                self.root.geometry(
+                    f"{self.initial_window_width}x{self.initial_window_height}+{self.initial_window_x}+{self.initial_window_y}"
+                )
         except TclError:
             pass
 
