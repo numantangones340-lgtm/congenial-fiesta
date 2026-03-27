@@ -947,12 +947,8 @@ class GuitarAmpRecorderApp:
 
         self.record_columns = Frame(self.record_tab, bg="#101418")
         self.record_columns.pack(fill="x")
-        self.record_columns.grid_columnconfigure(0, weight=1)
-        self.record_columns.grid_columnconfigure(1, weight=1)
         self.record_left_column = Frame(self.record_columns, bg="#101418")
-        self.record_right_column = Frame(self.record_columns, bg="#101418")
-        self.record_left_column.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
-        self.record_right_column.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        self.record_left_column.pack(fill="x")
 
         self.setup_column = Frame(self.setup_tab, bg="#101418")
         self.setup_column.pack(fill="x")
@@ -996,6 +992,14 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#2a1c1c", "#f6e7cb"),
         )
         self.preflight_warning_label.pack(fill="x", padx=14, pady=(0, 12))
+
+        status_box = self.create_section(parent=self.record_left_column, title="Durum", subtitle="Anlık hazır durumu ve son oturum burada görünür.")
+        self.status_label = Label(
+            status_box,
+            textvariable=self.status_text,
+            **self.summary_card_style("#1b2029", "#dce6ef"),
+        )
+        self.status_label.pack(fill="x", padx=14, pady=(10, 12))
 
         setup = self.create_section(parent=self.setup_column, title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         self.setup_status_label = Label(
@@ -1514,16 +1518,6 @@ class GuitarAmpRecorderApp:
         )
         self.recent_exports_label.pack(anchor="w", padx=14, pady=(0, 14))
 
-        status_box = self.create_section(parent=self.record_right_column, title="Durum")
-        self.status_label = Label(
-            status_box,
-            textvariable=self.status_text,
-            bg="#151b22",
-            fg="#dce6ef",
-            wraplength=self.section_wraplength,
-            justify="left",
-        )
-        self.status_label.pack(anchor="w", padx=14, pady=(12, 14))
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.input_device_choice.trace_add("write", self.on_input_choice_changed)
         self.output_device_choice.trace_add("write", self.on_output_choice_changed)
