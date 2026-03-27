@@ -680,11 +680,13 @@ class GuitarAmpRecorderApp:
         self.root.title("Gitar Amfi Kaydedici")
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
-        width = min(720, max(560, screen_w - 120))
-        height = min(880, max(640, screen_h - 140))
+        width = min(1080, max(920, screen_w - 110))
+        height = min(940, max(720, screen_h - 110))
         self.root.geometry(f"{width}x{height}")
-        self.root.minsize(560, 640)
+        self.root.minsize(880, 700)
         self.root.configure(bg="#101418")
+        self.content_wraplength = max(620, min(920, width - 110))
+        self.control_length = max(620, min(880, width - 140))
         self.app_version = read_app_version()
 
         self.backing_file: Optional[Path] = None
@@ -794,7 +796,7 @@ class GuitarAmpRecorderApp:
             bg="#182028",
             fg="#c7d2de",
             justify="left",
-            wraplength=620,
+            wraplength=self.content_wraplength,
         ).pack(anchor="w", padx=14, pady=(0, 14))
         Label(
             hero,
@@ -802,15 +804,23 @@ class GuitarAmpRecorderApp:
             bg="#182028",
             fg="#9fb0c2",
             justify="left",
-            wraplength=620,
+            wraplength=self.content_wraplength,
         ).pack(anchor="w", padx=14, pady=(0, 10))
+        hero_actions = Frame(hero, bg="#182028")
+        hero_actions.pack(fill="x", padx=14, pady=(0, 10))
+        Button(hero_actions, text="Aygıtları Tara", command=self.inspect_devices, bg="#1f6feb", fg="white").pack(side="left")
+        Button(hero_actions, text="Önerilenleri Doldur", command=self.fill_recommended_devices, bg="#2d7d46", fg="white").pack(
+            side="left", padx=(8, 0)
+        )
+        Button(hero_actions, text="5 sn Test", command=self.start_test_thread, bg="#34495e", fg="white").pack(side="left", padx=(8, 0))
+        Button(hero_actions, text="Müzik Seç", command=self.select_backing, bg="#8e44ad", fg="white").pack(side="left", padx=(8, 0))
         self.compact_status_label = Label(
             hero,
             textvariable=self.compact_status_text,
             bg="#0f1720",
             fg="#d7eefb",
             justify="left",
-            wraplength=620,
+            wraplength=self.content_wraplength,
             padx=10,
             pady=8,
         )
@@ -821,7 +831,7 @@ class GuitarAmpRecorderApp:
             bg="#182028",
             fg="#9fb0c2",
             justify="left",
-            wraplength=620,
+            wraplength=self.content_wraplength,
             padx=10,
             pady=6,
         )
@@ -885,7 +895,7 @@ class GuitarAmpRecorderApp:
             bg="#0f141a",
             fg="#dce6ef",
             justify="left",
-            wraplength=620,
+            wraplength=self.content_wraplength,
             padx=10,
             pady=10,
         )
@@ -897,7 +907,7 @@ class GuitarAmpRecorderApp:
             bg="#11202d",
             fg="#d7eefb",
             justify="left",
-            wraplength=620,
+            wraplength=self.content_wraplength,
             padx=10,
             pady=8,
         )
@@ -954,7 +964,7 @@ class GuitarAmpRecorderApp:
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
             anchor="w", padx=14, pady=(0, 4)
         )
-        self.meter_canvas = Canvas(setup, width=620, height=24, bg="#0f141a", highlightthickness=0)
+        self.meter_canvas = Canvas(setup, width=self.control_length, height=24, bg="#0f141a", highlightthickness=0)
         self.meter_canvas.pack(fill="x", padx=14, pady=(0, 6))
         self.meter_fill = self.meter_canvas.create_rectangle(0, 0, 0, 24, fill="#27ae60", width=0)
         self.meter_peak_marker = self.meter_canvas.create_rectangle(0, 0, 0, 24, fill="#f4f7fb", width=0)
@@ -1293,9 +1303,23 @@ class GuitarAmpRecorderApp:
         if title:
             Label(section, text=title, bg=bg, fg="#f4f7fb", font=("Helvetica", 14, "bold")).pack(anchor="w", padx=14, pady=(12, 2))
         if subtitle is not None:
-            Label(section, text=subtitle, bg=bg, fg="#9fb0c2", justify="left", wraplength=620).pack(anchor="w", padx=14, pady=(0, 10))
+            Label(
+                section,
+                text=subtitle,
+                bg=bg,
+                fg="#9fb0c2",
+                justify="left",
+                wraplength=getattr(self, "content_wraplength", 620),
+            ).pack(anchor="w", padx=14, pady=(0, 10))
         elif subtitlevariable is not None:
-            Label(section, textvariable=subtitlevariable, bg=bg, fg="#9fb0c2", justify="left", wraplength=620).pack(
+            Label(
+                section,
+                textvariable=subtitlevariable,
+                bg=bg,
+                fg="#9fb0c2",
+                justify="left",
+                wraplength=getattr(self, "content_wraplength", 620),
+            ).pack(
                 anchor="w", padx=14, pady=(0, 10)
             )
         return section
@@ -2142,7 +2166,7 @@ class GuitarAmpRecorderApp:
             "bg": bg,
             "fg": fg,
             "justify": "left",
-            "wraplength": 620,
+            "wraplength": getattr(self, "content_wraplength", 620),
             "padx": 9,
             "pady": 7,
         }
@@ -2154,7 +2178,7 @@ class GuitarAmpRecorderApp:
             from_=min_v,
             to=max_v,
             orient=HORIZONTAL,
-            length=620,
+            length=getattr(self, "control_length", 620),
             resolution=1,
             bg="#151b22",
             fg="#dce6ef",
