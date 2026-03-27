@@ -844,17 +844,9 @@ class GuitarAmpRecorderApp:
         self.hero_backing_button = Button(hero_actions, text="Müzik Seç", command=self.select_backing, bg="#8e44ad", fg="white")
         self.hero_backing_button.pack(side="left", padx=(8, 0))
         self.apply_button_style(self.hero_backing_button, role="accent")
-        self.compact_status_label = Label(
-            hero,
-            textvariable=self.compact_status_text,
-            bg="#0f1720",
-            fg="#d7eefb",
-            justify="left",
-            wraplength=self.hero_wraplength,
-            padx=10,
-            pady=8,
-        )
-        self.compact_status_label.pack(fill="x", padx=14, pady=(0, 10))
+        self.about_button = Button(hero_actions, text="Hakkında", command=self.show_about, bg="#34495e", fg="white")
+        self.about_button.pack(side="left", padx=(8, 0))
+        self.apply_button_style(self.about_button, role="secondary")
         self.operation_state_label = Label(
             hero,
             textvariable=self.operation_state_text,
@@ -865,10 +857,7 @@ class GuitarAmpRecorderApp:
             padx=10,
             pady=6,
         )
-        self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 10))
-        self.about_button = Button(hero, text="Hakkında", command=self.show_about, bg="#34495e", fg="white")
-        self.about_button.pack(anchor="w", padx=14, pady=(0, 14))
-        self.apply_button_style(self.about_button, role="secondary")
+        self.operation_state_label.pack(anchor="w", padx=14, pady=(0, 14))
 
         hero_overview = Frame(self.content, bg="#101418")
         hero_overview.pack(fill="x", padx=18, pady=(0, 12))
@@ -909,29 +898,30 @@ class GuitarAmpRecorderApp:
         self.left_column.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         self.right_column.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
 
-        next_step_box = self.create_section(parent=self.left_column, title="Sonraki Adım", subtitlevariable=self.next_step_subtitle_text)
+        focus_box = self.create_section(parent=self.left_column, title="Hızlı Kontrol", subtitle="Üstte yalnız kritik özetler gösterilir.")
+        Label(focus_box, text="Sonraki Adım", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(10, 4))
         self.next_step_label = Label(
-            next_step_box,
+            focus_box,
             textvariable=self.next_step_text,
             **self.summary_card_style("#1c2a1f", "#d8f3dc"),
         )
-        self.next_step_label.pack(fill="x", padx=14, pady=(10, 10))
+        self.next_step_label.pack(fill="x", padx=14, pady=(0, 10))
 
-        readiness_box = self.create_section(parent=self.left_column, title="Hazırlık Durumu", subtitlevariable=self.readiness_subtitle_text)
+        Label(focus_box, text="Hazırlık Durumu", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(0, 4))
         self.readiness_label = Label(
-            readiness_box,
+            focus_box,
             textvariable=self.readiness_text,
             **self.summary_card_style("#1b2029", "#dce6ef"),
         )
-        self.readiness_label.pack(fill="x", padx=14, pady=(10, 10))
+        self.readiness_label.pack(fill="x", padx=14, pady=(0, 10))
 
-        preflight_box = self.create_section(parent=self.left_column, title="Kayıt Öncesi Uyarı", subtitlevariable=self.preflight_subtitle_text)
+        Label(focus_box, text="Kayıt Öncesi Uyarı", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 11, "bold")).pack(anchor="w", padx=14, pady=(0, 4))
         self.preflight_warning_label = Label(
-            preflight_box,
+            focus_box,
             textvariable=self.preflight_warning_text,
             **self.summary_card_style("#2a1c1c", "#f6e7cb"),
         )
-        self.preflight_warning_label.pack(fill="x", padx=14, pady=(10, 10))
+        self.preflight_warning_label.pack(fill="x", padx=14, pady=(0, 12))
 
         setup = self.create_section(parent=self.left_column, title="Mikrofon Kurulumu", subtitlevariable=self.setup_hint_text)
         self.setup_status_label = Label(
