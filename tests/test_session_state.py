@@ -42,6 +42,10 @@ class SessionStateTests(unittest.TestCase):
         recorder.recent_output_summary_label = mock.Mock()
         recorder.setup_status_label = mock.Mock()
         recorder.setup_next_label = mock.Mock()
+        recorder.hero_scan_button = mock.Mock()
+        recorder.hero_fill_button = mock.Mock()
+        recorder.hero_test_button = mock.Mock()
+        recorder.hero_backing_button = mock.Mock()
         recorder.setup_status_text = FakeVar("")
         recorder.setup_hint_text = FakeVar("")
         recorder.setup_next_text = FakeVar("")
@@ -574,6 +578,28 @@ class SessionStateTests(unittest.TestCase):
         recorder.start_quick_record_button.configure.assert_called_once_with(state="disabled")
         recorder.start_recording_button.configure.assert_called_once_with(state="disabled")
         recorder.stop_recording_button.configure.assert_called_once_with(state="disabled")
+
+    def test_set_hero_action_button_states_disables_test_until_setup_ready(self) -> None:
+        recorder = self.make_app()
+        recorder.current_input_device_count = 0
+
+        recorder.set_hero_action_button_states()
+
+        recorder.hero_scan_button.configure.assert_called_once_with(state="normal")
+        recorder.hero_fill_button.configure.assert_called_once_with(state="normal")
+        recorder.hero_test_button.configure.assert_called_once_with(state="disabled")
+        recorder.hero_backing_button.configure.assert_called_once_with(state="normal")
+
+    def test_set_hero_action_button_states_locks_quick_bar_during_recording(self) -> None:
+        recorder = self.make_app()
+        recorder.recording_active = True
+
+        recorder.set_hero_action_button_states()
+
+        recorder.hero_scan_button.configure.assert_called_once_with(state="disabled")
+        recorder.hero_fill_button.configure.assert_called_once_with(state="disabled")
+        recorder.hero_test_button.configure.assert_called_once_with(state="disabled")
+        recorder.hero_backing_button.configure.assert_called_once_with(state="disabled")
 
     def test_set_recent_output_button_states_disables_recent_actions(self) -> None:
         recorder = self.make_app()

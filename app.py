@@ -3149,6 +3149,7 @@ class GuitarAmpRecorderApp:
             self.setup_next_text.set(self.build_setup_next_text(self.current_input_device_count, self.current_output_device_count))
             if hasattr(self, "start_test_button"):
                 self.set_recording_action_button_states(recording_active=self.recording_active)
+            self.set_hero_action_button_states()
             label = getattr(self, "setup_status_label", None)
             if label is not None:
                 ready = (
@@ -3291,6 +3292,22 @@ class GuitarAmpRecorderApp:
 
     def start_actions_ready(self) -> bool:
         return self.current_input_device_count > 0 and self.current_output_device_count > 0 and bool(self.output_dir.get().strip())
+
+    def set_hero_action_button_states(self) -> None:
+        recording_active = getattr(self, "recording_active", False)
+        setup_ready = self.start_actions_ready()
+        scan_state = "disabled" if recording_active else "normal"
+        test_state = "disabled" if recording_active or not setup_ready else "normal"
+        backing_state = "disabled" if recording_active else "normal"
+        for name, state in (
+            ("hero_scan_button", scan_state),
+            ("hero_fill_button", scan_state),
+            ("hero_test_button", test_state),
+            ("hero_backing_button", backing_state),
+        ):
+            button = getattr(self, name, None)
+            if button is not None:
+                button.configure(state=state)
 
     def meter_callback(self, indata, _frames, _time_info, status) -> None:
         if status:
@@ -3512,6 +3529,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         try:
             self.set_recording_action_button_states(recording_active=True)
+            self.set_hero_action_button_states()
             self.set_recent_output_button_states(enabled=False)
             self.update_action_guidance_summary()
             self.update_action_subtitle()
@@ -3530,6 +3548,7 @@ class GuitarAmpRecorderApp:
         self.record_progress_text.set(final_text)
         try:
             self.set_recording_action_button_states(recording_active=False)
+            self.set_hero_action_button_states()
             self.update_action_guidance_summary()
             self.update_action_subtitle()
             self.update_operation_state_summary()
