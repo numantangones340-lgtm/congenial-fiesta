@@ -868,6 +868,7 @@ class GuitarAmpRecorderApp:
             bg="#16212b",
             fg="#dfe9f5",
             justify="left",
+            anchor="w",
             wraplength=self.section_wraplength,
             padx=14,
             pady=10,
@@ -915,6 +916,7 @@ class GuitarAmpRecorderApp:
             bg="#101418",
             fg="#9fb0c2",
             justify="left",
+            anchor="w",
             font=("Helvetica", 10),
             wraplength=self.section_wraplength,
         )
@@ -1259,36 +1261,34 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#1b2230", "#dfe9f5"),
         )
         self.action_guidance_label.pack(fill="x", padx=14, pady=(10, 6))
+        action_buttons = Frame(actions, bg="#151b22")
+        action_buttons.pack(fill="x", padx=14, pady=(0, 14))
+        action_buttons.grid_columnconfigure(0, weight=1)
+        action_buttons.grid_columnconfigure(1, weight=1)
         self.start_test_button = self.create_click_chip(
-            actions,
+            action_buttons,
             "Mikrofon/Ses Kartı Testi (5 sn)",
             self.start_test_thread,
             role="primary",
             compact=False,
         )
-        self.start_test_button.pack(
-            fill="x", padx=14, pady=(0, 6)
-        )
+        self.start_test_button.grid(row=0, column=0, sticky="ew", pady=(0, 6))
         self.start_quick_record_button = self.create_click_chip(
-            actions,
+            action_buttons,
             "Hızlı Kayıt (Sadece Mikrofon)",
             self.start_quick_record_thread,
             role="accent",
             compact=False,
         )
-        self.start_quick_record_button.pack(
-            fill="x", padx=14, pady=(0, 6)
-        )
+        self.start_quick_record_button.grid(row=0, column=1, sticky="ew", padx=(8, 0), pady=(0, 6))
         self.start_recording_button = self.create_click_chip(
-            actions,
+            action_buttons,
             "Tam Kayıt (Mikrofon)",
             self.start_recording_thread,
             role="success",
             compact=False,
         )
-        self.start_recording_button.pack(
-            fill="x", padx=14, pady=(0, 6)
-        )
+        self.start_recording_button.grid(row=1, column=0, sticky="ew")
         self.start_test_button._chip_enabled = False
         self.start_quick_record_button._chip_enabled = False
         self.start_recording_button._chip_enabled = False
@@ -1296,13 +1296,13 @@ class GuitarAmpRecorderApp:
         self.apply_click_chip_style(self.start_quick_record_button, role="accent", enabled=False, compact=False)
         self.apply_click_chip_style(self.start_recording_button, role="success", enabled=False, compact=False)
         self.stop_recording_button = self.create_click_chip(
-            actions,
+            action_buttons,
             "Kaydı Durdur ve Kaydet",
             self.request_stop_recording,
             role="danger",
             compact=False,
         )
-        self.stop_recording_button.pack(fill="x", padx=14, pady=(0, 14))
+        self.stop_recording_button.grid(row=1, column=1, sticky="ew", padx=(8, 0))
         self.stop_recording_button._chip_enabled = False
         self.apply_click_chip_style(self.stop_recording_button, role="danger", enabled=False, compact=False)
 
