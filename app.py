@@ -692,6 +692,7 @@ class GuitarAmpRecorderApp:
         self.root.minsize(1180, 720)
         self.root.configure(bg="#101418")
         self.desktop_two_column = width >= 1180
+        self.max_dashboard_width = min(1480, max(1240, width - 36))
         self.hero_wraplength = max(820, min(1280, width - 160))
         if self.desktop_two_column:
             self.section_wraplength = max(460, min(620, ((width - 110) // 2) - 70))
@@ -789,14 +790,14 @@ class GuitarAmpRecorderApp:
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
-        self.canvas_window = self.canvas.create_window((0, 0), window=self.content, anchor="nw")
+        self.canvas_window = self.canvas.create_window((width / 2, 0), window=self.content, anchor="n")
         self.canvas.bind("<Configure>", self._on_canvas_configure)
         self.root.after(120, self.ensure_desktop_geometry)
 
         for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
             self.root.bind_all(sequence, self._on_mousewheel, add="+")
 
-        hero = self.create_section(padx=14, pady=(14, 10), bg="#182028", border="#293543")
+        hero = self.create_section(padx=18, pady=(18, 12), bg="#182028", border="#293543")
         Label(
             hero,
             text="Gitar Amfi Kaydedici",
@@ -870,7 +871,7 @@ class GuitarAmpRecorderApp:
         self.apply_button_style(self.about_button, role="secondary")
 
         hero_overview = Frame(self.content, bg="#101418")
-        hero_overview.pack(fill="x", padx=14, pady=(0, 10))
+        hero_overview.pack(fill="x", padx=18, pady=(0, 12))
         hero_overview.grid_columnconfigure(0, weight=1)
         hero_overview.grid_columnconfigure(1, weight=1)
         hero_overview.grid_columnconfigure(2, weight=1)
@@ -900,7 +901,7 @@ class GuitarAmpRecorderApp:
         )
 
         self.desktop_columns = Frame(self.content, bg="#101418")
-        self.desktop_columns.pack(fill="x", padx=14, pady=(0, 10))
+        self.desktop_columns.pack(fill="x", padx=18, pady=(0, 12))
         self.desktop_columns.grid_columnconfigure(0, weight=1)
         self.desktop_columns.grid_columnconfigure(1, weight=1)
         self.left_column = Frame(self.desktop_columns, bg="#101418")
@@ -2436,7 +2437,10 @@ class GuitarAmpRecorderApp:
 
     def _on_canvas_configure(self, event) -> None:
         try:
-            self.canvas.itemconfigure(self.canvas_window, width=event.width)
+            available_width = max(960, event.width - 32)
+            dashboard_width = min(getattr(self, "max_dashboard_width", available_width), available_width)
+            self.canvas.coords(self.canvas_window, event.width / 2, 0)
+            self.canvas.itemconfigure(self.canvas_window, width=dashboard_width)
             self.status_label.configure(wraplength=getattr(self, "section_wraplength", max(320, event.width - 36)))
         except TclError:
             pass
