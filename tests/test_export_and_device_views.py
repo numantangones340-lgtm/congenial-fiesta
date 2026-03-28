@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac')", "Toplam: 7 ses dosyasi | Gorunen: son 6 | Sira: yeni-eski"]
+            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac')", "Toplam: 7 | Gorunen: son 6 | Sira: yeni-eski"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -121,7 +121,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
                 "Cikis klasoru: ~/Demo ('Klasoru Ac')",
-                "Toplam: 8 ses dosyasi | Gorunen: son 6 | Sira: yeni-eski",
+                "Toplam: 8 | Gorunen: son 6 | Sira: yeni-eski",
                 f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -163,7 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Cikis klasoru: ~/Demo ('Klasoru Ac')", recorder.recent_exports_text.get())
-        self.assertIn("Toplam: 1 ses dosyasi | Gorunen: 1", recorder.recent_exports_text.get())
+        self.assertIn("Toplam: 1 | Gorunen: 1", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (En yeni export; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Toplam: 2 ses dosyasi | Gorunen: hepsi | Sira: yeni-eski",
+            "Toplam: 2 | Gorunen: hepsi | Sira: yeni-eski",
             recorder.recent_exports_text.get(),
         )
 
@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac')",
-                    "Toplam: 0 ses dosyasi | Gorunen: bos | En yeni ozet hazir",
+                    "Toplam: 0 | Gorunen: bos | En yeni ozet hazir",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (En yeni ozet; 'Son Oturum Ozetini Ac')",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac')",
-                    "Toplam: 0 ses dosyasi | Gorunen: bos",
+                    "Toplam: 0 | Gorunen: bos",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
