@@ -140,6 +140,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
+    def test_refresh_recent_exports_explains_summary_when_audio_missing(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports()
+
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            "\n".join(
+                [
+                    "Klasor: ~/Demo",
+                    "Ses dosyalari: 0 | Gosterilen: 0",
+                    "Ses dosyasi yok. Son oturum ozeti hazir.",
+                    "- session_summary.json (Oturum ozeti hazir)",
+                ]
+            ),
+        )
+
     def test_refresh_recent_exports_restores_summary_button_from_output_dir(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

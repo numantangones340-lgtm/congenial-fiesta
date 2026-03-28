@@ -1404,7 +1404,11 @@ class GuitarAmpRecorderApp:
                 self.last_export_path = None
             lines = [f"Klasor: {output_dir_text}"]
             lines.append(count_line)
-            lines.append(summary_line or "Henuz export yok.")
+            if summary_line:
+                lines.append("Ses dosyasi yok. Son oturum ozeti hazir.")
+                lines.append(summary_line)
+            else:
+                lines.append("Henuz export yok.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
