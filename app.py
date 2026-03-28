@@ -1483,11 +1483,12 @@ class GuitarAmpRecorderApp:
             visibility_suffix = " Tek kayit listede."
         else:
             visibility_suffix = " Tum ses dosyalari listede."
+        sort_suffix = " En yeni kayit ustte." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " Oturum ozeti de hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
         self.set_status(
-            f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{summary_suffix}"
+            f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )
 
     def format_display_path(self, path: Path) -> str:

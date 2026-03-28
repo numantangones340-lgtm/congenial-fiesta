@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Tum ses dosyalari listede.",
+            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Tum ses dosyalari listede. En yeni kayit ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Listede: son 6 kayit.",
+            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Listede: son 6 kayit. En yeni kayit ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
