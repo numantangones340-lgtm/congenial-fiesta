@@ -1828,8 +1828,12 @@ class GuitarAmpRecorderApp:
         self.backing_file = Path(file_path)
         self.backing_label.config(text=self.backing_file.name, fg="#2c3e50")
         self.refresh_recording_readiness()
+        self.set_status(f"Arka plan muzigi secildi: {self.backing_file.name}. Backing + mikrofon kaydi hazir.")
 
     def clear_backing(self) -> None:
+        if self.backing_file is None:
+            self.set_status("Arka plan muzigi zaten secili degil.")
+            return
         self.backing_file = None
         self.backing_label.config(text="Dosya seçilmedi", fg="#9aa7b5")
         self.refresh_recording_readiness()

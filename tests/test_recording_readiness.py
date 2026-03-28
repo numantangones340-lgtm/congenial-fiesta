@@ -3,6 +3,7 @@ import tempfile
 import types
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.modules.setdefault("numpy", types.SimpleNamespace(ndarray=object))
 sys.modules.setdefault("sounddevice", types.SimpleNamespace())
@@ -110,6 +111,32 @@ class RecordingReadinessTests(unittest.TestCase):
         self.assertEqual(recorder.backing_label.config_calls[-1], {"text": "Dosya seçilmedi", "fg": "#9aa7b5"})
         self.assertIn("Kaynak: Sadece mikrofon", recorder.record_progress_text.get())
         self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi temizlendi. Sadece mikrofon kaydi hazir.")
+
+    def test_clear_backing_without_selection_reports_noop(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recorder = self.make_app(tmpdir)
+
+            app.GuitarAmpRecorderApp.clear_backing(recorder)
+
+        self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi zaten secili degil.")
+        self.assertEqual(recorder.backing_label.config_calls, [])
+
+    def test_select_backing_updates_label_and_status(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recorder = self.make_app(tmpdir)
+            backing_path = Path(tmpdir) / "demo_backing.wav"
+            backing_path.write_text("audio", encoding="utf-8")
+
+            with mock.patch.object(app.filedialog, "askopenfilename", return_value=str(backing_path)):
+                app.GuitarAmpRecorderApp.select_backing(recorder)
+
+        self.assertEqual(recorder.backing_file, backing_path)
+        self.assertEqual(recorder.backing_label.config_calls[-1], {"text": "demo_backing.wav", "fg": "#2c3e50"})
+        self.assertIn("Kaynak: demo_backing.wav + mikrofon", recorder.record_progress_text.get())
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Arka plan muzigi secildi: demo_backing.wav. Backing + mikrofon kaydi hazir.",
+        )
 
 
 if __name__ == "__main__":
