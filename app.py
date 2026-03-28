@@ -1402,13 +1402,13 @@ class GuitarAmpRecorderApp:
         )[:6]
         count_line = f"Toplam {len(all_audio_files)}"
         if len(all_audio_files) > len(recent_files):
-            count_line += " | Gr: son 6"
+            count_line += " | Gr son 6"
         elif len(recent_files) == 1:
-            count_line += " | Gr: 1"
+            count_line += " | Gr 1"
         elif recent_files:
-            count_line += " | Gr: tumu"
+            count_line += " | Gr tumu"
         else:
-            count_line += " | Gr: 0"
+            count_line += " | Gr 0"
             if summary_line:
                 count_line += " | Ozet"
         if len(recent_files) > 1:
@@ -1465,22 +1465,22 @@ class GuitarAmpRecorderApp:
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
-                    "Liste yenilendi. Gr: 0. "
+                    "Liste yenilendi. Gr 0. "
                     "Ozet; 'Son Oturum Ozetini Ac'."
                 )
             else:
                 self.set_status(
-                    "Liste yenilendi. Gr: 0. "
+                    "Liste yenilendi. Gr 0. "
                     "Yeni kayitlardan sonra ciktilar burada gorunecek."
                 )
             return
         shown_count = min(len(audio_files), 6)
         if len(audio_files) > shown_count:
-            visibility_suffix = " Gr: son 6."
+            visibility_suffix = " Gr son 6."
         elif shown_count == 1:
-            visibility_suffix = " Gr: 1."
+            visibility_suffix = " Gr 1."
         else:
-            visibility_suffix = " Gr: tumu."
+            visibility_suffix = " Gr tumu."
         sort_suffix = " Sira yeni." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():

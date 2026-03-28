@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Klasor ~/Demo (Ac)", "Toplam 7 | Gr: son 6 | Sira yeni"]
+            expected = ["Klasor ~/Demo (Ac)", "Toplam 7 | Gr son 6 | Sira yeni"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -121,7 +121,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
                 "Klasor ~/Demo (Ac)",
-                "Toplam 8 | Gr: son 6 | Sira yeni",
+                "Toplam 8 | Gr son 6 | Sira yeni",
                 f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -163,7 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Klasor ~/Demo (Ac)", recorder.recent_exports_text.get())
-        self.assertIn("Toplam 1 | Gr: 1", recorder.recent_exports_text.get())
+        self.assertIn("Toplam 1 | Gr 1", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (Export; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Toplam 2 | Gr: tumu | Sira yeni",
+            "Toplam 2 | Gr tumu | Sira yeni",
             recorder.recent_exports_text.get(),
         )
 
@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor ~/Demo (Ac)",
-                    "Toplam 0 | Gr: 0 | Ozet",
+                    "Toplam 0 | Gr 0 | Ozet",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (Ozet; 'Son Oturum Ozetini Ac')",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor ~/Demo (Ac)",
-                    "Toplam 0 | Gr: 0",
+                    "Toplam 0 | Gr 0",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 2 ses dosyasi. Gr: tumu. Sira yeni.",
+            "Liste yenilendi. 2 ses dosyasi. Gr tumu. Sira yeni.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 1 ses dosyasi. Gr: 1. Ozet; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. 1 ses dosyasi. Gr 1. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 7 ses dosyasi. Gr: son 6. Sira yeni.",
+            "Liste yenilendi. 7 ses dosyasi. Gr son 6. Sira yeni.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. Gr: 0. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Liste yenilendi. Gr 0. Yeni kayitlardan sonra ciktilar burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. Gr: 0. Ozet; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. Gr 0. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
