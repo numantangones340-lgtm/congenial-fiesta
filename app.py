@@ -1457,10 +1457,17 @@ class GuitarAmpRecorderApp:
             else:
                 self.set_status("Son ciktilar yenilendi. Henuz export yok, yeni kayitlardan sonra ciktilar burada gorunecek.")
             return
+        shown_count = min(len(audio_files), 6)
+        if len(audio_files) > shown_count:
+            visibility_suffix = " Son 6 kayit listede."
+        else:
+            visibility_suffix = " Tum ses dosyalari listede."
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " Oturum ozeti de hazir."
-        self.set_status(f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.{summary_suffix}")
+        self.set_status(
+            f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{summary_suffix}"
+        )
 
     def format_display_path(self, path: Path) -> str:
         try:

@@ -286,7 +286,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.refresh_recent_exports_from_action()
 
-        self.assertEqual(recorder.status_messages[-1], "Son ciktilar yenilendi. 2 ses dosyasi bulundu.")
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Tum ses dosyalari listede.",
+        )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
         recorder = self.make_app()
@@ -301,7 +304,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Oturum ozeti de hazir.",
+            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Tum ses dosyalari listede. Oturum ozeti de hazir.",
+        )
+
+    def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            for index in range(7):
+                suffix = ".mp3" if index % 2 == 0 else ".wav"
+                (output_dir / f"take_{index}{suffix}").write_text("audio", encoding="utf-8")
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports_from_action()
+
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Son 6 kayit listede.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
