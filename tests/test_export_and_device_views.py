@@ -136,7 +136,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Klasor: ~/Demo (Klasoru Ac ile erisilebilir)", recorder.recent_exports_text.get())
-        self.assertIn("Ses dosyalari: 1 | Gosterilen: 1 | Tumu listede | En yeni ustte", recorder.recent_exports_text.get())
+        self.assertIn("Ses dosyalari: 1 | Gosterilen: 1 | Tumu listede", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav (Son export, Finder'da gosterilebilir)", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Son oturum ozeti, acilabilir)", recorder.recent_exports_text.get())
 

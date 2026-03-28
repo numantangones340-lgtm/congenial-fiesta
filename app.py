@@ -1405,7 +1405,7 @@ class GuitarAmpRecorderApp:
             count_line += " | Tumu listede"
         else:
             count_line += " | Liste bos"
-        if recent_files:
+        if len(recent_files) > 1:
             count_line += " | En yeni ustte"
         if not recent_files:
             self.last_export_path = None
