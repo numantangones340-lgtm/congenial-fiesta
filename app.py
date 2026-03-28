@@ -1382,6 +1382,7 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set(f"Klasor bulunamadi: {output_dir}")
             self.refresh_recent_output_buttons()
             return
+        output_dir_text = self.format_display_path(output_dir)
         self.restore_session_summary_from_output_dir(output_dir)
         summary_line = self.recent_session_summary_line(output_dir)
         recent_files = sorted(
@@ -1392,19 +1393,31 @@ class GuitarAmpRecorderApp:
         if not recent_files:
             if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
                 self.last_export_path = None
-            lines = [f"Klasor: {output_dir}"]
+            lines = [f"Klasor: {output_dir_text}"]
             lines.append(summary_line or "Henuz export yok.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
         if self.last_export_path is None or not self.last_export_path.exists():
             self.last_export_path = recent_files[0]
-        lines = [f"Klasor: {output_dir}"]
+        lines = [f"Klasor: {output_dir_text}"]
         lines.extend(f"- {path.name}" for path in recent_files)
         if summary_line:
             lines.append(summary_line)
         self.recent_exports_text.set("\n".join(lines))
         self.refresh_recent_output_buttons()
+
+    def format_display_path(self, path: Path) -> str:
+        try:
+            home = Path.home().resolve()
+            resolved = path.expanduser().resolve()
+            if resolved == home:
+                return "~"
+            if home in resolved.parents:
+                return f"~/{resolved.relative_to(home)}"
+        except Exception:
+            pass
+        return str(path)
 
     def recent_session_summary_line(self, output_dir: Path) -> str:
         summary_path = self.last_session_summary_path

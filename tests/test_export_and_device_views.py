@@ -92,8 +92,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             (output_dir / "ignore.txt").write_text("skip", encoding="utf-8")
 
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = [f"Klasor: {output_dir}"]
+            expected = ["Klasor: ~/Demo"]
             expected.extend(
                 f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             )
@@ -119,10 +120,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             summary_path.write_text("{}", encoding="utf-8")
             recorder.last_session_summary_path = summary_path
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
 
             recorder.refresh_recent_exports()
 
-        self.assertIn(f"Klasor: {output_dir}", recorder.recent_exports_text.get())
+        self.assertIn("Klasor: ~/Demo", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
