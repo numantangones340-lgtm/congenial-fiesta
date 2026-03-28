@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Ses dosyalari: 0 | Ses listesi bos | Yalnizca son oturum ozeti var",
+                    "Ses dosyalari: 0 | Ses listesi bos | Yalnizca son oturum ozeti dosyasi var",
                     "Ses dosyasi yok. Asagidaki son oturum ozetini acabilirsiniz.",
                     "- session_summary.json (Son oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
                 ]
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Ses listesi bos. Yalnizca son oturum ozeti var; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. Ses listesi bos. Yalnizca son oturum ozeti dosyasi var; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
