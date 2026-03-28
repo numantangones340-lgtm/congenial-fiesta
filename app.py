@@ -1403,6 +1403,8 @@ class GuitarAmpRecorderApp:
             count_line += " (Son 6 kayit)"
         elif recent_files:
             count_line += " | Tumu listede"
+        else:
+            count_line += " | Liste bos"
         if recent_files:
             count_line += " | En yeni ustte"
         if not recent_files:
