@@ -96,7 +96,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
             expected = ["Klasor: ~/Demo", "Ses dosyalari: 7 | Gosterilen: 6 (Son 6 kayit) | En yeni ustte"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
-            expected.append(f"- {recent[0].name} (Son export)")
+            expected.append(f"- {recent[0].name} (Son export, Finder'da gosterilebilir)")
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- ... 1 dosya daha var (Klasoru Ac ile tumunu gor)")
 
@@ -137,7 +137,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIn("Klasor: ~/Demo", recorder.recent_exports_text.get())
         self.assertIn("Ses dosyalari: 1 | Gosterilen: 1 | En yeni ustte", recorder.recent_exports_text.get())
-        self.assertIn("- take_001.wav (Son export)", recorder.recent_exports_text.get())
+        self.assertIn("- take_001.wav (Son export, Finder'da gosterilebilir)", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Son oturum ozeti, acilabilir)", recorder.recent_exports_text.get())
 
     def test_refresh_recent_exports_explains_summary_when_audio_missing(self) -> None:
