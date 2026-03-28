@@ -136,7 +136,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Cikis klasoru: ~/Demo (Klasoru Ac ile erisilebilir)", recorder.recent_exports_text.get())
-        self.assertIn("Ses dosyalari: 1 | Listede: 1 | Tek kayit listede", recorder.recent_exports_text.get())
+        self.assertIn("Ses dosyalari: 1 | Tek kayit listede", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav (Son export, Finder'da gosterilebilir)", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Son oturum ozeti, acilabilir)", recorder.recent_exports_text.get())
 
@@ -156,7 +156,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Ses dosyalari: 2 | Listede: 2 | Tum ses dosyalari listede | En yeni ustte",
+            "Ses dosyalari: 2 | Tum ses dosyalari listede | En yeni ustte",
             recorder.recent_exports_text.get(),
         )
 
@@ -177,7 +177,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo (Klasoru Ac ile erisilebilir)",
-                    "Ses dosyalari: 0 | Listede: 0 | Ses listesi bos | Yalnizca ozet var",
+                    "Ses dosyalari: 0 | Ses listesi bos | Yalnizca ozet var",
                     "Ses dosyasi yok. Alttaki son oturum ozetini acabilirsiniz.",
                     "- session_summary.json (Son oturum ozeti, acilabilir)",
                 ]
@@ -234,7 +234,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo (Klasoru Ac ile erisilebilir)",
-                    "Ses dosyalari: 0 | Listede: 0 | Ses listesi bos",
+                    "Ses dosyalari: 0 | Ses listesi bos",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
