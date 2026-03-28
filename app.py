@@ -1510,6 +1510,8 @@ class GuitarAmpRecorderApp:
 
     def open_last_export_in_finder(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
+            self.last_export_path = None
+            self.refresh_recent_output_buttons()
             self.set_status("Son export dosyasi bulunamadi.")
             return
         try:
@@ -1520,6 +1522,8 @@ class GuitarAmpRecorderApp:
 
     def open_last_session_summary(self) -> None:
         if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
+            self.last_session_summary_path = None
+            self.refresh_recent_output_buttons()
             self.set_status("Son oturum ozeti bulunamadi.")
             return
         try:
