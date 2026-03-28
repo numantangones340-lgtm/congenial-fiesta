@@ -1402,13 +1402,13 @@ class GuitarAmpRecorderApp:
         )[:6]
         count_line = f"Toplam ses dosyasi: {len(all_audio_files)}"
         if len(all_audio_files) > len(recent_files):
-            count_line += " | Listede: son 6 ses dosyasi"
+            count_line += " | Gorunen: son 6 ses dosyasi"
         elif len(recent_files) == 1:
-            count_line += " | Listede: 1 ses dosyasi"
+            count_line += " | Gorunen: 1 ses dosyasi"
         elif recent_files:
-            count_line += " | Listede: tum mevcut ses dosyalari"
+            count_line += " | Gorunen: tum mevcut ses dosyalari"
         else:
-            count_line += " | Listede: 0 ses dosyasi"
+            count_line += " | Gorunen: 0 ses dosyasi"
             if summary_line:
                 count_line += " | En yeni oturum ozeti dosyasi hazir"
         if len(recent_files) > 1:
@@ -1465,22 +1465,22 @@ class GuitarAmpRecorderApp:
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
-                    "Son ciktilar yenilendi. Listede: 0 ses dosyasi. "
+                    "Son ciktilar yenilendi. Gorunen: 0 ses dosyasi. "
                     "En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
                 )
             else:
                 self.set_status(
-                    "Son ciktilar yenilendi. Listede: 0 ses dosyasi. "
+                    "Son ciktilar yenilendi. Gorunen: 0 ses dosyasi. "
                     "Yeni kayitlardan sonra ciktilar burada gorunecek."
                 )
             return
         shown_count = min(len(audio_files), 6)
         if len(audio_files) > shown_count:
-            visibility_suffix = " Listede: son 6 ses dosyasi."
+            visibility_suffix = " Gorunen: son 6 ses dosyasi."
         elif shown_count == 1:
-            visibility_suffix = " Listede: 1 ses dosyasi."
+            visibility_suffix = " Gorunen: 1 ses dosyasi."
         else:
-            visibility_suffix = " Listede: tum mevcut ses dosyalari."
+            visibility_suffix = " Gorunen: tum mevcut ses dosyalari."
         sort_suffix = " Siralama: en yeni ustte." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():

@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", "Toplam ses dosyasi: 7 | Listede: son 6 ses dosyasi | Siralama: en yeni ustte"]
+            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", "Toplam ses dosyasi: 7 | Gorunen: son 6 ses dosyasi | Siralama: en yeni ustte"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -121,7 +121,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
                 "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                "Toplam ses dosyasi: 8 | Listede: son 6 ses dosyasi | Siralama: en yeni ustte",
+                "Toplam ses dosyasi: 8 | Gorunen: son 6 ses dosyasi | Siralama: en yeni ustte",
                 f"- {recent[0].name} (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -163,7 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", recorder.recent_exports_text.get())
-        self.assertIn("Toplam ses dosyasi: 1 | Listede: 1 ses dosyasi", recorder.recent_exports_text.get())
+        self.assertIn("Toplam ses dosyasi: 1 | Gorunen: 1 ses dosyasi", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Toplam ses dosyasi: 2 | Listede: tum mevcut ses dosyalari | Siralama: en yeni ustte",
+            "Toplam ses dosyasi: 2 | Gorunen: tum mevcut ses dosyalari | Siralama: en yeni ustte",
             recorder.recent_exports_text.get(),
         )
 
@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Toplam ses dosyasi: 0 | Listede: 0 ses dosyasi | En yeni oturum ozeti dosyasi hazir",
+                    "Toplam ses dosyasi: 0 | Gorunen: 0 ses dosyasi | En yeni oturum ozeti dosyasi hazir",
                     "Ses dosyasi yok. Asagidaki son oturum ozeti dosyasini acabilirsiniz.",
                     "- session_summary.json (En yeni oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Toplam ses dosyasi: 0 | Listede: 0 ses dosyasi",
+                    "Toplam ses dosyasi: 0 | Gorunen: 0 ses dosyasi",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Listede: tum mevcut ses dosyalari. Siralama: en yeni ustte.",
+            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Gorunen: tum mevcut ses dosyalari. Siralama: en yeni ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Listede: 1 ses dosyasi. En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Gorunen: 1 ses dosyasi. En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Listede: son 6 ses dosyasi. Siralama: en yeni ustte.",
+            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Gorunen: son 6 ses dosyasi. Siralama: en yeni ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Listede: 0 ses dosyasi. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Son ciktilar yenilendi. Gorunen: 0 ses dosyasi. Yeni kayitlardan sonra ciktilar burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Listede: 0 ses dosyasi. En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. Gorunen: 0 ses dosyasi. En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
