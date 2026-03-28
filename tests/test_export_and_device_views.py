@@ -98,6 +98,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected.extend(
                 f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             )
+            expected.append("- ... 1 dosya daha var")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
