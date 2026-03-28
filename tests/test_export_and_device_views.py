@@ -98,7 +98,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Son export, Finder'da gosterilebilir)")
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- ... 1 dosya daha var (Klasoru Ac ile tumunu gor)")
+            expected.append("- ... 1 ses dosyasi daha var (Klasoru Ac ile tumunu gor)")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
