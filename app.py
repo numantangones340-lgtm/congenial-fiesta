@@ -1463,11 +1463,14 @@ class GuitarAmpRecorderApp:
         return "- session_summary.json (Oturum ozeti hazir)"
 
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
-        if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-            return
         candidate = output_dir / "session_summary.json"
+        current = self.last_session_summary_path
+        if current is not None and current.exists() and current == candidate:
+            return
         if candidate.exists():
             self.last_session_summary_path = candidate
+        else:
+            self.last_session_summary_path = None
 
     def refresh_recent_output_buttons(self) -> None:
         export_button = getattr(self, "open_last_export_button", None)

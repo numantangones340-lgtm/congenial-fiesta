@@ -195,6 +195,31 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.last_session_summary_path, output_dir / "session_summary.json")
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
 
+    def test_refresh_recent_exports_clears_stale_summary_from_other_folder(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as olddir:
+            output_dir = Path(tmpdir)
+            old_summary = Path(olddir) / "session_summary.json"
+            old_summary.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = old_summary
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports()
+
+        self.assertIsNone(recorder.last_session_summary_path)
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            "\n".join(
+                [
+                    "Klasor: ~/Demo",
+                    "Ses dosyalari: 0 | Gosterilen: 0",
+                    "Henuz export yok.",
+                ]
+            ),
+        )
+
     def test_refresh_recent_exports_restores_last_export_from_newest_file(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
