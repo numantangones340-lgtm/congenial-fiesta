@@ -94,11 +94,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Klasor: ~/Demo ('Klasoru Ac')", "Toplam: 7 | Gorunen: son 6 | Sira: yeni-eski"]
+            expected = ["Klasor: ~/Demo (Ac)", "Toplam: 7 | Gorunen: son 6 | Sira: yeni-eski"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- +1 ses dosyasi ('Klasoru Ac')")
+            expected.append("- +1 ses dosyasi (Ac)")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -120,12 +120,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
-                "Klasor: ~/Demo ('Klasoru Ac')",
+                "Klasor: ~/Demo (Ac)",
                 "Toplam: 8 | Gorunen: son 6 | Sira: yeni-eski",
                 f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- +2 ses dosyasi ('Klasoru Ac')")
+            expected.append("- +2 ses dosyasi (Ac)")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -162,7 +162,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.refresh_recent_exports()
 
-        self.assertIn("Klasor: ~/Demo ('Klasoru Ac')", recorder.recent_exports_text.get())
+        self.assertIn("Klasor: ~/Demo (Ac)", recorder.recent_exports_text.get())
         self.assertIn("Toplam: 1 | Gorunen: 1", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (En yeni export; 'Son Dosyayi Finder'da Goster')",
@@ -209,7 +209,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.recent_exports_text.get(),
             "\n".join(
                 [
-                    "Klasor: ~/Demo ('Klasoru Ac')",
+                    "Klasor: ~/Demo (Ac)",
                     "Toplam: 0 | Gorunen: 0 | Ozet var",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (En yeni ozet; 'Son Oturum Ozetini Ac')",
@@ -266,7 +266,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.recent_exports_text.get(),
             "\n".join(
                 [
-                    "Klasor: ~/Demo ('Klasoru Ac')",
+                    "Klasor: ~/Demo (Ac)",
                     "Toplam: 0 | Gorunen: 0",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
