@@ -776,7 +776,7 @@ class GuitarAmpRecorderApp:
         )
         self.open_last_summary_button.pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Klasoru Ac", command=self.open_output_dir_in_finder, bg="#34495e", fg="white").pack(side="left", padx=(8, 0))
-        Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
+        Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports_from_action, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
             recent_box,
             textvariable=self.recent_exports_text,
@@ -1410,6 +1410,23 @@ class GuitarAmpRecorderApp:
             lines.append(summary_line)
         self.recent_exports_text.set("\n".join(lines))
         self.refresh_recent_output_buttons()
+
+    def refresh_recent_exports_from_action(self) -> None:
+        self.refresh_recent_exports()
+        output_dir = self.resolve_output_dir()
+        if not output_dir.exists():
+            self.set_status(f"Son ciktilar yenilendi. Klasor bulunamadi: {output_dir}")
+            return
+        audio_files = [
+            path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
+        ]
+        if not audio_files:
+            if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
+                self.set_status("Son ciktilar yenilendi. Ses dosyasi yok, oturum ozeti hazir.")
+            else:
+                self.set_status("Son ciktilar yenilendi. Henuz export yok.")
+            return
+        self.set_status(f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.")
 
     def format_display_path(self, path: Path) -> str:
         try:
