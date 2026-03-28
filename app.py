@@ -1443,7 +1443,7 @@ class GuitarAmpRecorderApp:
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
             lines.append(
-                f"- ... Ek dosyalar: {hidden_count} ses dosyasi (Klasor icin: 'Klasoru Ac')"
+                f"- ... Ek dosyalar: {hidden_count} ses dosyasi (Klasor: 'Klasoru Ac')"
             )
         if summary_line:
             lines.append(summary_line)
