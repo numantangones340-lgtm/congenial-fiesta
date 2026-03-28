@@ -1443,7 +1443,7 @@ class GuitarAmpRecorderApp:
             lines.append(label)
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
-            hidden_visibility_text = "Bu listede gosterilmiyor" if hidden_count == 1 else "Bu listede gosterilmiyorlar"
+            hidden_visibility_text = "Bu listede yer almiyor" if hidden_count == 1 else "Bu listede yer almiyorlar"
             lines.append(
                 f"- ... {hidden_count} ses dosyasi daha var ({hidden_visibility_text}, 'Klasoru Ac' ile tum ses dosyalarini gor)"
             )
