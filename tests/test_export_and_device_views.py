@@ -387,7 +387,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIsNone(recorder.last_export_path)
         recorder.refresh_recent_exports.assert_called_once()
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
-        self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
+        self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi. Son ciktilar yenilendi.")
 
     def test_open_last_export_in_finder_reports_success(self) -> None:
         recorder = self.make_app()
@@ -442,7 +442,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIsNone(recorder.last_session_summary_path)
         recorder.refresh_recent_exports.assert_called_once()
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
-        self.assertEqual(recorder.status_messages[-1], "Son oturum ozeti bulunamadi.")
+        self.assertEqual(recorder.status_messages[-1], "Son oturum ozeti bulunamadi. Son ciktilar yenilendi.")
 
     def test_open_last_session_summary_reports_success(self) -> None:
         recorder = self.make_app()
