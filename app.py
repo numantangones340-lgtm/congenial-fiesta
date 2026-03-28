@@ -1389,15 +1389,20 @@ class GuitarAmpRecorderApp:
         output_dir_text = self.format_display_path(output_dir)
         self.restore_session_summary_from_output_dir(output_dir)
         summary_line = self.recent_session_summary_line(output_dir)
+        all_audio_files = [
+            path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
+        ]
         recent_files = sorted(
-            [path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}],
+            all_audio_files,
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )[:6]
+        count_line = f"Ses dosyalari: {len(all_audio_files)} | Gosterilen: {len(recent_files)}"
         if not recent_files:
             if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
                 self.last_export_path = None
             lines = [f"Klasor: {output_dir_text}"]
+            lines.append(count_line)
             lines.append(summary_line or "Henuz export yok.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
@@ -1405,6 +1410,7 @@ class GuitarAmpRecorderApp:
         if self.last_export_path is None or not self.last_export_path.exists():
             self.last_export_path = recent_files[0]
         lines = [f"Klasor: {output_dir_text}"]
+        lines.append(count_line)
         lines.extend(f"- {path.name}" for path in recent_files)
         if summary_line:
             lines.append(summary_line)

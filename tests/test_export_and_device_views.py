@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Klasor: ~/Demo"]
+            expected = ["Klasor: ~/Demo", "Ses dosyalari: 7 | Gosterilen: 6"]
             expected.extend(
                 f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             )
@@ -134,6 +134,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Klasor: ~/Demo", recorder.recent_exports_text.get())
+        self.assertIn("Ses dosyalari: 1 | Gosterilen: 1", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
