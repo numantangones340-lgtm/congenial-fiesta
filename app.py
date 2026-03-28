@@ -1383,7 +1383,7 @@ class GuitarAmpRecorderApp:
             self.last_session_summary_path = None
             output_dir_text = self.format_display_path(output_dir)
             self.recent_exports_text.set(
-                f"Klasor bulunamadi: {output_dir_text}\n"
+                f"Cikis klasoru bulunamadi: {output_dir_text}\n"
                 "Bu cikis klasoru su an erisilemez.\n"
                 "'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz."
             )
@@ -1456,7 +1456,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
             self.set_status(
-                f"Son ciktilar yenilendi. Klasor bulunamadi: {self.format_display_path(output_dir)}. "
+                f"Son ciktilar yenilendi. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
                 "'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz."
             )
             return
