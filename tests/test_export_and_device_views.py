@@ -268,7 +268,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor ~/Demo",
                     "Top 0",
-                    "Export yok. Yeni kayitlar burada listelenir.",
+                    "Ses dosyasi yok. Yeni kayitlar burada listelenir.",
                 ]
             ),
         )
