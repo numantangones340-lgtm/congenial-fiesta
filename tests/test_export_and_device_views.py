@@ -228,6 +228,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
 
+    def test_open_last_export_in_finder_reports_success(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take_001.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_export_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take_001.wav")
+
     def test_open_output_dir_in_finder_creates_missing_directory(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -247,6 +260,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_session_summary()
 
         self.assertEqual(recorder.status_messages[-1], "Son oturum ozeti bulunamadi.")
+
+    def test_open_last_session_summary_reports_success(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_session_summary()
+
+        run_mock.assert_called_once_with(["open", str(summary_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Oturum ozeti aciliyor: session_summary.json")
 
 
 if __name__ == "__main__":

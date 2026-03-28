@@ -1465,6 +1465,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
+            self.set_status(f"Son export Finder'da gosteriliyor: {self.last_export_path.name}")
         except Exception as exc:
             self.set_status(f"Finder acilamadi: {exc}")
 
@@ -1474,6 +1475,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", str(self.last_session_summary_path)], check=False)
+            self.set_status(f"Oturum ozeti aciliyor: {self.last_session_summary_path.name}")
         except Exception as exc:
             self.set_status(f"Ozet acilamadi: {exc}")
 
