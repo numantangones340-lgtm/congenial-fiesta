@@ -1465,7 +1465,7 @@ class GuitarAmpRecorderApp:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
                     "Guncel. "
-                    "Ozet mevcut."
+                    "Ozet bulundu."
                 )
             else:
                 self.set_status(
@@ -1483,7 +1483,7 @@ class GuitarAmpRecorderApp:
         sort_suffix = " Yeni." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-            summary_suffix = " Ozet mevcut."
+            summary_suffix = " Ozet bulundu."
         self.set_status(
             f"Guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )
