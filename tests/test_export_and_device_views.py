@@ -211,7 +211,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
                     "Toplam ses: 0 | Gorunen: yok | En yeni ozet dosyasi hazir",
-                    "Ses dosyasi yok. Asagidaki ozet dosyasini acabilirsiniz.",
+                    "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (En yeni ozet dosyasi; 'Son Oturum Ozetini Ac')",
                 ]
             ),
