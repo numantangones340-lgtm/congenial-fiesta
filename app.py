@@ -1408,7 +1408,6 @@ class GuitarAmpRecorderApp:
         elif recent_files:
             count_line += " | Gr tumu"
         else:
-            count_line += " | Gr 0"
             if summary_line:
                 count_line += " | Ozet"
         if len(recent_files) > 1:
@@ -1465,12 +1464,12 @@ class GuitarAmpRecorderApp:
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
-                    "Liste yenilendi. Gr 0. "
+                    "Liste yenilendi. "
                     "Ozet; 'Son Oturum Ozetini Ac'."
                 )
             else:
                 self.set_status(
-                    "Liste yenilendi. Gr 0. "
+                    "Liste yenilendi. "
                     "Kayitlardan sonra burada gorunecek."
                 )
             return

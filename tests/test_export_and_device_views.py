@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor ~/Demo",
-                    "Top 0 | Gr 0 | Ozet",
+                    "Top 0 | Ozet",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (Ozet)",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor ~/Demo",
-                    "Top 0 | Gr 0",
+                    "Top 0",
                     "Export yok. Kayitlardan sonra burada gorunecek.",
                 ]
             ),
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. Gr 0. Kayitlardan sonra burada gorunecek.",
+            "Liste yenilendi. Kayitlardan sonra burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. Gr 0. Ozet; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
