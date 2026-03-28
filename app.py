@@ -1412,7 +1412,7 @@ class GuitarAmpRecorderApp:
             if summary_line:
                 count_line += " | Ozet"
         if len(recent_files) > 1:
-            count_line += " | Sira: yeni-eski"
+            count_line += " | Sira: yeni"
         if not recent_files:
             self.last_export_path = None
             lines = [f"Klasor: {output_dir_text} (Ac)"]
@@ -1481,7 +1481,7 @@ class GuitarAmpRecorderApp:
             visibility_suffix = " Gorunen: 1."
         else:
             visibility_suffix = " Gorunen: tumu."
-        sort_suffix = " Sira: yeni-eski." if shown_count > 1 else ""
+        sort_suffix = " Sira: yeni." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " Ozet; 'Son Oturum Ozetini Ac'."
