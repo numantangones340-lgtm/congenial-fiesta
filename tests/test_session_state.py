@@ -63,7 +63,9 @@ class SessionStateTests(unittest.TestCase):
         recorder.status_messages = []
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_recent_exports = mock.Mock()
+        recorder.refresh_recent_output_buttons = mock.Mock()
         recorder.load_saved_preset = mock.Mock()
+        recorder.last_session_summary_path = None
         return recorder
 
     def test_build_session_summary_contains_export_and_generated_files(self) -> None:
@@ -102,6 +104,19 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(loaded["preset_name"], "Temiz Gitar")
         self.assertEqual(loaded["summary_path"], str(summary_path))
 
+    def test_write_last_session_state_keeps_known_summary_when_not_passed(self) -> None:
+        recorder = self.make_app()
+        recorder.last_session_summary_path = Path("/tmp/onceki/session_summary.json")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            state_path = Path(tmpdir) / ".last_session.json"
+            output_dir = Path(tmpdir) / "Aksam Kaydi"
+
+            with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
+                recorder.write_last_session_state(output_dir)
+                loaded = recorder.load_last_session_state()
+
+        self.assertEqual(loaded["summary_path"], "/tmp/onceki/session_summary.json")
+
     def test_reload_last_session_for_named_session_sets_parent_dir_and_loads_preset(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -115,11 +130,13 @@ class SessionStateTests(unittest.TestCase):
                         "output_dir": str(session_dir),
                         "session_mode": "Isimli Oturum",
                         "preset_name": "Parlak Solo",
+                        "summary_path": str(session_dir / "session_summary.json"),
                     },
                     ensure_ascii=False,
                 ),
                 encoding="utf-8",
             )
+            (session_dir / "session_summary.json").write_text("{}", encoding="utf-8")
 
             with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
                 recorder.reload_last_session()
@@ -128,7 +145,9 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(recorder.session_name.get(), "Aksam Kaydi")
         self.assertEqual(recorder.session_mode.get(), "Isimli Oturum")
         self.assertEqual(recorder.preset_name.get(), "Parlak Solo")
+        self.assertEqual(recorder.last_session_summary_path, session_dir / "session_summary.json")
         recorder.load_saved_preset.assert_called_once()
+        recorder.refresh_recent_output_buttons.assert_called_once()
         recorder.refresh_recent_exports.assert_called_once()
         self.assertIn("Son oturum yuklendi", recorder.status_messages[-1])
 

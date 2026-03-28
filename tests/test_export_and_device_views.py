@@ -47,6 +47,14 @@ class FakeOptionMenu:
         return self.menu
 
 
+class FakeButton:
+    def __init__(self) -> None:
+        self.config_calls = []
+
+    def configure(self, **kwargs) -> None:
+        self.config_calls.append(kwargs)
+
+
 class ExportAndDeviceViewTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
@@ -65,6 +73,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
         recorder.last_export_path = None
+        recorder.last_session_summary_path = None
+        recorder.open_last_export_button = FakeButton()
+        recorder.open_last_summary_button = FakeButton()
         return recorder
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
@@ -167,6 +178,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_export_in_finder()
 
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
+
+    def test_open_last_session_summary_handles_missing_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.last_session_summary_path = None
+
+        recorder.open_last_session_summary()
+
+        self.assertEqual(recorder.status_messages[-1], "Son oturum ozeti bulunamadi.")
 
 
 if __name__ == "__main__":

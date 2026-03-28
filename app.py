@@ -518,6 +518,7 @@ class GuitarAmpRecorderApp:
         self.recording_mode = ""
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
+        self.last_session_summary_path: Optional[Path] = None
         self.recent_exports_text = StringVar(value="Henuz export yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
@@ -765,6 +766,15 @@ class GuitarAmpRecorderApp:
             state="disabled",
         )
         self.open_last_export_button.pack(side="left")
+        self.open_last_summary_button = Button(
+            recent_buttons,
+            text="Son Oturum Ozetini Ac",
+            command=self.open_last_session_summary,
+            bg="#6c5ce7",
+            fg="white",
+            state="disabled",
+        )
+        self.open_last_summary_button.pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Klasoru Ac", command=self.open_output_dir_in_finder, bg="#34495e", fg="white").pack(side="left", padx=(8, 0))
         Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white").pack(side="left", padx=(8, 0))
         self.recent_exports_label = Label(
@@ -1004,6 +1014,7 @@ class GuitarAmpRecorderApp:
             session_mode = str(last_session.get("session_mode", "")).strip()
             if session_mode:
                 self.session_mode.set(session_mode)
+            self.restore_last_session_summary(last_session)
             self.refresh_recent_exports()
             self.set_status(f"Son oturum hazir: {output_dir}")
 
@@ -1290,6 +1301,7 @@ class GuitarAmpRecorderApp:
 
     def write_last_session_state(self, output_dir: Path, summary_path: Optional[Path] = None) -> None:
         try:
+            effective_summary_path = summary_path or self.last_session_summary_path
             data = {
                 "app_version": self.app_version,
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -1297,7 +1309,7 @@ class GuitarAmpRecorderApp:
                 "session_mode": self.session_mode.get(),
                 "session_name": self.session_name.get(),
                 "preset_name": self.preset_name.get(),
-                "summary_path": str(summary_path) if summary_path else "",
+                "summary_path": str(effective_summary_path) if effective_summary_path else "",
             }
             LAST_SESSION_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:
@@ -1311,6 +1323,12 @@ class GuitarAmpRecorderApp:
         except Exception:
             return {}
         return data if isinstance(data, dict) else {}
+
+    def restore_last_session_summary(self, data: dict) -> None:
+        summary_text = str(data.get("summary_path", "")).strip()
+        summary_path = Path(summary_text) if summary_text else None
+        self.last_session_summary_path = summary_path if summary_path and summary_path.exists() else None
+        self.refresh_recent_output_buttons()
 
     def reload_last_session(self) -> None:
         data = self.load_last_session_state()
@@ -1333,6 +1351,7 @@ class GuitarAmpRecorderApp:
         if preset_name:
             self.preset_name.set(preset_name)
             self.load_saved_preset()
+        self.restore_last_session_summary(data)
         self.refresh_recent_exports()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
@@ -1340,6 +1359,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
             self.recent_exports_text.set(f"Klasor bulunamadi: {output_dir}")
+            self.refresh_recent_output_buttons()
             return
         recent_files = sorted(
             [path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}],
@@ -1348,9 +1368,26 @@ class GuitarAmpRecorderApp:
         )[:6]
         if not recent_files:
             self.recent_exports_text.set("Henuz export yok.")
+            self.refresh_recent_output_buttons()
             return
         lines = [f"- {path.name}" for path in recent_files]
         self.recent_exports_text.set("\n".join(lines))
+        self.refresh_recent_output_buttons()
+
+    def refresh_recent_output_buttons(self) -> None:
+        export_button = getattr(self, "open_last_export_button", None)
+        summary_button = getattr(self, "open_last_summary_button", None)
+        try:
+            if export_button is not None:
+                export_state = "normal" if self.last_export_path is not None and self.last_export_path.exists() else "disabled"
+                export_button.configure(state=export_state)
+            if summary_button is not None:
+                summary_state = (
+                    "normal" if self.last_session_summary_path is not None and self.last_session_summary_path.exists() else "disabled"
+                )
+                summary_button.configure(state=summary_state)
+        except TclError:
+            pass
 
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.resolve_output_dir()
@@ -1367,6 +1404,15 @@ class GuitarAmpRecorderApp:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
         except Exception as exc:
             self.set_status(f"Finder acilamadi: {exc}")
+
+    def open_last_session_summary(self) -> None:
+        if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
+            self.set_status("Son oturum ozeti bulunamadi.")
+            return
+        try:
+            subprocess.run(["open", str(self.last_session_summary_path)], check=False)
+        except Exception as exc:
+            self.set_status(f"Ozet acilamadi: {exc}")
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
@@ -1686,12 +1732,9 @@ class GuitarAmpRecorderApp:
         self.record_progress_text.set(final_text)
         try:
             self.stop_recording_button.configure(state="disabled")
-            if self.last_export_path is not None and self.last_export_path.exists():
-                self.open_last_export_button.configure(state="normal")
-            else:
-                self.open_last_export_button.configure(state="disabled")
         except TclError:
             pass
+        self.refresh_recent_output_buttons()
 
     def update_recording_progress_ui(self) -> None:
         try:
@@ -1874,6 +1917,7 @@ class GuitarAmpRecorderApp:
             sf.write(test_path, processed, sr)
             self.last_export_path = test_path
             summary_path = self.write_session_summary(output_dir, [test_path], "device_test")
+            self.last_session_summary_path = summary_path if summary_path and summary_path.exists() else None
             self.write_last_session_state(output_dir, summary_path)
             self.refresh_recent_exports()
 
@@ -2088,6 +2132,7 @@ class GuitarAmpRecorderApp:
                     self.last_export_path = vocal_wav_path
                 generated_files = [path for path in [mp3_path, mix_wav_path, vocal_wav_path] if path.exists()]
                 summary_path = self.write_session_summary(output_dir, generated_files, "record_export")
+                self.last_session_summary_path = summary_path if summary_path and summary_path.exists() else None
                 self.write_last_session_state(output_dir, summary_path)
                 if summary_path is not None:
                     notes.append(f"Oturum Ozeti: {summary_path}")
