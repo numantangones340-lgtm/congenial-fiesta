@@ -288,6 +288,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son ciktilar yenilendi. 2 ses dosyasi bulundu.")
 
+    def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            (output_dir / "take_001.wav").write_text("audio", encoding="utf-8")
+            (output_dir / "session_summary.json").write_text("{}", encoding="utf-8")
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports_from_action()
+
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Oturum ozeti de hazir.",
+        )
+
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
         recorder = self.make_app()
         missing_dir = Path("/tmp/does-not-exist-gar")
