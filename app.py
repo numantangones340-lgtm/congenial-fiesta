@@ -1405,7 +1405,7 @@ class GuitarAmpRecorderApp:
         if len(all_audio_files) > len(recent_files):
             count_line += " | Listede: son 6 kayit"
         elif len(recent_files) == 1:
-            count_line += " | Tek kayit listede"
+            count_line += " | Tek ses dosyasi listede"
         elif recent_files:
             count_line += " | Tum ses dosyalari listede"
         else:
@@ -1480,7 +1480,7 @@ class GuitarAmpRecorderApp:
         if len(audio_files) > shown_count:
             visibility_suffix = " Listede: son 6 kayit."
         elif shown_count == 1:
-            visibility_suffix = " Tek kayit listede."
+            visibility_suffix = " Tek ses dosyasi listede."
         else:
             visibility_suffix = " Tum ses dosyalari listede."
         sort_suffix = " En yeni kayit ustte." if shown_count > 1 else ""
