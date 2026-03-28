@@ -116,7 +116,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIsNone(recorder.last_session_summary_path)
         self.assertEqual(
             recorder.recent_exports_text.get(),
-            "Klasor bulunamadi: ~/missing-output\nCikis klasoru su an erisilemez. 'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz.",
+            "Klasor bulunamadi: ~/missing-output\nBu cikis klasoru su an erisilemez.\n'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz.",
         )
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})

@@ -1383,7 +1383,9 @@ class GuitarAmpRecorderApp:
             self.last_session_summary_path = None
             output_dir_text = self.format_display_path(output_dir)
             self.recent_exports_text.set(
-                f"Klasor bulunamadi: {output_dir_text}\nCikis klasoru su an erisilemez. 'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz."
+                f"Klasor bulunamadi: {output_dir_text}\n"
+                "Bu cikis klasoru su an erisilemez.\n"
+                "'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz."
             )
             self.refresh_recent_output_buttons()
             return
