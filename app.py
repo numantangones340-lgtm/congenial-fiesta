@@ -1382,18 +1382,30 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set(f"Klasor bulunamadi: {output_dir}")
             self.refresh_recent_output_buttons()
             return
+        summary_line = self.recent_session_summary_line(output_dir)
         recent_files = sorted(
             [path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}],
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )[:6]
         if not recent_files:
-            self.recent_exports_text.set("Henuz export yok.")
+            self.recent_exports_text.set(summary_line or "Henuz export yok.")
             self.refresh_recent_output_buttons()
             return
         lines = [f"- {path.name}" for path in recent_files]
+        if summary_line:
+            lines.append(summary_line)
         self.recent_exports_text.set("\n".join(lines))
         self.refresh_recent_output_buttons()
+
+    def recent_session_summary_line(self, output_dir: Path) -> str:
+        summary_path = self.last_session_summary_path
+        if summary_path is None or not summary_path.exists():
+            candidate = output_dir / "session_summary.json"
+            summary_path = candidate if candidate.exists() else None
+        if summary_path is None:
+            return ""
+        return "- session_summary.json (Oturum ozeti hazir)"
 
     def refresh_recent_output_buttons(self) -> None:
         export_button = getattr(self, "open_last_export_button", None)

@@ -108,6 +108,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_text.get(), f"Klasor bulunamadi: {missing_dir}")
 
+    def test_refresh_recent_exports_includes_session_summary_hint(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            audio_path = output_dir / "take_001.wav"
+            audio_path.write_text("audio", encoding="utf-8")
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.refresh_recent_exports()
+
+        self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
+        self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
+
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
         recorder = self.make_app()
         inputs = [(index, f"Input {index}") for index in range(6)]
