@@ -138,7 +138,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Cikis klasoru: ~/Demo (Klasoru Ac ile erisilebilir)", recorder.recent_exports_text.get())
         self.assertIn("Ses dosyalari: 1 | Tek kayit listede", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav (Son export, Finder'da gosterilebilir)", recorder.recent_exports_text.get())
-        self.assertIn("- session_summary.json (Son oturum ozeti, acilabilir)", recorder.recent_exports_text.get())
+        self.assertIn(
+            "- session_summary.json (Son oturum ozeti, 'Son Oturum Ozetini Ac' ile acilabilir)",
+            recorder.recent_exports_text.get(),
+        )
 
     def test_refresh_recent_exports_marks_all_audio_listed_when_multiple_files_fit(self) -> None:
         recorder = self.make_app()
@@ -179,7 +182,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                     "Cikis klasoru: ~/Demo (Klasoru Ac ile erisilebilir)",
                     "Ses dosyalari: 0 | Ses listesi bos | Yalnizca ozet var",
                     "Ses dosyasi yok. Alttaki son oturum ozetini acabilirsiniz.",
-                    "- session_summary.json (Son oturum ozeti, acilabilir)",
+                    "- session_summary.json (Son oturum ozeti, 'Son Oturum Ozetini Ac' ile acilabilir)",
                 ]
             ),
         )
