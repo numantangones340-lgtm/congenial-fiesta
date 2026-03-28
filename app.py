@@ -1496,6 +1496,14 @@ class GuitarAmpRecorderApp:
         except TclError:
             pass
 
+    def refresh_recent_outputs_if_available(self) -> None:
+        refresh = getattr(self, "refresh_recent_exports", None)
+        if callable(refresh):
+            try:
+                refresh()
+            except Exception:
+                pass
+
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.resolve_output_dir()
         try:
@@ -1511,6 +1519,7 @@ class GuitarAmpRecorderApp:
     def open_last_export_in_finder(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
             self.last_export_path = None
+            self.refresh_recent_outputs_if_available()
             self.refresh_recent_output_buttons()
             self.set_status("Son export dosyasi bulunamadi.")
             return
@@ -1523,6 +1532,7 @@ class GuitarAmpRecorderApp:
     def open_last_session_summary(self) -> None:
         if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
             self.last_session_summary_path = None
+            self.refresh_recent_outputs_if_available()
             self.refresh_recent_output_buttons()
             self.set_status("Son oturum ozeti bulunamadi.")
             return

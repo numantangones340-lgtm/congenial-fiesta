@@ -380,10 +380,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_open_last_export_in_finder_handles_missing_export(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = None
+        recorder.refresh_recent_exports = mock.Mock()
 
         recorder.open_last_export_in_finder()
 
         self.assertIsNone(recorder.last_export_path)
+        recorder.refresh_recent_exports.assert_called_once()
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
 
@@ -433,10 +435,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
         recorder = self.make_app()
         recorder.last_session_summary_path = None
+        recorder.refresh_recent_exports = mock.Mock()
 
         recorder.open_last_session_summary()
 
         self.assertIsNone(recorder.last_session_summary_path)
+        recorder.refresh_recent_exports.assert_called_once()
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.status_messages[-1], "Son oturum ozeti bulunamadi.")
 
