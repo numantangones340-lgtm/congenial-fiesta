@@ -1420,7 +1420,7 @@ class GuitarAmpRecorderApp:
                 lines.append("Ses kaydi henuz yok. Asagidaki oturum ozetini acabilirsiniz.")
                 lines.append(summary_line)
             else:
-                lines.append("Ses kaydi henuz yok. Yeni kayitlar burada belirecek.")
+                lines.append("Ses kaydi henuz yok. Yeni kayitlar burada yer alacak.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
@@ -1470,7 +1470,7 @@ class GuitarAmpRecorderApp:
             else:
                 self.set_status(
                     "Durum guncel. "
-                    "Yeni kayitlar burada belirecek."
+                    "Yeni kayitlar burada yer alacak."
                 )
             return
         shown_count = min(len(audio_files), 6)
