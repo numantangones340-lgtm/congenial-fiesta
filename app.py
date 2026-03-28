@@ -1411,7 +1411,7 @@ class GuitarAmpRecorderApp:
                 lines.append("Ses dosyasi yok. Son oturum ozeti hazir.")
                 lines.append(summary_line)
             else:
-                lines.append("Henuz export yok.")
+                lines.append("Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return

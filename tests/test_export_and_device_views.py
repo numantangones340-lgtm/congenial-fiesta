@@ -215,7 +215,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor: ~/Demo",
                     "Ses dosyalari: 0 | Gosterilen: 0",
-                    "Henuz export yok.",
+                    "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
         )
