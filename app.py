@@ -1460,9 +1460,9 @@ class GuitarAmpRecorderApp:
         ]
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-                self.set_status("Son ciktilar yenilendi. Liste bos, son oturum ozeti hazir ve acilabilir.")
+                self.set_status("Son ciktilar yenilendi. Ses listesi bos, son oturum ozeti hazir ve acilabilir.")
             else:
-                self.set_status("Son ciktilar yenilendi. Liste bos, yeni kayitlardan sonra ciktilar burada gorunecek.")
+                self.set_status("Son ciktilar yenilendi. Ses listesi bos, yeni kayitlardan sonra ciktilar burada gorunecek.")
             return
         shown_count = min(len(audio_files), 6)
         if len(audio_files) > shown_count:
