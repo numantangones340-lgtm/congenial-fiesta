@@ -1415,7 +1415,7 @@ class GuitarAmpRecorderApp:
             count_line += " | Siralama: yeni-eski"
         if not recent_files:
             self.last_export_path = None
-            lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac' ile acabilirsiniz)"]
+            lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac')"]
             lines.append(count_line)
             if summary_line:
                 lines.append("Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.")
@@ -1433,7 +1433,7 @@ class GuitarAmpRecorderApp:
             or current_export != recent_files[0]
         ):
             self.last_export_path = recent_files[0]
-        lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac' ile acabilirsiniz)"]
+        lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac')"]
         lines.append(count_line)
         for index, path in enumerate(recent_files):
             label = f"- {path.name}"
