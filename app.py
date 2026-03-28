@@ -1486,7 +1486,7 @@ class GuitarAmpRecorderApp:
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " Ozet hazir; 'Son Oturum Ozetini Ac'."
         self.set_status(
-            f"Liste yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{sort_suffix}{summary_suffix}"
+            f"Liste yenilendi. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )
 
     def format_display_path(self, path: Path) -> str:

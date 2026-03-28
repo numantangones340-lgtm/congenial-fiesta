@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 2 ses dosyasi bulundu. Gorunen: tumu. Sira: yeni-eski.",
+            "Liste yenilendi. 2 ses dosyasi. Gorunen: tumu. Sira: yeni-eski.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 1 ses dosyasi bulundu. Gorunen: 1. Ozet hazir; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. 1 ses dosyasi. Gorunen: 1. Ozet hazir; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 7 ses dosyasi bulundu. Gorunen: son 6. Sira: yeni-eski.",
+            "Liste yenilendi. 7 ses dosyasi. Gorunen: son 6. Sira: yeni-eski.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
