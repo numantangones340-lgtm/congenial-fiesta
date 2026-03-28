@@ -163,7 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Cikis klasoru: ~/Demo ('Klasoru Ac')", recorder.recent_exports_text.get())
-        self.assertIn("Toplam: 1 ses dosyasi | Gorunen: 1 ses dosyasi", recorder.recent_exports_text.get())
+        self.assertIn("Toplam: 1 ses dosyasi | Gorunen: 1", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (En yeni export; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Gorunen: 1 ses dosyasi. En yeni ozet hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Gorunen: 1. En yeni ozet hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:

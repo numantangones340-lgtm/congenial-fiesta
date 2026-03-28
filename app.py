@@ -1404,7 +1404,7 @@ class GuitarAmpRecorderApp:
         if len(all_audio_files) > len(recent_files):
             count_line += " | Gorunen: son 6"
         elif len(recent_files) == 1:
-            count_line += " | Gorunen: 1 ses dosyasi"
+            count_line += " | Gorunen: 1"
         elif recent_files:
             count_line += " | Gorunen: hepsi"
         else:
@@ -1478,7 +1478,7 @@ class GuitarAmpRecorderApp:
         if len(audio_files) > shown_count:
             visibility_suffix = " Gorunen: son 6."
         elif shown_count == 1:
-            visibility_suffix = " Gorunen: 1 ses dosyasi."
+            visibility_suffix = " Gorunen: 1."
         else:
             visibility_suffix = " Gorunen: hepsi."
         sort_suffix = " Siralama: yeni-eski." if shown_count > 1 else ""
