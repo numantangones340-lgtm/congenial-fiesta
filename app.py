@@ -1455,7 +1455,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
             self.set_status(
-                f"Son ciktilar yenilendi. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
+                f"Liste yenilendi. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
                 "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
             )
             return
@@ -1465,12 +1465,12 @@ class GuitarAmpRecorderApp:
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
-                    "Son ciktilar yenilendi. Gorunen: bos. "
+                    "Liste yenilendi. Gorunen: bos. "
                     "Ozet hazir; 'Son Oturum Ozetini Ac'."
                 )
             else:
                 self.set_status(
-                    "Son ciktilar yenilendi. Gorunen: bos. "
+                    "Liste yenilendi. Gorunen: bos. "
                     "Yeni kayitlardan sonra ciktilar burada gorunecek."
                 )
             return
@@ -1486,7 +1486,7 @@ class GuitarAmpRecorderApp:
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " Ozet hazir; 'Son Oturum Ozetini Ac'."
         self.set_status(
-            f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{sort_suffix}{summary_suffix}"
+            f"Liste yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )
 
     def format_display_path(self, path: Path) -> str:

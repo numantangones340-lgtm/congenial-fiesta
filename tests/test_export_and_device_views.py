@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Gorunen: tumu. Sira: yeni-eski.",
+            "Liste yenilendi. 2 ses dosyasi bulundu. Gorunen: tumu. Sira: yeni-eski.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Gorunen: 1. Ozet hazir; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. 1 ses dosyasi bulundu. Gorunen: 1. Ozet hazir; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Gorunen: son 6. Sira: yeni-eski.",
+            "Liste yenilendi. 7 ses dosyasi bulundu. Gorunen: son 6. Sira: yeni-eski.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
@@ -387,7 +387,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+            "Liste yenilendi. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_empty_state_hint(self) -> None:
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Gorunen: bos. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Liste yenilendi. Gorunen: bos. Yeni kayitlardan sonra ciktilar burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Gorunen: bos. Ozet hazir; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. Gorunen: bos. Ozet hazir; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
