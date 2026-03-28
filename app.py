@@ -1419,7 +1419,7 @@ class GuitarAmpRecorderApp:
             lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac' ile acabilirsiniz)"]
             lines.append(count_line)
             if summary_line:
-                lines.append("Ses dosyasi yok. Asagidaki son oturum ozetini acabilirsiniz.")
+                lines.append("Ses dosyasi yok. Asagidaki son oturum ozeti dosyasini acabilirsiniz.")
                 lines.append(summary_line)
             else:
                 lines.append("Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.")
