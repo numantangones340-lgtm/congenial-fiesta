@@ -163,7 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", recorder.recent_exports_text.get())
-        self.assertIn("Ses dosyasi sayisi: 1 | Tek ses dosyasi listede", recorder.recent_exports_text.get())
+        self.assertIn("Ses dosyasi sayisi: 1 | Listede: tek ses dosyasi", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (Son export dosyasi; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Ses dosyasi sayisi: 2 | Tum ses dosyalari listede | En yeni kayit ustte",
+            "Ses dosyasi sayisi: 2 | Listede: tum ses dosyalari | En yeni kayit ustte",
             recorder.recent_exports_text.get(),
         )
 
@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Tum ses dosyalari listede. En yeni kayit ustte.",
+            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Listede: tum ses dosyalari. En yeni kayit ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Tek ses dosyasi listede. Son oturum ozeti dosyasi da hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. 1 ses dosyasi bulundu. Listede: tek ses dosyasi. Son oturum ozeti dosyasi da hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
