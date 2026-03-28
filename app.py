@@ -1442,7 +1442,7 @@ class GuitarAmpRecorderApp:
             lines.append(label)
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
-            lines.append(f"- ... {hidden_count} ses dosyasi daha var (Klasoru Ac ile tumunu gor)")
+            lines.append(f"- ... {hidden_count} ses dosyasi daha var (Bu listede gosterilmiyor, Klasoru Ac ile tumunu gor)")
         if summary_line:
             lines.append(summary_line)
         self.recent_exports_text.set("\n".join(lines))
