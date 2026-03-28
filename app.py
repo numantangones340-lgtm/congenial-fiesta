@@ -1413,7 +1413,7 @@ class GuitarAmpRecorderApp:
             if summary_line:
                 count_line += " | Yalnizca son oturum ozeti var"
         if len(recent_files) > 1:
-            count_line += " | En yeni ustte"
+            count_line += " | En yeni kayit ustte"
         if not recent_files:
             self.last_export_path = None
             lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac' ile erisilebilir)"]
