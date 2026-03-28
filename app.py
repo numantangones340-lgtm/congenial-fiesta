@@ -1399,6 +1399,8 @@ class GuitarAmpRecorderApp:
             reverse=True,
         )[:6]
         count_line = f"Ses dosyalari: {len(all_audio_files)} | Gosterilen: {len(recent_files)}"
+        if len(all_audio_files) > len(recent_files):
+            count_line += " (Son 6 kayit)"
         if recent_files:
             count_line += " | En yeni ustte"
         if not recent_files:
