@@ -519,7 +519,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
         self.last_session_summary_path: Optional[Path] = None
-        self.recent_exports_text = StringVar(value="Ses dosyasi yok.")
+        self.recent_exports_text = StringVar(value="Henuz ses dosyasi yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
         self.output_device_options = ["Varsayılan macOS çıkışı"]
@@ -1417,10 +1417,10 @@ class GuitarAmpRecorderApp:
             lines = [f"Klasor {output_dir_text}"]
             lines.append(count_line)
             if summary_line:
-                lines.append("Ses dosyasi yok. Alttaki ozeti acin.")
+                lines.append("Henuz ses dosyasi yok. Alttaki ozeti acin.")
                 lines.append(summary_line)
             else:
-                lines.append("Ses dosyasi yok. Yeni kayitlar burada gorunur.")
+                lines.append("Henuz ses dosyasi yok. Yeni kayitlar burada gorunur.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
