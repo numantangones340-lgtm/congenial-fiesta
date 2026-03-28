@@ -1421,7 +1421,11 @@ class GuitarAmpRecorderApp:
             self.last_export_path = recent_files[0]
         lines = [f"Klasor: {output_dir_text}"]
         lines.append(count_line)
-        lines.extend(f"- {path.name}" for path in recent_files)
+        for index, path in enumerate(recent_files):
+            label = f"- {path.name}"
+            if index == 0:
+                label += " (Son export)"
+            lines.append(label)
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
             lines.append(f"- ... {hidden_count} dosya daha var")

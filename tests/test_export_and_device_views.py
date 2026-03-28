@@ -95,9 +95,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
             expected = ["Klasor: ~/Demo", "Ses dosyalari: 7 | Gosterilen: 6"]
-            expected.extend(
-                f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
-            )
+            recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
+            expected.append(f"- {recent[0].name} (Son export)")
+            expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- ... 1 dosya daha var")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
@@ -137,7 +137,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIn("Klasor: ~/Demo", recorder.recent_exports_text.get())
         self.assertIn("Ses dosyalari: 1 | Gosterilen: 1", recorder.recent_exports_text.get())
-        self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
+        self.assertIn("- take_001.wav (Son export)", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
     def test_refresh_recent_exports_explains_summary_when_audio_missing(self) -> None:
