@@ -1417,7 +1417,7 @@ class GuitarAmpRecorderApp:
             lines = [f"Klasor {output_dir_text}"]
             lines.append(count_line)
             if summary_line:
-                lines.append("Ses kaydi henuz yok. Asagidaki oturum ozetini goruntuleyebilirsiniz.")
+                lines.append("Ses kaydi henuz yok. Asagidaki oturum ozetini acabilirsiniz.")
                 lines.append(summary_line)
             else:
                 lines.append("Ses kaydi henuz yok. Yeni kayitlar burada belirecek.")
@@ -1465,7 +1465,7 @@ class GuitarAmpRecorderApp:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
                     "Durum guncel. "
-                    "Ozet hazir. Goruntuleyebilirsiniz."
+                    "Ozet hazir. Acabilirsiniz."
                 )
             else:
                 self.set_status(
@@ -1483,7 +1483,7 @@ class GuitarAmpRecorderApp:
         sort_suffix = " Yeni." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-            summary_suffix = " Ozet hazir. Goruntuleyebilirsiniz."
+            summary_suffix = " Ozet hazir. Acabilirsiniz."
         self.set_status(
             f"Durum guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )

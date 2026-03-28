@@ -211,7 +211,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor ~/Demo",
                     "Top 0 | Ozet",
-                    "Ses kaydi henuz yok. Asagidaki oturum ozetini goruntuleyebilirsiniz.",
+                    "Ses kaydi henuz yok. Asagidaki oturum ozetini acabilirsiniz.",
                     "- session_summary.json (Ozet)",
                 ]
             ),
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Durum guncel. 1 ses dosyasi. Gr 1. Ozet hazir. Goruntuleyebilirsiniz.",
+            "Durum guncel. 1 ses dosyasi. Gr 1. Ozet hazir. Acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Durum guncel. Ozet hazir. Goruntuleyebilirsiniz.",
+            "Durum guncel. Ozet hazir. Acabilirsiniz.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
