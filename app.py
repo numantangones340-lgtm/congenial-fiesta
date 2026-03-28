@@ -1379,6 +1379,8 @@ class GuitarAmpRecorderApp:
     def refresh_recent_exports(self) -> None:
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
+            self.last_export_path = None
+            self.last_session_summary_path = None
             self.recent_exports_text.set(f"Klasor bulunamadi: {output_dir}")
             self.refresh_recent_output_buttons()
             return

@@ -104,11 +104,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_refresh_recent_exports_handles_missing_dir(self) -> None:
         recorder = self.make_app()
         missing_dir = Path("/tmp/does-not-exist-gar")
+        recorder.last_export_path = Path("/tmp/old_take.wav")
+        recorder.last_session_summary_path = Path("/tmp/session_summary.json")
         recorder.resolve_output_dir = mock.Mock(return_value=missing_dir)
 
         recorder.refresh_recent_exports()
 
+        self.assertIsNone(recorder.last_export_path)
+        self.assertIsNone(recorder.last_session_summary_path)
         self.assertEqual(recorder.recent_exports_text.get(), f"Klasor bulunamadi: {missing_dir}")
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
 
     def test_refresh_recent_exports_includes_session_summary_hint(self) -> None:
         recorder = self.make_app()
