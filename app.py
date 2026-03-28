@@ -1410,7 +1410,7 @@ class GuitarAmpRecorderApp:
         else:
             count_line += " | Gorunen: 0"
             if summary_line:
-                count_line += " | Ozet var"
+                count_line += " | Ozet"
         if len(recent_files) > 1:
             count_line += " | Sira: yeni-eski"
         if not recent_files:
@@ -1466,7 +1466,7 @@ class GuitarAmpRecorderApp:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
                     "Liste yenilendi. Gorunen: 0. "
-                    "Ozet var; 'Son Oturum Ozetini Ac'."
+                    "Ozet; 'Son Oturum Ozetini Ac'."
                 )
             else:
                 self.set_status(
@@ -1484,7 +1484,7 @@ class GuitarAmpRecorderApp:
         sort_suffix = " Sira: yeni-eski." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-            summary_suffix = " Ozet var; 'Son Oturum Ozetini Ac'."
+            summary_suffix = " Ozet; 'Son Oturum Ozetini Ac'."
         self.set_status(
             f"Liste yenilendi. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )

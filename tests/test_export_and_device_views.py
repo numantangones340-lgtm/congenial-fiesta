@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor: ~/Demo (Ac)",
-                    "Toplam: 0 | Gorunen: 0 | Ozet var",
+                    "Toplam: 0 | Gorunen: 0 | Ozet",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (En yeni ozet; 'Son Oturum Ozetini Ac')",
                 ]
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. 1 ses dosyasi. Gorunen: 1. Ozet var; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. 1 ses dosyasi. Gorunen: 1. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. Gorunen: 0. Ozet var; 'Son Oturum Ozetini Ac'.",
+            "Liste yenilendi. Gorunen: 0. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
