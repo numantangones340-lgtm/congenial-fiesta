@@ -1420,7 +1420,7 @@ class GuitarAmpRecorderApp:
                 lines.append("Henuz ses dosyasi yok. Alttaki ozeti acabilirsiniz.")
                 lines.append(summary_line)
             else:
-                lines.append("Henuz ses dosyasi yok. Yeni kayitlar burada gorunur.")
+                lines.append("Henuz ses dosyasi yok. Yeni kayitlar burada gorulecek.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
@@ -1470,7 +1470,7 @@ class GuitarAmpRecorderApp:
             else:
                 self.set_status(
                     "Guncel. "
-                    "Yeni kayitlar burada gorunur."
+                    "Yeni kayitlar burada gorulecek."
                 )
             return
         shown_count = min(len(audio_files), 6)
