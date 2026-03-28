@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Toplam: 0 ses dosyasi | Gorunen: yok | En yeni ozet hazir",
+                    "Toplam: 0 ses dosyasi | Gorunen: bos | En yeni ozet hazir",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (En yeni ozet; 'Son Oturum Ozetini Ac')",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Toplam: 0 ses dosyasi | Gorunen: yok",
+                    "Toplam: 0 ses dosyasi | Gorunen: bos",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Gorunen: yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Son ciktilar yenilendi. Gorunen: bos. Yeni kayitlardan sonra ciktilar burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Gorunen: yok. En yeni ozet hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. Gorunen: bos. En yeni ozet hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:

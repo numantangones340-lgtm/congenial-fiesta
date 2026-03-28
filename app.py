@@ -1408,7 +1408,7 @@ class GuitarAmpRecorderApp:
         elif recent_files:
             count_line += " | Gorunen: hepsi"
         else:
-            count_line += " | Gorunen: yok"
+            count_line += " | Gorunen: bos"
             if summary_line:
                 count_line += " | En yeni ozet hazir"
         if len(recent_files) > 1:
@@ -1465,12 +1465,12 @@ class GuitarAmpRecorderApp:
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
-                    "Son ciktilar yenilendi. Gorunen: yok. "
+                    "Son ciktilar yenilendi. Gorunen: bos. "
                     "En yeni ozet hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
                 )
             else:
                 self.set_status(
-                    "Son ciktilar yenilendi. Gorunen: yok. "
+                    "Son ciktilar yenilendi. Gorunen: bos. "
                     "Yeni kayitlardan sonra ciktilar burada gorunecek."
                 )
             return
