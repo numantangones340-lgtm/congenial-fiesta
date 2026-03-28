@@ -183,10 +183,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = self.make_app()
         missing_dir = Path("/tmp/does-not-exist-gar")
         recorder.resolve_output_dir = mock.Mock(return_value=missing_dir)
+        recorder.format_display_path = mock.Mock(return_value="~/Missing")
 
         recorder.refresh_recent_exports_from_action()
 
-        self.assertEqual(recorder.status_messages[-1], f"Son ciktilar yenilendi. Klasor bulunamadi: {missing_dir}")
+        self.assertEqual(recorder.status_messages[-1], "Son ciktilar yenilendi. Klasor bulunamadi: ~/Missing")
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
         recorder = self.make_app()
@@ -278,13 +279,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "new-session-folder"
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/new-session-folder")
 
             with mock.patch.object(app.subprocess, "run") as run_mock:
                 recorder.open_output_dir_in_finder()
                 self.assertTrue(output_dir.exists())
                 run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
                 recorder.refresh_recent_exports.assert_called_once()
-                self.assertEqual(recorder.status_messages[-1], f"Klasor acildi: {output_dir}")
+                self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/new-session-folder")
 
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
         recorder = self.make_app()

@@ -1415,7 +1415,7 @@ class GuitarAmpRecorderApp:
         self.refresh_recent_exports()
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
-            self.set_status(f"Son ciktilar yenilendi. Klasor bulunamadi: {output_dir}")
+            self.set_status(f"Son ciktilar yenilendi. Klasor bulunamadi: {self.format_display_path(output_dir)}")
             return
         audio_files = [
             path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
@@ -1477,7 +1477,7 @@ class GuitarAmpRecorderApp:
             output_dir.mkdir(parents=True, exist_ok=True)
             subprocess.run(["open", str(output_dir)], check=False)
             self.refresh_recent_exports()
-            self.set_status(f"Klasor acildi: {output_dir}")
+            self.set_status(f"Klasor acildi: {self.format_display_path(output_dir)}")
         except Exception as exc:
             self.set_status(f"Klasor acilamadi: {exc}")
 
