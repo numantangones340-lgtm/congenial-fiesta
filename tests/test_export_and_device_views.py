@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Ses dosyasi sayisi: 0 | Listede yok: 0 ses dosyasi | En yeni oturum ozeti dosyasi hazir",
+                    "Ses dosyasi sayisi: 0 | Listede: 0 ses dosyasi | En yeni oturum ozeti dosyasi hazir",
                     "Ses dosyasi yok. Asagidaki son oturum ozeti dosyasini acabilirsiniz.",
                     "- session_summary.json (En yeni oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                    "Ses dosyasi sayisi: 0 | Listede yok: 0 ses dosyasi",
+                    "Ses dosyasi sayisi: 0 | Listede: 0 ses dosyasi",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
             ),
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Listede yok: 0 ses dosyasi. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Son ciktilar yenilendi. Listede: 0 ses dosyasi. Yeni kayitlardan sonra ciktilar burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Listede yok: 0 ses dosyasi. En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
+            "Son ciktilar yenilendi. Listede: 0 ses dosyasi. En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
