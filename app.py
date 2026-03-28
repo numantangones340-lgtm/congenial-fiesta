@@ -1401,6 +1401,8 @@ class GuitarAmpRecorderApp:
         count_line = f"Ses dosyalari: {len(all_audio_files)} | Gosterilen: {len(recent_files)}"
         if len(all_audio_files) > len(recent_files):
             count_line += " (Son 6 kayit)"
+        elif len(recent_files) == 1:
+            count_line += " | Tek kayit listede"
         elif recent_files:
             count_line += " | Tumu listede"
         else:
