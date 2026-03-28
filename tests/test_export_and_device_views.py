@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile erisilebilir)", "Ses dosyalari: 7 | Listede: 6 (Son 6 kayit) | En yeni kayit ustte"]
+            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile erisilebilir)", "Ses dosyalari: 7 | Listede: son 6 kayit | En yeni kayit ustte"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Son export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -121,7 +121,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
                 "Cikis klasoru: ~/Demo ('Klasoru Ac' ile erisilebilir)",
-                "Ses dosyalari: 8 | Listede: 6 (Son 6 kayit) | En yeni kayit ustte",
+                "Ses dosyalari: 8 | Listede: son 6 kayit | En yeni kayit ustte",
                 f"- {recent[0].name} (Son export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])

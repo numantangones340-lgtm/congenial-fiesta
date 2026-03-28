@@ -1403,7 +1403,7 @@ class GuitarAmpRecorderApp:
         audio_count_label = "Ses dosyasi" if len(all_audio_files) == 1 else "Ses dosyalari"
         count_line = f"{audio_count_label}: {len(all_audio_files)}"
         if len(all_audio_files) > len(recent_files):
-            count_line += f" | Listede: {len(recent_files)} (Son 6 kayit)"
+            count_line += " | Listede: son 6 kayit"
         elif len(recent_files) == 1:
             count_line += " | Tek kayit listede"
         elif recent_files:
