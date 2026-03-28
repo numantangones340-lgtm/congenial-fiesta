@@ -98,7 +98,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Son export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- ... 1 ses dosyasi daha var (Bu listede yer almiyor, 'Klasoru Ac' ile tum ses dosyalarini gor)")
+            expected.append("- ... 1 ses dosyasi daha var (Bu listede yer almiyor, 'Klasoru Ac' ile tum ses dosyalarini gorebilirsiniz)")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -125,7 +125,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 f"- {recent[0].name} (Son export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- ... 2 ses dosyasi daha var (Bu listede yer almiyorlar, 'Klasoru Ac' ile tum ses dosyalarini gor)")
+            expected.append("- ... 2 ses dosyasi daha var (Bu listede yer almiyorlar, 'Klasoru Ac' ile tum ses dosyalarini gorebilirsiniz)")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
