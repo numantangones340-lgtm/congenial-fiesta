@@ -224,6 +224,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi.")
 
+    def test_open_output_dir_in_finder_creates_missing_directory(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "new-session-folder"
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_output_dir_in_finder()
+                self.assertTrue(output_dir.exists())
+                run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
+                self.assertEqual(recorder.status_messages[-1], f"Klasor acildi: {output_dir}")
+
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
         recorder = self.make_app()
         recorder.last_session_summary_path = None
