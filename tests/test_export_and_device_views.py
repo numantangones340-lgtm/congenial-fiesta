@@ -164,6 +164,25 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ),
         )
 
+    def test_refresh_recent_exports_clears_stale_export_when_only_summary_exists(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as olddir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            old_export = Path(olddir) / "old_take.wav"
+            old_export.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = old_export
+            recorder.last_session_summary_path = summary_path
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports()
+
+        self.assertIsNone(recorder.last_export_path)
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
+
     def test_refresh_recent_exports_restores_summary_button_from_output_dir(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -1400,8 +1400,7 @@ class GuitarAmpRecorderApp:
         )[:6]
         count_line = f"Ses dosyalari: {len(all_audio_files)} | Gosterilen: {len(recent_files)}"
         if not recent_files:
-            if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
-                self.last_export_path = None
+            self.last_export_path = None
             lines = [f"Klasor: {output_dir_text}"]
             lines.append(count_line)
             if summary_line:
