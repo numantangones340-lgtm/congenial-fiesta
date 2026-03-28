@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Toplam: 2 ses dosyasi | Gorunen: tum ses dosyalari | Siralama: yeni -> eski",
+            "Toplam: 2 ses dosyasi | Gorunen: hepsi | Siralama: yeni -> eski",
             recorder.recent_exports_text.get(),
         )
 
@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Gorunen: tum ses dosyalari. Siralama: yeni -> eski.",
+            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Gorunen: hepsi. Siralama: yeni -> eski.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
