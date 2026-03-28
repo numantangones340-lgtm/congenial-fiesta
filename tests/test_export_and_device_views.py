@@ -112,7 +112,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIsNone(recorder.last_export_path)
         self.assertIsNone(recorder.last_session_summary_path)
-        self.assertEqual(recorder.recent_exports_text.get(), f"Klasor bulunamadi: {missing_dir}")
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            f"Klasor bulunamadi: {missing_dir}\nCikis klasorunu kontrol edin veya 'Klasoru Ac' ile yeniden olusturun.",
+        )
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
 
