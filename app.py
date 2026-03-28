@@ -1454,7 +1454,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
             self.set_status(
-                f"Liste guncel. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
+                f"Guncel. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
                 "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
             )
             return
@@ -1464,12 +1464,12 @@ class GuitarAmpRecorderApp:
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
-                    "Liste guncel. "
+                    "Guncel. "
                     "Ozet; 'Son Oturum Ozetini Ac'."
                 )
             else:
                 self.set_status(
-                    "Liste guncel. "
+                    "Guncel. "
                     "Kayittan sonra burada."
                 )
             return
@@ -1485,7 +1485,7 @@ class GuitarAmpRecorderApp:
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " Ozet; 'Son Oturum Ozetini Ac'."
         self.set_status(
-            f"Liste guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
+            f"Guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
         )
 
     def format_display_path(self, path: Path) -> str:

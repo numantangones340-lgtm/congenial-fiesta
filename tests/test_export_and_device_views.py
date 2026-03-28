@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste guncel. 2 ses dosyasi. Gr tumu. Yeni.",
+            "Guncel. 2 ses dosyasi. Gr tumu. Yeni.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -357,7 +357,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste guncel. 1 ses dosyasi. Gr 1. Ozet; 'Son Oturum Ozetini Ac'.",
+            "Guncel. 1 ses dosyasi. Gr 1. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_refresh_recent_exports_from_action_reports_truncated_audio_list(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste guncel. 7 ses dosyasi. Gr son 6. Yeni.",
+            "Guncel. 7 ses dosyasi. Gr son 6. Yeni.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
@@ -387,7 +387,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+            "Guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_empty_state_hint(self) -> None:
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste guncel. Kayittan sonra burada.",
+            "Guncel. Kayittan sonra burada.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
@@ -416,7 +416,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste guncel. Ozet; 'Son Oturum Ozetini Ac'.",
+            "Guncel. Ozet; 'Son Oturum Ozetini Ac'.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
