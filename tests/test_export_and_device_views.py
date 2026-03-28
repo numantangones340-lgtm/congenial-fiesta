@@ -363,7 +363,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Ses dosyasi yok, oturum ozeti hazir ve acilabilir.",
+            "Son ciktilar yenilendi. Liste bos, son oturum ozeti hazir ve acilabilir.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
