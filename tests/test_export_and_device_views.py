@@ -93,9 +93,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.refresh_recent_exports()
-            expected = [
+            expected = [f"Klasor: {output_dir}"]
+            expected.extend(
                 f"- {path.name}" for path in sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
-            ]
+            )
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -121,6 +122,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.refresh_recent_exports()
 
+        self.assertIn(f"Klasor: {output_dir}", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
