@@ -157,7 +157,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor: ~/Demo (Klasoru Ac ile erisilebilir)",
-                    "Ses dosyalari: 0 | Gosterilen: 0 | Ses listesi bos",
+                    "Ses dosyalari: 0 | Gosterilen: 0 | Ses listesi bos | Yalnizca ozet var",
                     "Ses dosyasi yok. Son oturum ozeti hazir ve acilabilir.",
                     "- session_summary.json (Son oturum ozeti, acilabilir)",
                 ]
