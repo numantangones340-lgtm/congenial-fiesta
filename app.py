@@ -1438,7 +1438,7 @@ class GuitarAmpRecorderApp:
         for index, path in enumerate(recent_files):
             label = f"- {path.name}"
             if index == 0:
-                label += " (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')"
+                label += " (En yeni export; 'Son Dosyayi Finder'da Goster')"
             lines.append(label)
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:

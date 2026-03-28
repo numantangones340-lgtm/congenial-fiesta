@@ -96,7 +96,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
             expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", "Toplam: 7 ses dosyasi | Gorunen: son 6 ses dosyasi | Siralama: yeni-eski"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
-            expected.append(f"- {recent[0].name} (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')")
+            expected.append(f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- ... Ek dosyalar: 1 ses dosyasi (Tum ses dosyalari: 'Klasoru Ac')")
 
@@ -122,7 +122,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected = [
                 "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
                 "Toplam: 8 ses dosyasi | Gorunen: son 6 ses dosyasi | Siralama: yeni-eski",
-                f"- {recent[0].name} (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')",
+                f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- ... Ek dosyalar: 2 ses dosyasi (Tum ses dosyalari: 'Klasoru Ac')")
@@ -165,7 +165,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", recorder.recent_exports_text.get())
         self.assertIn("Toplam: 1 ses dosyasi | Gorunen: 1 ses dosyasi", recorder.recent_exports_text.get())
         self.assertIn(
-            "- take_001.wav (En yeni export dosyasi; 'Son Dosyayi Finder'da Goster')",
+            "- take_001.wav (En yeni export; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
         )
         self.assertIn(
