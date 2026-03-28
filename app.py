@@ -1389,9 +1389,13 @@ class GuitarAmpRecorderApp:
             reverse=True,
         )[:6]
         if not recent_files:
+            if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
+                self.last_export_path = None
             self.recent_exports_text.set(summary_line or "Henuz export yok.")
             self.refresh_recent_output_buttons()
             return
+        if self.last_export_path is None or not self.last_export_path.exists():
+            self.last_export_path = recent_files[0]
         lines = [f"- {path.name}" for path in recent_files]
         if summary_line:
             lines.append(summary_line)

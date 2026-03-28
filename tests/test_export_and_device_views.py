@@ -124,6 +124,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
+    def test_refresh_recent_exports_restores_last_export_from_newest_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            first = output_dir / "take_001.wav"
+            second = output_dir / "take_002.mp3"
+            first.write_text("audio", encoding="utf-8")
+            second.write_text("audio", encoding="utf-8")
+            os.utime(first, (time.time(), time.time()))
+            os.utime(second, (time.time() + 10, time.time() + 10))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.refresh_recent_exports()
+
+        self.assertEqual(recorder.last_export_path, second)
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
+
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
         recorder = self.make_app()
         inputs = [(index, f"Input {index}") for index in range(6)]
