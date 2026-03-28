@@ -1408,7 +1408,7 @@ class GuitarAmpRecorderApp:
             lines = [f"Klasor: {output_dir_text} (Klasoru Ac ile erisilebilir)"]
             lines.append(count_line)
             if summary_line:
-                lines.append("Ses dosyasi yok. Son oturum ozeti hazir.")
+                lines.append("Ses dosyasi yok. Son oturum ozeti hazir ve acilabilir.")
                 lines.append(summary_line)
             else:
                 lines.append("Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.")
@@ -1449,7 +1449,7 @@ class GuitarAmpRecorderApp:
         ]
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-                self.set_status("Son ciktilar yenilendi. Ses dosyasi yok, oturum ozeti hazir.")
+                self.set_status("Son ciktilar yenilendi. Ses dosyasi yok, oturum ozeti hazir ve acilabilir.")
             else:
                 self.set_status("Son ciktilar yenilendi. Henuz export yok, yeni kayitlardan sonra ciktilar burada gorunecek.")
             return

@@ -158,7 +158,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor: ~/Demo (Klasoru Ac ile erisilebilir)",
                     "Ses dosyalari: 0 | Gosterilen: 0",
-                    "Ses dosyasi yok. Son oturum ozeti hazir.",
+                    "Ses dosyasi yok. Son oturum ozeti hazir ve acilabilir.",
                     "- session_summary.json (Son oturum ozeti, acilabilir)",
                 ]
             ),
@@ -326,6 +326,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(
             recorder.status_messages[-1],
             "Son ciktilar yenilendi. Henuz export yok, yeni kayitlardan sonra ciktilar burada gorunecek.",
+        )
+
+    def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            (output_dir / "session_summary.json").write_text("{}", encoding="utf-8")
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports_from_action()
+
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Son ciktilar yenilendi. Ses dosyasi yok, oturum ozeti hazir ve acilabilir.",
         )
 
     def test_build_device_summary_limits_list_and_reports_counts(self) -> None:
