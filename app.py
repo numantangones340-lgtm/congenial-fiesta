@@ -1412,7 +1412,7 @@ class GuitarAmpRecorderApp:
             if summary_line:
                 count_line += " | En yeni ozet dosyasi hazir"
         if len(recent_files) > 1:
-            count_line += " | Siralama: yeni -> eski"
+            count_line += " | Siralama: yeni-eski"
         if not recent_files:
             self.last_export_path = None
             lines = [f"Cikis klasoru: {output_dir_text} ('Klasoru Ac' ile acabilirsiniz)"]
@@ -1481,7 +1481,7 @@ class GuitarAmpRecorderApp:
             visibility_suffix = " Gorunen: 1 ses dosyasi."
         else:
             visibility_suffix = " Gorunen: hepsi."
-        sort_suffix = " Siralama: yeni -> eski." if shown_count > 1 else ""
+        sort_suffix = " Siralama: yeni-eski." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = " En yeni ozet dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
