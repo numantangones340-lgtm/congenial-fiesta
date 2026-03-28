@@ -677,7 +677,10 @@ class GuitarAmpRecorderApp:
         Label(media, text="Arka Plan Müzik", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(anchor="w", padx=14, pady=(12, 4))
         self.backing_label = Label(media, text="Dosya seçilmedi", fg="#9aa7b5", bg="#151b22")
         self.backing_label.pack(anchor="w", padx=14)
-        Button(media, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(anchor="w", padx=14, pady=10)
+        media_buttons = Frame(media, bg="#151b22")
+        media_buttons.pack(anchor="w", padx=14, pady=10)
+        Button(media_buttons, text="Müzik Dosyası Seç", command=self.select_backing, bg="#2d7d46", fg="white").pack(side="left")
+        Button(media_buttons, text="Müziği Temizle", command=self.clear_backing, bg="#5d6d7e", fg="white").pack(side="left", padx=(8, 0))
 
         export = self.create_section(title="Çıktı", subtitle="Kayıt klasörünü seçin; MP3 ve WAV dosyaları oraya yazılır.")
         Label(export, text="Çıkış Klasörü", bg="#151b22", fg="#dce6ef").pack(anchor="w", padx=14, pady=(12, 2))
@@ -1745,6 +1748,12 @@ class GuitarAmpRecorderApp:
         self.backing_file = Path(file_path)
         self.backing_label.config(text=self.backing_file.name, fg="#2c3e50")
         self.refresh_recording_readiness()
+
+    def clear_backing(self) -> None:
+        self.backing_file = None
+        self.backing_label.config(text="Dosya seçilmedi", fg="#9aa7b5")
+        self.refresh_recording_readiness()
+        self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon kaydi hazir.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
         input_text = self.input_device_id.get().strip()

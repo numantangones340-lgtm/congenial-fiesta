@@ -22,6 +22,14 @@ class FakeVar:
         self.value = value
 
 
+class FakeLabel:
+    def __init__(self) -> None:
+        self.config_calls = []
+
+    def config(self, **kwargs) -> None:
+        self.config_calls.append(kwargs)
+
+
 class RecordingReadinessTests(unittest.TestCase):
     def make_app(self, output_dir: str) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
@@ -38,6 +46,9 @@ class RecordingReadinessTests(unittest.TestCase):
         recorder.recording_active = False
         recorder.last_input_peak = 0.0
         recorder.backing_file = None
+        recorder.backing_label = FakeLabel()
+        recorder.status_messages = []
+        recorder.set_status = recorder.status_messages.append
         return recorder
 
     def test_build_recording_readiness_summary_for_mic_only_session(self) -> None:
@@ -87,6 +98,18 @@ class RecordingReadinessTests(unittest.TestCase):
             app.GuitarAmpRecorderApp.refresh_recording_readiness(recorder)
 
         self.assertEqual(recorder.record_progress_text.get(), "kayit suruyor")
+
+    def test_clear_backing_returns_to_mic_only_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recorder = self.make_app(tmpdir)
+            recorder.backing_file = Path(tmpdir) / "demo_backing.wav"
+
+            app.GuitarAmpRecorderApp.clear_backing(recorder)
+
+        self.assertIsNone(recorder.backing_file)
+        self.assertEqual(recorder.backing_label.config_calls[-1], {"text": "Dosya seçilmedi", "fg": "#9aa7b5"})
+        self.assertIn("Kaynak: Sadece mikrofon", recorder.record_progress_text.get())
+        self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi temizlendi. Sadece mikrofon kaydi hazir.")
 
 
 if __name__ == "__main__":
