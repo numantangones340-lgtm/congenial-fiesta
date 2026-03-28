@@ -1473,7 +1473,7 @@ class GuitarAmpRecorderApp:
             summary_path = candidate if candidate.exists() else None
         if summary_path is None:
             return ""
-        return "- session_summary.json (Oturum ozeti hazir)"
+        return "- session_summary.json (Son oturum ozeti)"
 
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
         candidate = output_dir / "session_summary.json"
