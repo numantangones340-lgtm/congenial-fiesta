@@ -96,7 +96,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
             expected = ["Klasor ~/Demo", "Toplam 7 | Gr son 6 | Yeni"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
-            expected.append(f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')")
+            expected.append(f"- {recent[0].name} (Export)")
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- +1")
 
@@ -122,7 +122,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected = [
                 "Klasor ~/Demo",
                 "Toplam 8 | Gr son 6 | Yeni",
-                f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')",
+                f"- {recent[0].name} (Export)",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- +2")
@@ -165,11 +165,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Klasor ~/Demo", recorder.recent_exports_text.get())
         self.assertIn("Toplam 1 | Gr 1", recorder.recent_exports_text.get())
         self.assertIn(
-            "- take_001.wav (Export; 'Son Dosyayi Finder'da Goster')",
+            "- take_001.wav (Export)",
             recorder.recent_exports_text.get(),
         )
         self.assertIn(
-            "- session_summary.json (Ozet; 'Son Oturum Ozetini Ac')",
+            "- session_summary.json (Ozet)",
             recorder.recent_exports_text.get(),
         )
 
@@ -212,7 +212,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                     "Klasor ~/Demo",
                     "Toplam 0 | Gr 0 | Ozet",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
-                    "- session_summary.json (Ozet; 'Son Oturum Ozetini Ac')",
+                    "- session_summary.json (Ozet)",
                 ]
             ),
         )

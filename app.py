@@ -1438,7 +1438,7 @@ class GuitarAmpRecorderApp:
         for index, path in enumerate(recent_files):
             label = f"- {path.name}"
             if index == 0:
-                label += " (Export; 'Son Dosyayi Finder'da Goster')"
+                label += " (Export)"
             lines.append(label)
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
@@ -1508,7 +1508,7 @@ class GuitarAmpRecorderApp:
             summary_path = candidate if candidate.exists() else None
         if summary_path is None:
             return ""
-        return "- session_summary.json (Ozet; 'Son Oturum Ozetini Ac')"
+        return "- session_summary.json (Ozet)"
 
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
         candidate = output_dir / "session_summary.json"
