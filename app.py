@@ -1562,7 +1562,7 @@ class GuitarAmpRecorderApp:
         if self.last_export_path is None or not self.last_export_path.exists():
             self.last_export_path = None
             self.refresh_recent_output_buttons()
-            self.set_status("Son export dosyasi bulunamadi. Son ciktilar yenilendi.")
+            self.set_status("Son export dosyasi bulunamadi; son ciktilar yenilendi.")
             return
         try:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
@@ -1575,7 +1575,7 @@ class GuitarAmpRecorderApp:
         if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
             self.last_session_summary_path = None
             self.refresh_recent_output_buttons()
-            self.set_status("Son oturum ozeti bulunamadi. Son ciktilar yenilendi.")
+            self.set_status("Son oturum ozeti bulunamadi; son ciktilar yenilendi.")
             return
         try:
             subprocess.run(["open", str(self.last_session_summary_path)], check=False)
