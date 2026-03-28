@@ -354,7 +354,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Klasor bulunamadi: ~/Missing. Klasoru Ac ile yeniden olusturabilirsiniz.",
+            "Son ciktilar yenilendi. Klasor bulunamadi: ~/Missing. Klasoru Ac ile yeniden olusturup Finder'da acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_empty_state_hint(self) -> None:

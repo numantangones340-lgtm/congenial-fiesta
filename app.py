@@ -1452,7 +1452,7 @@ class GuitarAmpRecorderApp:
         if not output_dir.exists():
             self.set_status(
                 f"Son ciktilar yenilendi. Klasor bulunamadi: {self.format_display_path(output_dir)}. "
-                "Klasoru Ac ile yeniden olusturabilirsiniz."
+                "Klasoru Ac ile yeniden olusturup Finder'da acabilirsiniz."
             )
             return
         audio_files = [
