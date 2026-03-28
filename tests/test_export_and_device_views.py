@@ -136,7 +136,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Cikis klasoru: ~/Demo ('Klasoru Ac' ile erisilebilir)", recorder.recent_exports_text.get())
-        self.assertIn("Ses dosyalari: 1 | Tek kayit listede", recorder.recent_exports_text.get())
+        self.assertIn("Ses dosyasi: 1 | Tek kayit listede", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (Son export; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
