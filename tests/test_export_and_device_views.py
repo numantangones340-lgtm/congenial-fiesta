@@ -143,7 +143,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIsNone(recorder.last_session_summary_path)
         self.assertEqual(
             recorder.recent_exports_text.get(),
-            "Cikis klasoru bulunamadi: ~/missing-output\nBu cikis klasorune su an ulasilamiyor.\n'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz.",
+            "Cikis klasoru bulunamadi: ~/missing-output\nBu cikis klasorune su an ulasilamiyor.\n'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
@@ -387,7 +387,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz.",
+            "Son ciktilar yenilendi. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
 
     def test_refresh_recent_exports_from_action_reports_empty_state_hint(self) -> None:

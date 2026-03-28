@@ -1385,7 +1385,7 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set(
                 f"Cikis klasoru bulunamadi: {output_dir_text}\n"
                 "Bu cikis klasorune su an ulasilamiyor.\n"
-                "'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz."
+                "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
             )
             self.refresh_recent_output_buttons()
             return
@@ -1458,7 +1458,7 @@ class GuitarAmpRecorderApp:
         if not output_dir.exists():
             self.set_status(
                 f"Son ciktilar yenilendi. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
-                "'Klasoru Ac' ile yeniden olusturup Finder'da acabilirsiniz."
+                "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
             )
             return
         audio_files = [
