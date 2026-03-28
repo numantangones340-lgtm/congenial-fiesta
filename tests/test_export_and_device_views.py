@@ -332,7 +332,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         recorder.refresh_recent_exports_from_action()
 
-        self.assertEqual(recorder.status_messages[-1], "Son ciktilar yenilendi. Klasor bulunamadi: ~/Missing")
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Son ciktilar yenilendi. Klasor bulunamadi: ~/Missing. Klasoru Ac ile yeniden olusturabilirsiniz.",
+        )
 
     def test_refresh_recent_exports_from_action_reports_empty_state_hint(self) -> None:
         recorder = self.make_app()
