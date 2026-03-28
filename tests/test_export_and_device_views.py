@@ -169,7 +169,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.recent_exports_text.get(),
         )
         self.assertIn(
-            "- session_summary.json (En son oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
+            "- session_summary.json (En yeni oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
             recorder.recent_exports_text.get(),
         )
 
@@ -212,7 +212,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                     "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
                     "Ses dosyasi sayisi: 0 | Listede yok: 0 ses dosyasi | Yalnizca son oturum ozeti dosyasi hazir",
                     "Ses dosyasi yok. Asagidaki son oturum ozeti dosyasini acabilirsiniz.",
-                    "- session_summary.json (En son oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
+                    "- session_summary.json (En yeni oturum ozeti dosyasi; 'Son Oturum Ozetini Ac')",
                 ]
             ),
         )
