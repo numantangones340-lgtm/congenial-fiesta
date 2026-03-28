@@ -268,7 +268,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor ~/Demo",
                     "Toplam 0 | Gr 0",
-                    "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+                    "Henuz export yok. Yeni kayitlardan sonra burada gorunecek.",
                 ]
             ),
         )
@@ -401,7 +401,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Liste yenilendi. Gr 0. Yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Liste yenilendi. Gr 0. Yeni kayitlardan sonra burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
