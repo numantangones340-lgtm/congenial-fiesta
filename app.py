@@ -1406,7 +1406,7 @@ class GuitarAmpRecorderApp:
         elif len(recent_files) == 1:
             count_line += " | Gorunen: 1"
         elif recent_files:
-            count_line += " | Gorunen: hepsi"
+            count_line += " | Gorunen: tumu"
         else:
             count_line += " | Gorunen: bos"
             if summary_line:
@@ -1480,7 +1480,7 @@ class GuitarAmpRecorderApp:
         elif shown_count == 1:
             visibility_suffix = " Gorunen: 1."
         else:
-            visibility_suffix = " Gorunen: hepsi."
+            visibility_suffix = " Gorunen: tumu."
         sort_suffix = " Sira: yeni-eski." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
