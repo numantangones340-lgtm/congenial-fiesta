@@ -1459,6 +1459,7 @@ class GuitarAmpRecorderApp:
         try:
             output_dir.mkdir(parents=True, exist_ok=True)
             subprocess.run(["open", str(output_dir)], check=False)
+            self.refresh_recent_exports()
             self.set_status(f"Klasor acildi: {output_dir}")
         except Exception as exc:
             self.set_status(f"Klasor acilamadi: {exc}")

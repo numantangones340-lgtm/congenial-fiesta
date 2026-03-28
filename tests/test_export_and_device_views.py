@@ -252,6 +252,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
     def test_open_output_dir_in_finder_creates_missing_directory(self) -> None:
         recorder = self.make_app()
+        recorder.refresh_recent_exports = mock.Mock()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "new-session-folder"
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
@@ -260,6 +261,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.open_output_dir_in_finder()
                 self.assertTrue(output_dir.exists())
                 run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
+                recorder.refresh_recent_exports.assert_called_once()
                 self.assertEqual(recorder.status_messages[-1], f"Klasor acildi: {output_dir}")
 
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
