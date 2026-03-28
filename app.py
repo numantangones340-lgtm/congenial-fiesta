@@ -1381,8 +1381,9 @@ class GuitarAmpRecorderApp:
         if not output_dir.exists():
             self.last_export_path = None
             self.last_session_summary_path = None
+            output_dir_text = self.format_display_path(output_dir)
             self.recent_exports_text.set(
-                f"Klasor bulunamadi: {output_dir}\nCikis klasorunu kontrol edin veya 'Klasoru Ac' ile yeniden olusturun."
+                f"Klasor bulunamadi: {output_dir_text}\nCikis klasorunu kontrol edin veya 'Klasoru Ac' ile yeniden olusturun."
             )
             self.refresh_recent_output_buttons()
             return
