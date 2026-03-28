@@ -96,7 +96,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
             expected = ["Klasor: ~/Demo (Ac)", "Toplam 7 | Gorunen: son 6 | Sira: yeni"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
-            expected.append(f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')")
+            expected.append(f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- +1 ses (Ac)")
 
@@ -122,7 +122,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected = [
                 "Klasor: ~/Demo (Ac)",
                 "Toplam 8 | Gorunen: son 6 | Sira: yeni",
-                f"- {recent[0].name} (En yeni export; 'Son Dosyayi Finder'da Goster')",
+                f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
             expected.append("- +2 ses (Ac)")
@@ -165,7 +165,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Klasor: ~/Demo (Ac)", recorder.recent_exports_text.get())
         self.assertIn("Toplam 1 | Gorunen: 1", recorder.recent_exports_text.get())
         self.assertIn(
-            "- take_001.wav (En yeni export; 'Son Dosyayi Finder'da Goster')",
+            "- take_001.wav (Export; 'Son Dosyayi Finder'da Goster')",
             recorder.recent_exports_text.get(),
         )
         self.assertIn(
