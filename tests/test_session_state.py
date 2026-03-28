@@ -136,7 +136,12 @@ class SessionStateTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            (session_dir / "session_summary.json").write_text("{}", encoding="utf-8")
+            export_path = session_dir / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            (session_dir / "session_summary.json").write_text(
+                json.dumps({"generated_files": [str(export_path)]}, ensure_ascii=False),
+                encoding="utf-8",
+            )
 
             with mock.patch.object(app, "LAST_SESSION_PATH", state_path):
                 recorder.reload_last_session()
@@ -146,10 +151,25 @@ class SessionStateTests(unittest.TestCase):
         self.assertEqual(recorder.session_mode.get(), "Isimli Oturum")
         self.assertEqual(recorder.preset_name.get(), "Parlak Solo")
         self.assertEqual(recorder.last_session_summary_path, session_dir / "session_summary.json")
+        self.assertEqual(recorder.last_export_path, export_path)
         recorder.load_saved_preset.assert_called_once()
         recorder.refresh_recent_output_buttons.assert_called_once()
         recorder.refresh_recent_exports.assert_called_once()
         self.assertIn("Son oturum yuklendi", recorder.status_messages[-1])
+
+    def test_restore_last_session_summary_ignores_missing_generated_files(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text(
+                json.dumps({"generated_files": [str(Path(tmpdir) / "missing.mp3")]}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+
+            recorder.restore_last_session_summary({"summary_path": str(summary_path)})
+
+        self.assertEqual(recorder.last_session_summary_path, summary_path)
+        self.assertIsNone(recorder.last_export_path)
 
     def test_reload_last_session_for_single_folder_uses_full_output_dir(self) -> None:
         recorder = self.make_app()

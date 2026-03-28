@@ -1328,7 +1328,28 @@ class GuitarAmpRecorderApp:
         summary_text = str(data.get("summary_path", "")).strip()
         summary_path = Path(summary_text) if summary_text else None
         self.last_session_summary_path = summary_path if summary_path and summary_path.exists() else None
+        self.restore_last_export_from_summary()
         self.refresh_recent_output_buttons()
+
+    def restore_last_export_from_summary(self) -> None:
+        self.last_export_path = None
+        summary_path = self.last_session_summary_path
+        if summary_path is None or not summary_path.exists():
+            return
+        try:
+            raw = json.loads(summary_path.read_text(encoding="utf-8"))
+        except Exception:
+            return
+        generated_files = raw.get("generated_files", [])
+        if not isinstance(generated_files, list):
+            return
+        existing_files = []
+        for item in generated_files:
+            path = Path(str(item))
+            if path.exists():
+                existing_files.append(path)
+        if existing_files:
+            self.last_export_path = existing_files[0]
 
     def reload_last_session(self) -> None:
         data = self.load_last_session_state()
