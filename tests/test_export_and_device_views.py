@@ -94,11 +94,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Klasor ~/Demo (Ac)", "Toplam 7 | Gr son 6 | Sira yeni"]
+            expected = ["Klasor ~/Demo", "Toplam 7 | Gr son 6 | Sira yeni"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- +1 ses (Ac)")
+            expected.append("- +1 ses")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -120,12 +120,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
-                "Klasor ~/Demo (Ac)",
+                "Klasor ~/Demo",
                 "Toplam 8 | Gr son 6 | Sira yeni",
                 f"- {recent[0].name} (Export; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
-            expected.append("- +2 ses (Ac)")
+            expected.append("- +2 ses")
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
@@ -162,7 +162,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.refresh_recent_exports()
 
-        self.assertIn("Klasor ~/Demo (Ac)", recorder.recent_exports_text.get())
+        self.assertIn("Klasor ~/Demo", recorder.recent_exports_text.get())
         self.assertIn("Toplam 1 | Gr 1", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (Export; 'Son Dosyayi Finder'da Goster')",
@@ -209,7 +209,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.recent_exports_text.get(),
             "\n".join(
                 [
-                    "Klasor ~/Demo (Ac)",
+                    "Klasor ~/Demo",
                     "Toplam 0 | Gr 0 | Ozet",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (Ozet; 'Son Oturum Ozetini Ac')",
@@ -266,7 +266,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.recent_exports_text.get(),
             "\n".join(
                 [
-                    "Klasor ~/Demo (Ac)",
+                    "Klasor ~/Demo",
                     "Toplam 0 | Gr 0",
                     "Henuz export yok. Yeni kayitlardan sonra ciktilar burada gorunecek.",
                 ]
