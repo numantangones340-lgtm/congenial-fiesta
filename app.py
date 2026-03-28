@@ -519,7 +519,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
         self.last_session_summary_path: Optional[Path] = None
-        self.recent_exports_text = StringVar(value="Henuz kayit yok. Yeni kayitlar burada gorunur.")
+        self.recent_exports_text = StringVar(value="Henuz kayit yok. Yeni kayitlar burada gosterilir.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
         self.output_device_options = ["Varsayılan macOS çıkışı"]
@@ -1420,7 +1420,7 @@ class GuitarAmpRecorderApp:
                 lines.append("Henuz kayit yok. Alttaki ozeti acabilirsiniz.")
                 lines.append(summary_line)
             else:
-                lines.append("Henuz kayit yok. Yeni kayitlar burada gorunur.")
+                lines.append("Henuz kayit yok. Yeni kayitlar burada gosterilir.")
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
@@ -1470,7 +1470,7 @@ class GuitarAmpRecorderApp:
             else:
                 self.set_status(
                     "Durum guncel. "
-                    "Yeni kayitlar burada gorunur."
+                    "Yeni kayitlar burada gosterilir."
                 )
             return
         shown_count = min(len(audio_files), 6)
