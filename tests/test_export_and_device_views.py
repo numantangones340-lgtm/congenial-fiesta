@@ -211,7 +211,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor ~/Demo",
                     "Top 0 | Ozet",
-                    "Ses kaydi henuz yok. Asagidaki ozeti acabilirsiniz.",
+                    "Henuz ses kaydi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (Ozet)",
                 ]
             ),
@@ -268,7 +268,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 [
                     "Klasor ~/Demo",
                     "Top 0",
-                    "Ses kaydi henuz yok. Yeni kayitlar burada yer alacak.",
+                    "Henuz ses kaydi yok. Yeni kayitlar burada yer alacak.",
                 ]
             ),
         )
