@@ -102,6 +102,33 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
 
+    def test_refresh_recent_exports_pluralizes_hidden_audio_line(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            files = []
+            for index in range(8):
+                path = output_dir / f"take_{index}.wav"
+                path.write_text("audio", encoding="utf-8")
+                os.utime(path, (time.time() + index, time.time() + index))
+                files.append(path)
+
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports()
+
+            recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
+            expected = [
+                "Cikis klasoru: ~/Demo ('Klasoru Ac' ile erisilebilir)",
+                "Ses dosyalari: 8 | Listede: 6 (Son 6 kayit) | En yeni ustte",
+                f"- {recent[0].name} (Son export; 'Son Dosyayi Finder'da Goster')",
+            ]
+            expected.extend(f"- {path.name}" for path in recent[1:])
+            expected.append("- ... 2 ses dosyasi daha var (Bu listede gosterilmiyorlar, 'Klasoru Ac' ile tumunu gor)")
+
+        self.assertEqual(recorder.recent_exports_text.get(), "\n".join(expected))
+
     def test_refresh_recent_exports_handles_missing_dir(self) -> None:
         recorder = self.make_app()
         missing_dir = Path("/tmp/does-not-exist-gar")
