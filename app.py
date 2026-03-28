@@ -1451,7 +1451,7 @@ class GuitarAmpRecorderApp:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status("Son ciktilar yenilendi. Ses dosyasi yok, oturum ozeti hazir.")
             else:
-                self.set_status("Son ciktilar yenilendi. Henuz export yok.")
+                self.set_status("Son ciktilar yenilendi. Henuz export yok, yeni kayitlardan sonra ciktilar burada gorunecek.")
             return
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
