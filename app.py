@@ -1464,7 +1464,10 @@ class GuitarAmpRecorderApp:
         ]
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-                self.set_status("Son ciktilar yenilendi. Ses listesi bos, yalnizca son oturum ozeti var ve acilabilir.")
+                self.set_status(
+                    "Son ciktilar yenilendi. Ses listesi bos, yalnizca son oturum ozeti var. "
+                    "'Son Oturum Ozetini Ac' ile acabilirsiniz."
+                )
             else:
                 self.set_status("Son ciktilar yenilendi. Ses listesi bos, yeni kayitlardan sonra ciktilar burada gorunecek.")
             return
@@ -1477,7 +1480,7 @@ class GuitarAmpRecorderApp:
             visibility_suffix = " Tum ses dosyalari listede."
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-            summary_suffix = " Oturum ozeti de hazir."
+            summary_suffix = " Oturum ozeti de hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
         self.set_status(
             f"Son ciktilar yenilendi. {len(audio_files)} ses dosyasi bulundu.{visibility_suffix}{summary_suffix}"
         )
