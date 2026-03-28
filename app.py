@@ -1411,7 +1411,7 @@ class GuitarAmpRecorderApp:
         else:
             count_line += " | Ses listesi bos"
             if summary_line:
-                count_line += " | Yalnizca ozet var"
+                count_line += " | Yalnizca son oturum ozeti var"
         if len(recent_files) > 1:
             count_line += " | En yeni ustte"
         if not recent_files:
