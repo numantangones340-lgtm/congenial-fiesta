@@ -1416,6 +1416,7 @@ class GuitarAmpRecorderApp:
             current_export is None
             or not current_export.exists()
             or current_export.parent != output_dir
+            or current_export != recent_files[0]
         ):
             self.last_export_path = recent_files[0]
         lines = [f"Klasor: {output_dir_text}"]
