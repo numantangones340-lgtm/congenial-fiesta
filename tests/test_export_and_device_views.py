@@ -138,7 +138,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Klasor: ~/Demo", recorder.recent_exports_text.get())
         self.assertIn("Ses dosyalari: 1 | Gosterilen: 1", recorder.recent_exports_text.get())
         self.assertIn("- take_001.wav (Son export)", recorder.recent_exports_text.get())
-        self.assertIn("- session_summary.json (Son oturum ozeti)", recorder.recent_exports_text.get())
+        self.assertIn("- session_summary.json (Son oturum ozeti, acilabilir)", recorder.recent_exports_text.get())
 
     def test_refresh_recent_exports_explains_summary_when_audio_missing(self) -> None:
         recorder = self.make_app()
@@ -159,7 +159,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                     "Klasor: ~/Demo",
                     "Ses dosyalari: 0 | Gosterilen: 0",
                     "Ses dosyasi yok. Son oturum ozeti hazir.",
-                    "- session_summary.json (Son oturum ozeti)",
+                    "- session_summary.json (Son oturum ozeti, acilabilir)",
                 ]
             ),
         )
