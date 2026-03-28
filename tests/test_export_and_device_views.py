@@ -124,6 +124,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("- take_001.wav", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Oturum ozeti hazir)", recorder.recent_exports_text.get())
 
+    def test_refresh_recent_exports_restores_summary_button_from_output_dir(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            (output_dir / "session_summary.json").write_text("{}", encoding="utf-8")
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.refresh_recent_exports()
+
+        self.assertEqual(recorder.last_session_summary_path, output_dir / "session_summary.json")
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
+
     def test_refresh_recent_exports_restores_last_export_from_newest_file(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
