@@ -313,7 +313,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 self.assertTrue(output_dir.exists())
                 run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
                 recorder.refresh_recent_exports.assert_called_once()
-                self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/new-session-folder")
+                self.assertEqual(recorder.status_messages[-1], "Klasor hazirlandi ve acildi: ~/new-session-folder")
+
+    def test_open_output_dir_in_finder_reports_existing_directory(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_recent_exports = mock.Mock()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/existing-session-folder")
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_output_dir_in_finder()
+
+        run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
+        recorder.refresh_recent_exports.assert_called_once()
+        self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
 
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
         recorder = self.make_app()

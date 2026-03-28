@@ -1488,10 +1488,12 @@ class GuitarAmpRecorderApp:
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.resolve_output_dir()
         try:
+            created_now = not output_dir.exists()
             output_dir.mkdir(parents=True, exist_ok=True)
             subprocess.run(["open", str(output_dir)], check=False)
             self.refresh_recent_exports()
-            self.set_status(f"Klasor acildi: {self.format_display_path(output_dir)}")
+            prefix = "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
+            self.set_status(f"{prefix}: {self.format_display_path(output_dir)}")
         except Exception as exc:
             self.set_status(f"Klasor acilamadi: {exc}")
 
