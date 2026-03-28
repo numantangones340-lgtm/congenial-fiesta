@@ -1400,8 +1400,7 @@ class GuitarAmpRecorderApp:
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )[:6]
-        audio_count_label = "Ses dosyasi" if len(all_audio_files) == 1 else "Ses dosyalari"
-        count_line = f"{audio_count_label}: {len(all_audio_files)}"
+        count_line = f"Ses dosyasi sayisi: {len(all_audio_files)}"
         if len(all_audio_files) > len(recent_files):
             count_line += " | Listede: son 6 ses dosyasi"
         elif len(recent_files) == 1:
