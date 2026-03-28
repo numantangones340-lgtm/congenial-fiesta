@@ -519,7 +519,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
         self.last_session_summary_path: Optional[Path] = None
-        self.recent_exports_text = StringVar(value="Henuz ses kaydi yok.")
+        self.recent_exports_text = StringVar(value="Henuz ses kaydi yok. Yeni kayitlar burada gorunecek.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
         self.output_device_options = ["Varsayılan macOS çıkışı"]
