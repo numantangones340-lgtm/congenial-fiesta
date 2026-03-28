@@ -1406,7 +1406,7 @@ class GuitarAmpRecorderApp:
         elif len(recent_files) == 1:
             count_line += " | Gorunen: 1 ses dosyasi"
         elif recent_files:
-            count_line += " | Gorunen: tum mevcut ses dosyalari"
+            count_line += " | Gorunen: tum ses dosyalari"
         else:
             count_line += " | Gorunen: 0 ses dosyasi"
             if summary_line:
@@ -1480,7 +1480,7 @@ class GuitarAmpRecorderApp:
         elif shown_count == 1:
             visibility_suffix = " Gorunen: 1 ses dosyasi."
         else:
-            visibility_suffix = " Gorunen: tum mevcut ses dosyalari."
+            visibility_suffix = " Gorunen: tum ses dosyalari."
         sort_suffix = " Siralama: en yeni ustte." if shown_count > 1 else ""
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
