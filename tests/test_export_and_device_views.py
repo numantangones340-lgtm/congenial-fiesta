@@ -237,6 +237,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.last_export_path, second)
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
 
+    def test_refresh_recent_exports_scopes_last_export_to_active_folder(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as olddir:
+            output_dir = Path(tmpdir)
+            first = output_dir / "take_001.wav"
+            second = output_dir / "take_002.mp3"
+            first.write_text("audio", encoding="utf-8")
+            second.write_text("audio", encoding="utf-8")
+            os.utime(first, (time.time(), time.time()))
+            os.utime(second, (time.time() + 10, time.time() + 10))
+            old_export = Path(olddir) / "old_take.wav"
+            old_export.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = old_export
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.refresh_recent_exports()
+
+        self.assertEqual(recorder.last_export_path, second)
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
+
     def test_refresh_recent_exports_from_action_reports_audio_count(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

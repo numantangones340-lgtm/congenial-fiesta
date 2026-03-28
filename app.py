@@ -1411,7 +1411,12 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
-        if self.last_export_path is None or not self.last_export_path.exists():
+        current_export = self.last_export_path
+        if (
+            current_export is None
+            or not current_export.exists()
+            or current_export.parent != output_dir
+        ):
             self.last_export_path = recent_files[0]
         lines = [f"Klasor: {output_dir_text}"]
         lines.append(count_line)
