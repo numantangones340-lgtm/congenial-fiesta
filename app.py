@@ -1406,7 +1406,7 @@ class GuitarAmpRecorderApp:
         elif recent_files:
             count_line += " | Tumu listede"
         else:
-            count_line += " | Liste bos"
+            count_line += " | Ses listesi bos"
         if len(recent_files) > 1:
             count_line += " | En yeni ustte"
         if not recent_files:
