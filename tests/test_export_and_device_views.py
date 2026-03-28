@@ -140,6 +140,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("- take_001.wav (Son export, Finder'da gosterilebilir)", recorder.recent_exports_text.get())
         self.assertIn("- session_summary.json (Son oturum ozeti, acilabilir)", recorder.recent_exports_text.get())
 
+    def test_refresh_recent_exports_marks_all_audio_listed_when_multiple_files_fit(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            first = output_dir / "take_001.wav"
+            second = output_dir / "take_002.mp3"
+            first.write_text("audio", encoding="utf-8")
+            second.write_text("audio", encoding="utf-8")
+            os.utime(first, (time.time(), time.time()))
+            os.utime(second, (time.time() + 10, time.time() + 10))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            recorder.refresh_recent_exports()
+
+        self.assertIn(
+            "Ses dosyalari: 2 | Gosterilen: 2 | Tum ses dosyalari listede | En yeni ustte",
+            recorder.recent_exports_text.get(),
+        )
+
     def test_refresh_recent_exports_explains_summary_when_audio_missing(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
