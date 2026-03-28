@@ -1417,7 +1417,7 @@ class GuitarAmpRecorderApp:
             lines = [f"Klasor {output_dir_text}"]
             lines.append(count_line)
             if summary_line:
-                lines.append("Ses dosyasi yok. Asagidan ozeti acabilirsiniz.")
+                lines.append("Ses dosyasi yok. Alttaki ozeti acabilirsiniz.")
                 lines.append(summary_line)
             else:
                 lines.append("Ses dosyasi yok. Yeni kayitlar burada yer alir.")
