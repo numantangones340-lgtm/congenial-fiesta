@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Klasor ~/Demo", "Toplam 7 | Gr son 6 | Yeni"]
+            expected = ["Klasor ~/Demo", "Top 7 | Gr son 6 | Yeni"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Export)")
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -121,7 +121,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
                 "Klasor ~/Demo",
-                "Toplam 8 | Gr son 6 | Yeni",
+                "Top 8 | Gr son 6 | Yeni",
                 f"- {recent[0].name} (Export)",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -163,7 +163,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn("Klasor ~/Demo", recorder.recent_exports_text.get())
-        self.assertIn("Toplam 1 | Gr 1", recorder.recent_exports_text.get())
+        self.assertIn("Top 1 | Gr 1", recorder.recent_exports_text.get())
         self.assertIn(
             "- take_001.wav (Export)",
             recorder.recent_exports_text.get(),
@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Toplam 2 | Gr tumu | Yeni",
+            "Top 2 | Gr tumu | Yeni",
             recorder.recent_exports_text.get(),
         )
 
@@ -210,7 +210,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor ~/Demo",
-                    "Toplam 0 | Gr 0 | Ozet",
+                    "Top 0 | Gr 0 | Ozet",
                     "Ses dosyasi yok. Asagidaki ozeti acabilirsiniz.",
                     "- session_summary.json (Ozet)",
                 ]
@@ -267,7 +267,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "\n".join(
                 [
                     "Klasor ~/Demo",
-                    "Toplam 0 | Gr 0",
+                    "Top 0 | Gr 0",
                     "Export yok. Yeni kayitlardan sonra burada gorunecek.",
                 ]
             ),
