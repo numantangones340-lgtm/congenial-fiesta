@@ -1402,7 +1402,7 @@ class GuitarAmpRecorderApp:
         )[:6]
         count_line = f"Toplam: {len(all_audio_files)} ses dosyasi"
         if len(all_audio_files) > len(recent_files):
-            count_line += " | Gorunen: son 6 ses dosyasi"
+            count_line += " | Gorunen: son 6"
         elif len(recent_files) == 1:
             count_line += " | Gorunen: 1 ses dosyasi"
         elif recent_files:
@@ -1476,7 +1476,7 @@ class GuitarAmpRecorderApp:
             return
         shown_count = min(len(audio_files), 6)
         if len(audio_files) > shown_count:
-            visibility_suffix = " Gorunen: son 6 ses dosyasi."
+            visibility_suffix = " Gorunen: son 6."
         elif shown_count == 1:
             visibility_suffix = " Gorunen: 1 ses dosyasi."
         else:
