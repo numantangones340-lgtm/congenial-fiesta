@@ -1442,7 +1442,7 @@ class GuitarAmpRecorderApp:
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
             lines.append(
-                f"- +{hidden_count}"
+                f"+{hidden_count}"
             )
         if summary_line:
             lines.append(summary_line)
