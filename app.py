@@ -1410,7 +1410,7 @@ class GuitarAmpRecorderApp:
         else:
             count_line += " | Listede yok: 0 ses dosyasi"
             if summary_line:
-                count_line += " | Yalnizca en yeni oturum ozeti dosyasi hazir"
+                count_line += " | En yeni oturum ozeti dosyasi hazir"
         if len(recent_files) > 1:
             count_line += " | Siralama: en yeni ustte"
         if not recent_files:
@@ -1466,7 +1466,7 @@ class GuitarAmpRecorderApp:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
                 self.set_status(
                     "Son ciktilar yenilendi. Listede yok: 0 ses dosyasi. "
-                    "Yalnizca en yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
+                    "En yeni oturum ozeti dosyasi hazir; 'Son Oturum Ozetini Ac' ile acabilirsiniz."
                 )
             else:
                 self.set_status(
