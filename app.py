@@ -1478,7 +1478,7 @@ class GuitarAmpRecorderApp:
             return
         shown_count = min(len(audio_files), 6)
         if len(audio_files) > shown_count:
-            visibility_suffix = " Son 6 kayit listede."
+            visibility_suffix = " Listede: son 6 kayit."
         elif shown_count == 1:
             visibility_suffix = " Tek kayit listede."
         else:

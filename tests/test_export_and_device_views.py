@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Son 6 kayit listede.",
+            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Listede: son 6 kayit.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
