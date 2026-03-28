@@ -345,7 +345,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. Henuz export yok, yeni kayitlardan sonra ciktilar burada gorunecek.",
+            "Son ciktilar yenilendi. Liste bos, yeni kayitlardan sonra ciktilar burada gorunecek.",
         )
 
     def test_refresh_recent_exports_from_action_reports_summary_only_state(self) -> None:
