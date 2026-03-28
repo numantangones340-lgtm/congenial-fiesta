@@ -94,7 +94,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
             recorder.format_display_path = mock.Mock(return_value="~/Demo")
             recorder.refresh_recent_exports()
-            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", "Ses dosyasi sayisi: 7 | Listede: son 6 ses dosyasi | En yeni kayit ustte"]
+            expected = ["Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)", "Ses dosyasi sayisi: 7 | Listede: son 6 ses dosyasi | Siralama: en yeni ustte"]
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected.append(f"- {recent[0].name} (Son export dosyasi; 'Son Dosyayi Finder'da Goster')")
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -121,7 +121,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recent = sorted(files, key=lambda path: path.stat().st_mtime, reverse=True)[:6]
             expected = [
                 "Cikis klasoru: ~/Demo ('Klasoru Ac' ile acabilirsiniz)",
-                "Ses dosyasi sayisi: 8 | Listede: son 6 ses dosyasi | En yeni kayit ustte",
+                "Ses dosyasi sayisi: 8 | Listede: son 6 ses dosyasi | Siralama: en yeni ustte",
                 f"- {recent[0].name} (Son export dosyasi; 'Son Dosyayi Finder'da Goster')",
             ]
             expected.extend(f"- {path.name}" for path in recent[1:])
@@ -189,7 +189,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         self.assertIn(
-            "Ses dosyasi sayisi: 2 | Listede: tum ses dosyalari | En yeni kayit ustte",
+            "Ses dosyasi sayisi: 2 | Listede: tum ses dosyalari | Siralama: en yeni ustte",
             recorder.recent_exports_text.get(),
         )
 
@@ -341,7 +341,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Listede: tum ses dosyalari. En yeni kayit ustte.",
+            "Son ciktilar yenilendi. 2 ses dosyasi bulundu. Listede: tum ses dosyalari. Siralama: en yeni ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_audio_count_with_summary(self) -> None:
@@ -374,7 +374,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.status_messages[-1],
-            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Listede: son 6 ses dosyasi. En yeni kayit ustte.",
+            "Son ciktilar yenilendi. 7 ses dosyasi bulundu. Listede: son 6 ses dosyasi. Siralama: en yeni ustte.",
         )
 
     def test_refresh_recent_exports_from_action_reports_missing_dir(self) -> None:
