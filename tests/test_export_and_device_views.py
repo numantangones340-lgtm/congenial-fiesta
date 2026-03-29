@@ -875,6 +875,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             True,
         )
 
+    def test_handle_missing_recent_output_target_for_open_delegates_to_clear(self) -> None:
+        recorder = self.make_app()
+        recorder.clear_missing_recent_output_target = mock.Mock()
+
+        recorder.handle_missing_recent_output_target_for_open(
+            "last_export_path",
+            "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+        )
+
+        recorder.clear_missing_recent_output_target.assert_called_once_with(
+            "last_export_path",
+            "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+        )
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
