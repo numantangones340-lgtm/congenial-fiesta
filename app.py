@@ -1449,14 +1449,9 @@ class GuitarAmpRecorderApp:
         ]
         if not audio_files:
             if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-                self.set_status(
-                    f"Durum guncel. {self.summary_ready_status_message()}"
-                )
+                self.set_status(self.summary_ready_full_status_message())
             else:
-                self.set_status(
-                    "Durum guncel. "
-                    "Yeni kayitlar burada gosterilir."
-                )
+                self.set_status(self.empty_recent_exports_status_message())
             return
         shown_count = min(len(audio_files), 6)
         visibility_suffix = self.recent_exports_status_suffix(
@@ -1490,6 +1485,12 @@ class GuitarAmpRecorderApp:
 
     def summary_ready_status_message(self) -> str:
         return "Ozet hazir. Isterseniz acabilirsiniz."
+
+    def empty_recent_exports_status_message(self) -> str:
+        return "Durum guncel. Yeni kayitlar burada gosterilir."
+
+    def summary_ready_full_status_message(self) -> str:
+        return f"Durum guncel. {self.summary_ready_status_message()}"
 
     def recent_exports_count_line(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         line = f"Top {total_audio_count}"

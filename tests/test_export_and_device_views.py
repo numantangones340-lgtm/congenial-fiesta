@@ -102,6 +102,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Ozet hazir. Isterseniz acabilirsiniz.",
         )
 
+    def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.empty_recent_exports_status_message(),
+            "Durum guncel. Yeni kayitlar burada gosterilir.",
+        )
+
+    def test_summary_ready_full_status_message_matches_status_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.summary_ready_full_status_message(),
+            "Durum guncel. Ozet hazir. Isterseniz acabilirsiniz.",
+        )
+
     def test_missing_output_dir_message_matches_empty_view_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
