@@ -2867,12 +2867,22 @@ class GuitarAmpRecorderApp:
         error_prefix: str,
         reveal_in_finder: bool = False,
     ) -> dict[str, object]:
-        payload = self.recent_output_open_target_args_payload(
-            attribute_name=attribute_name,
-            target_name=target_name,
-            success_prefix=success_prefix,
-            error_prefix=error_prefix,
+        return self.recent_output_open_target_payload_with_reveal(
+            self.recent_output_open_target_args_payload(
+                attribute_name=attribute_name,
+                target_name=target_name,
+                success_prefix=success_prefix,
+                error_prefix=error_prefix,
+            ),
+            reveal_in_finder,
         )
+
+    def recent_output_open_target_payload_with_reveal(
+        self,
+        payload: dict[str, object],
+        reveal_in_finder: bool,
+    ) -> dict[str, object]:
+        payload = dict(payload)
         payload.update(self.recent_output_open_reveal_args(reveal_in_finder))
         return payload
 

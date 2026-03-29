@@ -3634,6 +3634,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             },
         )
 
+    def test_recent_output_open_target_payload_with_reveal_returns_target_payload(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_target_payload_with_reveal(
+                {
+                    "attribute_name": "last_export_path",
+                    "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                    "success_prefix": "Son export Finder'da gosteriliyor",
+                    "error_prefix": "Finder acilamadi",
+                },
+                True,
+            ),
+            {
+                "attribute_name": "last_export_path",
+                "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                "success_prefix": "Son export Finder'da gosteriliyor",
+                "error_prefix": "Finder acilamadi",
+                "reveal_in_finder": True,
+            },
+        )
+
     def test_recent_output_open_target_args_payload_returns_target_payload(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
