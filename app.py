@@ -2827,6 +2827,9 @@ class GuitarAmpRecorderApp:
         payload.update(self.recent_output_open_reveal_args(reveal_in_finder))
         return payload
 
+    def recent_output_missing_message(self, target_name: str) -> str:
+        return f"{target_name} bulunamadi; son ciktilar yenilendi."
+
     def recent_output_open_args_payload(
         self,
         attribute_name: str,
@@ -2849,7 +2852,7 @@ class GuitarAmpRecorderApp:
     def open_last_export_in_finder_args(self) -> dict[str, object]:
         return self.recent_output_open_args(
             attribute_name="last_export_path",
-            missing_message="Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            missing_message=self.recent_output_missing_message("Son export dosyasi"),
             success_prefix="Son export Finder'da gosteriliyor",
             error_prefix="Finder acilamadi",
             reveal_in_finder=True,
@@ -2876,7 +2879,7 @@ class GuitarAmpRecorderApp:
     def open_last_session_summary_args(self) -> dict[str, object]:
         return self.recent_output_open_args(
             attribute_name="last_session_summary_path",
-            missing_message="Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
+            missing_message=self.recent_output_missing_message("Son oturum ozeti"),
             success_prefix="Oturum ozeti aciliyor",
             error_prefix="Ozet acilamadi",
         )
