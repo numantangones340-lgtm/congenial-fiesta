@@ -2013,10 +2013,18 @@ class GuitarAmpRecorderApp:
             return self.recent_exports_empty_lines_with_summary(summary_line)
         return self.recent_exports_empty_lines_without_summary()
 
-    def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
+    def recent_exports_empty_content_lines(
+        self,
+        output_dir_text: str,
+        count_line: str,
+        summary_line: str,
+    ) -> list[str]:
         lines = self.recent_exports_intro_lines(output_dir_text, count_line)
         lines.extend(self.recent_exports_empty_body_lines(summary_line))
         return lines
+
+    def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
+        return self.recent_exports_empty_content_lines(output_dir_text, count_line, summary_line)
 
     def recent_exports_has_hidden_count(self, hidden_count: int) -> bool:
         return self.recent_exports_has_count(hidden_count)

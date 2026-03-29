@@ -1558,6 +1558,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_empty_content_lines_combines_intro_and_body(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_empty_content_lines(
+                output_dir_text="~/Demo",
+                count_line="Top 0 | Ozet",
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            [
+                "Klasor ~/Demo",
+                "Top 0 | Ozet",
+                "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
     def test_build_recent_exports_empty_lines_with_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
