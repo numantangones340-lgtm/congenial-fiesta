@@ -2447,8 +2447,11 @@ class GuitarAmpRecorderApp:
     def output_dir_open_error_text(self, exc: Exception) -> str:
         return f"{self.output_dir_open_error_prefix()}: {self.output_dir_open_error_detail_text(exc)}"
 
+    def output_dir_open_error_status_text(self, exc: Exception) -> str:
+        return self.output_dir_open_error_text(exc)
+
     def set_output_dir_open_error_status(self, exc: Exception) -> None:
-        self.set_status(self.output_dir_open_error_text(exc))
+        self.set_status(self.output_dir_open_error_status_text(exc))
 
     def open_resolved_output_dir_in_finder(self, output_dir: Path) -> None:
         try:

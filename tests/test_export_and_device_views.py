@@ -538,6 +538,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "boom",
         )
 
+    def test_output_dir_open_error_status_text_formats_exception(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.output_dir_open_error_status_text(RuntimeError("boom")),
+            "Klasor acilamadi: boom",
+        )
+
     def test_set_output_dir_open_error_status_reports_exception(self) -> None:
         recorder = self.make_app()
 
