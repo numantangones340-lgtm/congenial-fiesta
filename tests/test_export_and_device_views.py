@@ -2034,6 +2034,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Klasor ~/Demo\nTop 0 | Ozet\nHenuz ses kaydi yok. Alttaki ozeti acabilirsiniz.\n- session_summary.json (Ozet)",
         )
 
+    def test_set_shown_recent_exports_view_sets_text_and_refreshes_buttons(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_shown_recent_exports_view(
+            output_dir_text="~/Demo",
+            count_line="Top 0 | Ozet",
+            recent_files=[],
+            hidden_count=0,
+            summary_line="- session_summary.json (Ozet)",
+        )
+
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            "Klasor ~/Demo\nTop 0 | Ozet\nHenuz ses kaydi yok. Alttaki ozeti acabilirsiniz.\n- session_summary.json (Ozet)",
+        )
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
+
     def test_show_recent_exports_sets_text_and_disables_buttons_without_paths(self) -> None:
         recorder = self.make_app()
 

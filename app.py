@@ -2320,7 +2320,7 @@ class GuitarAmpRecorderApp:
             summary_line=summary_line,
         )
 
-    def show_recent_exports(
+    def set_shown_recent_exports_view(
         self,
         output_dir_text: str,
         count_line: str,
@@ -2336,6 +2336,22 @@ class GuitarAmpRecorderApp:
                 hidden_count=hidden_count,
                 summary_line=summary_line,
             )
+        )
+
+    def show_recent_exports(
+        self,
+        output_dir_text: str,
+        count_line: str,
+        recent_files: list[Path],
+        hidden_count: int,
+        summary_line: str,
+    ) -> None:
+        self.set_shown_recent_exports_view(
+            output_dir_text=output_dir_text,
+            count_line=count_line,
+            recent_files=recent_files,
+            hidden_count=hidden_count,
+            summary_line=summary_line,
         )
 
     def update_recent_exports_text(self, text: str) -> None:
