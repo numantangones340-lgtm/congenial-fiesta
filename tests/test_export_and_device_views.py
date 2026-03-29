@@ -1350,6 +1350,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "- take_001.wav (Export)",
         )
 
+    def test_recent_export_label_matches_export_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_export_label(), "Export")
+
     def test_recent_output_line_without_label(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
