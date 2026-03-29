@@ -2882,9 +2882,12 @@ class GuitarAmpRecorderApp:
         payload: dict[str, object],
         reveal_in_finder: bool,
     ) -> dict[str, object]:
-        payload = dict(payload)
+        payload = self.recent_output_payload_args(payload)
         payload.update(self.recent_output_open_reveal_args(reveal_in_finder))
         return payload
+
+    def recent_output_payload_args(self, payload: dict[str, object]) -> dict[str, object]:
+        return dict(payload)
 
     def recent_output_open_target_args_payload(
         self,

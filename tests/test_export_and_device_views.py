@@ -3656,6 +3656,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             },
         )
 
+    def test_recent_output_payload_args_returns_payload_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        payload = {
+            "attribute_name": "last_export_path",
+            "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+        }
+
+        resolved = recorder.recent_output_payload_args(payload)
+
+        self.assertEqual(resolved, payload)
+        self.assertIsNot(resolved, payload)
+
     def test_recent_output_open_target_args_payload_returns_target_payload(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
