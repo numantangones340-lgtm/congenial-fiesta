@@ -1608,6 +1608,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertTrue(recorder.recent_exports_has_files([Path("take_001.wav")]))
 
+    def test_recent_exports_lines_without_files_uses_empty_builder(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_lines_without_files(
+                output_dir_text="~/Demo",
+                count_line="Top 0 | Ozet",
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            [
+                "Klasor ~/Demo",
+                "Top 0 | Ozet",
+                "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
     def test_build_recent_exports_lines_uses_empty_builder_when_no_files(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
