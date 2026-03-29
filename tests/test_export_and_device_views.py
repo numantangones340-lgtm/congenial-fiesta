@@ -1656,6 +1656,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "- take_002.mp3 (Export)",
         )
 
+    def test_recent_exports_file_body_lines_if_present_skips_empty_files(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_file_body_lines_if_present([]),
+            [],
+        )
+
     def test_recent_exports_file_body_lines_formats_recent_files(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recent_files = [Path("take_002.mp3"), Path("take_001.wav")]
