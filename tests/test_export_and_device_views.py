@@ -491,6 +491,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["open", "/tmp/session_summary.json"],
         )
 
+    def test_recent_output_target_path_reads_named_attribute(self) -> None:
+        recorder = self.make_app()
+        recorder.last_export_path = Path("/tmp/take.wav")
+
+        self.assertEqual(
+            recorder.recent_output_target_path("last_export_path"),
+            Path("/tmp/take.wav"),
+        )
+
     def test_open_recent_output_target_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = None
