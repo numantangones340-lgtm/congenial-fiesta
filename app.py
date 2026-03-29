@@ -1690,6 +1690,24 @@ class GuitarAmpRecorderApp:
         display_context: dict[str, object],
     ) -> None:
         summary_line, recent_files, count_line, hidden_count = self.recent_exports_context_view_inputs(display_context)
+        self.show_recent_exports_context_view(
+            output_dir=output_dir,
+            output_dir_text=output_dir_text,
+            summary_line=summary_line,
+            recent_files=recent_files,
+            count_line=count_line,
+            hidden_count=hidden_count,
+        )
+
+    def show_recent_exports_context_view(
+        self,
+        output_dir: Path,
+        output_dir_text: str,
+        summary_line: str,
+        recent_files: list[Path],
+        count_line: str,
+        hidden_count: int,
+    ) -> None:
         self.sync_last_export_from_recent_files(output_dir, recent_files)
         self.show_recent_exports(
             output_dir_text=output_dir_text,

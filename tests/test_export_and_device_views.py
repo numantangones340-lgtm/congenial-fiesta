@@ -1451,6 +1451,31 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ("- session_summary.json (Ozet)", [export_path], "Top 1 | Gr 1", 0),
         )
 
+    def test_show_recent_exports_context_view_applies_render_values(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        export_path = output_dir / "take.wav"
+        recorder.sync_last_export_from_recent_files = mock.Mock()
+        recorder.show_recent_exports = mock.Mock()
+
+        recorder.show_recent_exports_context_view(
+            output_dir=output_dir,
+            output_dir_text="~/Demo",
+            summary_line="- session_summary.json (Ozet)",
+            recent_files=[export_path],
+            count_line="Top 1 | Gr 1",
+            hidden_count=0,
+        )
+
+        recorder.sync_last_export_from_recent_files.assert_called_once_with(output_dir, [export_path])
+        recorder.show_recent_exports.assert_called_once_with(
+            output_dir_text="~/Demo",
+            count_line="Top 1 | Gr 1",
+            recent_files=[export_path],
+            hidden_count=0,
+            summary_line="- session_summary.json (Ozet)",
+        )
+
     def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
