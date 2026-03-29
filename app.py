@@ -1403,13 +1403,7 @@ class GuitarAmpRecorderApp:
         )
         if not recent_files:
             self.last_export_path = None
-            lines = [self.recent_exports_header_line(output_dir_text)]
-            lines.append(count_line)
-            if summary_line:
-                lines.append(self.empty_recent_exports_summary_message())
-                lines.append(summary_line)
-            else:
-                lines.append(self.empty_recent_exports_message())
+            lines = self.build_recent_exports_empty_lines(output_dir_text, count_line, summary_line)
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
@@ -1421,15 +1415,14 @@ class GuitarAmpRecorderApp:
             or current_export != recent_files[0]
         ):
             self.last_export_path = recent_files[0]
-        lines = [self.recent_exports_header_line(output_dir_text)]
-        lines.append(count_line)
-        for index, path in enumerate(recent_files):
-            lines.append(self.recent_export_line(path.name, is_latest=(index == 0)))
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
-        if hidden_count:
-            lines.append(self.recent_hidden_count_line(hidden_count))
-        if summary_line:
-            lines.append(summary_line)
+        lines = self.build_recent_exports_file_lines(
+            output_dir_text=output_dir_text,
+            count_line=count_line,
+            recent_files=recent_files,
+            hidden_count=hidden_count,
+            summary_line=summary_line,
+        )
         self.recent_exports_text.set("\n".join(lines))
         self.refresh_recent_output_buttons()
 
@@ -1549,6 +1542,32 @@ class GuitarAmpRecorderApp:
 
     def recent_summary_line(self, filename: str) -> str:
         return f"- {filename} (Ozet)"
+
+    def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
+        lines = [self.recent_exports_header_line(output_dir_text), count_line]
+        if summary_line:
+            lines.append(self.empty_recent_exports_summary_message())
+            lines.append(summary_line)
+        else:
+            lines.append(self.empty_recent_exports_message())
+        return lines
+
+    def build_recent_exports_file_lines(
+        self,
+        output_dir_text: str,
+        count_line: str,
+        recent_files: list[Path],
+        hidden_count: int,
+        summary_line: str,
+    ) -> list[str]:
+        lines = [self.recent_exports_header_line(output_dir_text), count_line]
+        for index, path in enumerate(recent_files):
+            lines.append(self.recent_export_line(path.name, is_latest=(index == 0)))
+        if hidden_count:
+            lines.append(self.recent_hidden_count_line(hidden_count))
+        if summary_line:
+            lines.append(summary_line)
+        return lines
 
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
         candidate = output_dir / "session_summary.json"

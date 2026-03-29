@@ -214,6 +214,45 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "+2",
         )
 
+    def test_build_recent_exports_empty_lines_with_summary(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.build_recent_exports_empty_lines(
+                output_dir_text="~/Demo",
+                count_line="Top 0 | Ozet",
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            [
+                "Klasor ~/Demo",
+                "Top 0 | Ozet",
+                "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
+    def test_build_recent_exports_file_lines_with_hidden_count(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recent_files = [Path("take_002.mp3"), Path("take_001.wav")]
+
+        self.assertEqual(
+            recorder.build_recent_exports_file_lines(
+                output_dir_text="~/Demo",
+                count_line="Top 3 | Gr son 6 | Yeni",
+                recent_files=recent_files,
+                hidden_count=1,
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            [
+                "Klasor ~/Demo",
+                "Top 3 | Gr son 6 | Yeni",
+                "- take_002.mp3 (Export)",
+                "- take_001.wav",
+                "+1",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
