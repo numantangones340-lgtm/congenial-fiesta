@@ -774,6 +774,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.limit_recent_export_audio_files.assert_called_once_with(recent_files)
         recorder.recent_exports_shown_count.assert_called_once_with(1)
 
+    def test_recent_exports_display_metrics_builds_count_line_and_hidden_count(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.recent_exports_count_line = mock.Mock(return_value="Top 7 | Gr son 6 | Yeni")
+        recorder.recent_exports_hidden_count = mock.Mock(return_value=1)
+
+        metrics = recorder.recent_exports_display_metrics(
+            total_audio_count=7,
+            shown_count=6,
+            has_summary=False,
+            has_recent_files=True,
+        )
+
+        self.assertEqual(metrics, ("Top 7 | Gr son 6 | Yeni", 1))
+        recorder.recent_exports_count_line.assert_called_once_with(
+            total_audio_count=7,
+            shown_count=6,
+            has_summary=False,
+        )
+        recorder.recent_exports_hidden_count.assert_called_once_with(
+            total_audio_count=7,
+            shown_count=6,
+        )
+
     def test_recent_exports_display_context_matches_summary_only_state(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:

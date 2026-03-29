@@ -1544,28 +1544,45 @@ class GuitarAmpRecorderApp:
             "shown_count": shown_count,
         }
 
+    def recent_exports_display_metrics(
+        self,
+        total_audio_count: int,
+        shown_count: int,
+        has_summary: bool,
+        has_recent_files: bool,
+    ) -> tuple[str, int]:
+        count_line = self.recent_exports_count_line(
+            total_audio_count=total_audio_count,
+            shown_count=shown_count,
+            has_summary=has_summary,
+        )
+        hidden_count = (
+            self.recent_exports_hidden_count(
+                total_audio_count=total_audio_count,
+                shown_count=shown_count,
+            )
+            if has_recent_files
+            else 0
+        )
+        return count_line, hidden_count
+
     def recent_exports_display_context(self, output_dir: Path) -> dict[str, object]:
         display_inputs = self.recent_exports_display_inputs(output_dir)
         summary_line = str(display_inputs["summary_line"])
         recent_files = list(display_inputs["recent_files"])
         total_audio_count = int(display_inputs["total_audio_count"])
         shown_count = int(display_inputs["shown_count"])
+        count_line, hidden_count = self.recent_exports_display_metrics(
+            total_audio_count=total_audio_count,
+            shown_count=shown_count,
+            has_summary=bool(summary_line),
+            has_recent_files=bool(recent_files),
+        )
         return {
             "summary_line": summary_line,
             "recent_files": recent_files,
-            "count_line": self.recent_exports_count_line(
-                total_audio_count=total_audio_count,
-                shown_count=shown_count,
-                has_summary=bool(summary_line),
-            ),
-            "hidden_count": (
-                self.recent_exports_hidden_count(
-                    total_audio_count=total_audio_count,
-                    shown_count=shown_count,
-                )
-                if recent_files
-                else 0
-            ),
+            "count_line": count_line,
+            "hidden_count": hidden_count,
         }
 
     def show_recent_exports_from_context(
