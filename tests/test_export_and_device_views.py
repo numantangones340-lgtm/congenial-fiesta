@@ -918,6 +918,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             True,
         )
 
+    def test_has_resolved_recent_output_target_for_open_checks_presence(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertFalse(recorder.has_resolved_recent_output_target_for_open(None))
+        self.assertTrue(recorder.has_resolved_recent_output_target_for_open(Path("/tmp/take.wav")))
+
     def test_handle_resolved_recent_output_target_for_open_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.handle_missing_recent_output_target_for_open = mock.Mock()
