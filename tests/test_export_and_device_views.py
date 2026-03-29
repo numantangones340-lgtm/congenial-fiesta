@@ -617,6 +617,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
 
+    def test_recent_output_open_error_text_formats_exception(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_error_text("Finder acilamadi", RuntimeError("boom")),
+            "Finder acilamadi: boom",
+        )
+
     def test_open_recent_output_target_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = None

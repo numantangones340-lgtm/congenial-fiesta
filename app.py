@@ -2520,7 +2520,10 @@ class GuitarAmpRecorderApp:
             subprocess.run(command, check=False)
             self.set_recent_output_open_status(success_prefix, path)
         except Exception as exc:
-            self.set_status(f"{error_prefix}: {exc}")
+            self.set_status(self.recent_output_open_error_text(error_prefix, exc))
+
+    def recent_output_open_error_text(self, error_prefix: str, exc: Exception) -> str:
+        return f"{error_prefix}: {exc}"
 
     def open_recent_output_target(
         self,
