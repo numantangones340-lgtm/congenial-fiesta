@@ -1448,10 +1448,11 @@ class GuitarAmpRecorderApp:
             path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
         ]
         if not audio_files:
-            if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-                self.set_status(self.summary_ready_full_status_message())
-            else:
-                self.set_status(self.empty_recent_exports_status_message())
+            self.set_status(
+                self.recent_exports_empty_status_message(
+                    has_summary=self.last_session_summary_path is not None and self.last_session_summary_path.exists()
+                )
+            )
             return
         shown_count = min(len(audio_files), 6)
         self.set_status(
@@ -1488,6 +1489,11 @@ class GuitarAmpRecorderApp:
 
     def summary_ready_full_status_message(self) -> str:
         return f"Durum guncel. {self.summary_ready_status_message()}"
+
+    def recent_exports_empty_status_message(self, has_summary: bool) -> str:
+        if has_summary:
+            return self.summary_ready_full_status_message()
+        return self.empty_recent_exports_status_message()
 
     def recent_exports_count_line(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         line = f"Top {total_audio_count}"
