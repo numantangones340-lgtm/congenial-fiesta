@@ -1987,11 +1987,13 @@ class GuitarAmpRecorderApp:
     def recent_exports_intro_lines(self, output_dir_text: str, count_line: str) -> list[str]:
         return [self.recent_exports_header_line(output_dir_text), count_line]
 
+    def recent_exports_empty_summary_lines(self, summary_line: str) -> list[str]:
+        return [self.empty_recent_exports_summary_message(), summary_line]
+
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         lines = self.recent_exports_intro_lines(output_dir_text, count_line)
         if summary_line:
-            lines.append(self.empty_recent_exports_summary_message())
-            lines.append(summary_line)
+            lines.extend(self.recent_exports_empty_summary_lines(summary_line))
         else:
             lines.append(self.empty_recent_exports_message())
         return lines
