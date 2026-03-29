@@ -540,6 +540,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["open", "/tmp/demo-output"],
         )
 
+    def test_output_dir_open_command_prefix_returns_open(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.output_dir_open_command_prefix(), ["open"])
+
     def test_output_dir_open_command_text_returns_path_string(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")

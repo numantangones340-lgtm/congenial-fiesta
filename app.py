@@ -2491,8 +2491,11 @@ class GuitarAmpRecorderApp:
     def output_dir_open_command_text(self, output_dir: Path) -> str:
         return str(output_dir)
 
+    def output_dir_open_command_prefix(self) -> list[str]:
+        return ["open"]
+
     def output_dir_open_command(self, output_dir: Path) -> list[str]:
-        return ["open", self.output_dir_open_command_text(output_dir)]
+        return [*self.output_dir_open_command_prefix(), self.output_dir_open_command_text(output_dir)]
 
     def recent_output_open_command_prefix(self, reveal_in_finder: bool) -> list[str]:
         return ["open", "-R"] if reveal_in_finder else ["open"]
