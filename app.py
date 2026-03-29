@@ -2483,7 +2483,7 @@ class GuitarAmpRecorderApp:
         self.set_status(self.recent_output_open_status_text(prefix, path))
 
     def recent_output_open_error_status_text(self, error_prefix: str, exc: Exception) -> str:
-        return self.recent_output_open_error_text(error_prefix, exc)
+        return f"{self.recent_output_open_error_prefix(error_prefix)}: {self.recent_output_open_error_status_detail_text(exc)}"
 
     def set_recent_output_open_error_status(self, error_prefix: str, exc: Exception) -> None:
         self.set_status(self.recent_output_open_error_status_text(error_prefix, exc))
@@ -2493,6 +2493,9 @@ class GuitarAmpRecorderApp:
 
     def recent_output_open_error_detail_text(self, exc: Exception) -> str:
         return str(exc)
+
+    def recent_output_open_error_status_detail_text(self, exc: Exception) -> str:
+        return self.recent_output_open_error_detail_text(exc)
 
     def output_dir_open_error_detail_text(self, exc: Exception) -> str:
         return str(exc)
