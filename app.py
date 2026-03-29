@@ -2636,6 +2636,15 @@ class GuitarAmpRecorderApp:
     ) -> None:
         self.clear_missing_recent_output_target(attribute_name, missing_message)
 
+    def handle_existing_recent_output_target_for_open(
+        self,
+        path: Path,
+        success_prefix: str,
+        error_prefix: str,
+        reveal_in_finder: bool = False,
+    ) -> None:
+        self.open_resolved_recent_output_target(path, success_prefix, error_prefix, reveal_in_finder)
+
     def handle_resolved_recent_output_target_for_open(
         self,
         path: Optional[Path],
@@ -2648,7 +2657,12 @@ class GuitarAmpRecorderApp:
         if path is None:
             self.handle_missing_recent_output_target_for_open(attribute_name, missing_message)
             return
-        self.open_resolved_recent_output_target(path, success_prefix, error_prefix, reveal_in_finder)
+        self.handle_existing_recent_output_target_for_open(
+            path,
+            success_prefix,
+            error_prefix,
+            reveal_in_finder,
+        )
 
     def open_recent_output_path(
         self,

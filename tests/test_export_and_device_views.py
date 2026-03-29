@@ -889,10 +889,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
         )
 
+    def test_handle_existing_recent_output_target_for_open_delegates_to_open(self) -> None:
+        recorder = self.make_app()
+        export_path = Path("/tmp/take.wav")
+        recorder.open_resolved_recent_output_target = mock.Mock()
+
+        recorder.handle_existing_recent_output_target_for_open(
+            export_path,
+            "Son export Finder'da gosteriliyor",
+            "Finder acilamadi",
+            True,
+        )
+
+        recorder.open_resolved_recent_output_target.assert_called_once_with(
+            export_path,
+            "Son export Finder'da gosteriliyor",
+            "Finder acilamadi",
+            True,
+        )
+
     def test_handle_resolved_recent_output_target_for_open_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.handle_missing_recent_output_target_for_open = mock.Mock()
-        recorder.open_resolved_recent_output_target = mock.Mock()
+        recorder.handle_existing_recent_output_target_for_open = mock.Mock()
 
         recorder.handle_resolved_recent_output_target_for_open(
             None,
@@ -907,7 +926,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "last_export_path",
             "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
         )
-        recorder.open_resolved_recent_output_target.assert_not_called()
+        recorder.handle_existing_recent_output_target_for_open.assert_not_called()
 
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
