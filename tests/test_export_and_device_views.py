@@ -749,6 +749,31 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(inputs, (2, True))
         recorder.recent_exports_status_context.assert_called_once_with(output_dir)
 
+    def test_recent_exports_display_inputs_collects_summary_and_counts(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recent_files = [Path("/tmp/demo-output/take.wav")]
+        recorder.recent_session_summary_line = mock.Mock(return_value="- session_summary.json (Ozet)")
+        recorder.list_recent_export_audio_files = mock.Mock(return_value=recent_files)
+        recorder.limit_recent_export_audio_files = mock.Mock(return_value=recent_files)
+        recorder.recent_exports_shown_count = mock.Mock(return_value=1)
+
+        inputs = recorder.recent_exports_display_inputs(output_dir)
+
+        self.assertEqual(
+            inputs,
+            {
+                "summary_line": "- session_summary.json (Ozet)",
+                "recent_files": recent_files,
+                "total_audio_count": 1,
+                "shown_count": 1,
+            },
+        )
+        recorder.recent_session_summary_line.assert_called_once_with(output_dir)
+        recorder.list_recent_export_audio_files.assert_called_once_with(output_dir)
+        recorder.limit_recent_export_audio_files.assert_called_once_with(recent_files)
+        recorder.recent_exports_shown_count.assert_called_once_with(1)
+
     def test_recent_exports_display_context_matches_summary_only_state(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:
