@@ -1762,9 +1762,7 @@ class GuitarAmpRecorderApp:
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.resolve_output_dir()
         try:
-            created_now = not output_dir.exists()
-            output_dir.mkdir(parents=True, exist_ok=True)
-            subprocess.run(self.output_dir_open_command(output_dir), check=False)
+            created_now = self.open_output_dir(output_dir)
             self.refresh_recent_exports()
             self.set_output_dir_open_status(output_dir, created_now)
         except Exception as exc:
@@ -1781,6 +1779,12 @@ class GuitarAmpRecorderApp:
     def set_output_dir_open_status(self, output_dir: Path, created_now: bool) -> None:
         prefix = "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
         self.set_status(f"{prefix}: {self.format_display_path(output_dir)}")
+
+    def open_output_dir(self, output_dir: Path) -> bool:
+        created_now = not output_dir.exists()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        subprocess.run(self.output_dir_open_command(output_dir), check=False)
+        return created_now
 
     def output_dir_open_command(self, output_dir: Path) -> list[str]:
         return ["open", str(output_dir)]

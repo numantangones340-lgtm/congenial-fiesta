@@ -315,6 +315,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.format_display_path.assert_called_once_with(output_dir)
         self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
 
+    def test_open_output_dir_creates_missing_directory_and_reports_created(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "new-session-folder"
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                created_now = recorder.open_output_dir(output_dir)
+
+            self.assertTrue(created_now)
+            self.assertTrue(output_dir.exists())
+            run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
+
+    def test_open_output_dir_returns_false_for_existing_directory(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                created_now = recorder.open_output_dir(output_dir)
+
+        self.assertFalse(created_now)
+        run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
+
     def test_output_dir_open_command_returns_open_command(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
