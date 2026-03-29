@@ -479,6 +479,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["open", "/tmp/demo-output"],
         )
 
+    def test_recent_output_open_command_prefix_matches_reveal_mode(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_output_open_command_prefix(True), ["open", "-R"])
+        self.assertEqual(recorder.recent_output_open_command_prefix(False), ["open"])
+
     def test_recent_output_open_command_for_finder_reveal(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         path = Path("/tmp/take.wav")
