@@ -2540,8 +2540,11 @@ class GuitarAmpRecorderApp:
     def output_dir_open_status_status_prefix(self, created_now: bool) -> str:
         return self.output_dir_open_status_prefix(created_now)
 
+    def output_dir_open_status_status_target_text(self, output_dir: Path) -> str:
+        return self.output_dir_open_status_target_text(output_dir)
+
     def output_dir_open_status_status_detail_text(self, output_dir: Path) -> str:
-        return self.output_dir_open_status_detail_text(output_dir)
+        return self.output_dir_open_status_status_target_text(output_dir)
 
     def output_dir_open_status_status_text(self, output_dir: Path, created_now: bool) -> str:
         return f"{self.output_dir_open_status_status_prefix(created_now)}: {self.output_dir_open_status_status_detail_text(output_dir)}"
