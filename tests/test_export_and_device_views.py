@@ -1365,6 +1365,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_output_line_prefix(), "- ")
 
+    def test_recent_output_has_label_detects_non_empty_label(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_output_has_label("Ozet"))
+
     def test_recent_output_label_suffix_wraps_label_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

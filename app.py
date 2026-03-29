@@ -1916,8 +1916,11 @@ class GuitarAmpRecorderApp:
     def recent_output_line_prefix(self) -> str:
         return "- "
 
+    def recent_output_has_label(self, label: str) -> bool:
+        return bool(label)
+
     def recent_output_label_suffix(self, label: str) -> str:
-        return f" ({label})" if label else ""
+        return f" ({label})" if self.recent_output_has_label(label) else ""
 
     def recent_output_line_content(self, filename: str) -> str:
         return f"{self.recent_output_line_prefix()}{filename}"
