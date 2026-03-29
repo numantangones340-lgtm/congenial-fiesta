@@ -1226,6 +1226,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.last_export_path, newest_path)
 
+    def test_recent_exports_context_view_inputs_extracts_render_values(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        export_path = Path("/tmp/demo-output/take.wav")
+        inputs = recorder.recent_exports_context_view_inputs(
+            {
+                "summary_line": "- session_summary.json (Ozet)",
+                "recent_files": [export_path],
+                "count_line": "Top 1 | Gr 1",
+                "hidden_count": 0,
+            }
+        )
+
+        self.assertEqual(
+            inputs,
+            ("- session_summary.json (Ozet)", [export_path], "Top 1 | Gr 1", 0),
+        )
+
     def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
