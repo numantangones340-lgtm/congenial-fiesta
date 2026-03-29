@@ -2760,14 +2760,17 @@ class GuitarAmpRecorderApp:
             reveal_in_finder,
         )
 
+    def open_last_export_in_finder_args(self) -> dict[str, object]:
+        return {
+            "attribute_name": "last_export_path",
+            "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            "success_prefix": "Son export Finder'da gosteriliyor",
+            "error_prefix": "Finder acilamadi",
+            "reveal_in_finder": True,
+        }
+
     def open_last_export_in_finder(self) -> None:
-        self.open_recent_output_target(
-            attribute_name="last_export_path",
-            missing_message="Son export dosyasi bulunamadi; son ciktilar yenilendi.",
-            success_prefix="Son export Finder'da gosteriliyor",
-            error_prefix="Finder acilamadi",
-            reveal_in_finder=True,
-        )
+        self.open_recent_output_target(**self.open_last_export_in_finder_args())
 
     def open_last_session_summary(self) -> None:
         self.open_recent_output_target(

@@ -3430,6 +3430,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi; son ciktilar yenilendi.")
 
+    def test_open_last_export_in_finder_args_returns_target_payload(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.open_last_export_in_finder_args(),
+            {
+                "attribute_name": "last_export_path",
+                "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                "success_prefix": "Son export Finder'da gosteriliyor",
+                "error_prefix": "Finder acilamadi",
+                "reveal_in_finder": True,
+            },
+        )
+
     def test_open_last_export_in_finder_reports_success(self) -> None:
         recorder = self.make_app()
         recorder.refresh_recent_exports = mock.Mock()
