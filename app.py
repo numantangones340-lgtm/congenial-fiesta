@@ -1990,6 +1990,9 @@ class GuitarAmpRecorderApp:
     def recent_exports_empty_summary_lines(self, summary_line: str) -> list[str]:
         return [self.empty_recent_exports_summary_message(), summary_line]
 
+    def recent_exports_empty_message_lines(self) -> list[str]:
+        return [self.empty_recent_exports_message()]
+
     def recent_exports_has_summary_line(self, summary_line: str) -> bool:
         return bool(summary_line)
 
@@ -1998,7 +2001,7 @@ class GuitarAmpRecorderApp:
         if self.recent_exports_has_summary_line(summary_line):
             lines.extend(self.recent_exports_empty_summary_lines(summary_line))
         else:
-            lines.append(self.empty_recent_exports_message())
+            lines.extend(self.recent_exports_empty_message_lines())
         return lines
 
     def recent_exports_has_hidden_count(self, hidden_count: int) -> bool:

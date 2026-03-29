@@ -1505,6 +1505,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_empty_message_lines_formats_empty_block(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_empty_message_lines(),
+            ["Henuz ses kaydi yok. Yeni kayitlar burada gosterilir."],
+        )
+
     def test_recent_exports_has_summary_line_detects_non_empty_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
