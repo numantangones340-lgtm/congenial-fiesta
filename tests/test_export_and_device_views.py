@@ -912,6 +912,42 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             has_recent_files=True,
         )
 
+    def test_recent_exports_display_context_components_collects_render_values(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        export_path = output_dir / "take.wav"
+        recorder.recent_exports_display_inputs = mock.Mock(
+            return_value={
+                "summary_line": "- session_summary.json (Ozet)",
+                "recent_files": [export_path],
+                "total_audio_count": 1,
+                "shown_count": 1,
+            }
+        )
+        recorder.recent_exports_display_context_inputs = mock.Mock(
+            return_value=("- session_summary.json (Ozet)", [export_path], 1, 1)
+        )
+        recorder.recent_exports_display_context_metrics = mock.Mock(return_value=("Top 1 | Gr 1 | Ozet", 0))
+
+        components = recorder.recent_exports_display_context_components(output_dir)
+
+        self.assertEqual(components, ("- session_summary.json (Ozet)", [export_path], "Top 1 | Gr 1 | Ozet", 0))
+        recorder.recent_exports_display_inputs.assert_called_once_with(output_dir)
+        recorder.recent_exports_display_context_inputs.assert_called_once_with(
+            {
+                "summary_line": "- session_summary.json (Ozet)",
+                "recent_files": [export_path],
+                "total_audio_count": 1,
+                "shown_count": 1,
+            }
+        )
+        recorder.recent_exports_display_context_metrics.assert_called_once_with(
+            summary_line="- session_summary.json (Ozet)",
+            recent_files=[export_path],
+            total_audio_count=1,
+            shown_count=1,
+        )
+
     def test_recent_exports_display_context_payload_builds_render_dict(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         export_path = Path("/tmp/demo-output/take.wav")
