@@ -268,6 +268,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             self.assertEqual(recorder.recent_output_button_state(path), "normal")
 
+    def test_apply_recent_output_button_state_configures_button(self) -> None:
+        recorder = self.make_app()
+        button = recorder.open_last_export_button
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "take.wav"
+            path.write_text("audio", encoding="utf-8")
+
+            recorder.apply_recent_output_button_state(button, path)
+
+        self.assertEqual(button.config_calls[-1], {"state": "normal"})
+
     def test_clear_missing_recent_output_target_clears_path_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
