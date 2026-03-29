@@ -1783,10 +1783,10 @@ class GuitarAmpRecorderApp:
             shown_count=shown_count,
             has_summary=False,
         )
-        suffix = f" {visibility_label}."
-        if shown_count > 1:
-            suffix += " Yeni."
-        return suffix
+        return f" {visibility_label}.{self.recent_exports_status_newest_suffix(shown_count)}"
+
+    def recent_exports_status_newest_suffix(self, shown_count: int) -> str:
+        return " Yeni." if shown_count > 1 else ""
 
     def recent_exports_audio_status_summary_suffix(self, has_summary: bool) -> str:
         return f" {self.summary_ready_status_message()}" if has_summary else ""
