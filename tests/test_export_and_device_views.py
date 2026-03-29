@@ -1219,6 +1219,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         )
         recorder.recent_exports_missing_dir_status_message.assert_called_once_with(missing_dir)
 
+    def test_recent_exports_action_status_has_output_dir_checks_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+
+            self.assertTrue(recorder.recent_exports_action_status_has_output_dir(output_dir))
+
+        self.assertFalse(recorder.recent_exports_action_status_has_output_dir(output_dir))
+
     def test_recent_exports_action_status_message_for_missing_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         missing_dir = Path("/tmp/does-not-exist-gar")
