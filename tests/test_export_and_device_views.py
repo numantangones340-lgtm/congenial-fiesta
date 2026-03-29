@@ -1360,6 +1360,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_export_line_label(True), "Export")
 
+    def test_recent_export_has_label_detects_latest_item(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_export_has_label(True))
+
     def test_recent_output_line_prefix_matches_list_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
