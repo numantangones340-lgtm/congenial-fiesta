@@ -525,6 +525,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Klasor acilamadi: boom",
         )
 
+    def test_output_dir_open_error_prefix_returns_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.output_dir_open_error_prefix(), "Klasor acilamadi")
+
     def test_output_dir_open_error_detail_text_returns_exception_text(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

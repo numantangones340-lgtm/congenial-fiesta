@@ -2441,8 +2441,11 @@ class GuitarAmpRecorderApp:
         created_now = self.open_output_dir_and_refresh_recent_exports(output_dir)
         self.set_output_dir_open_status(output_dir, created_now)
 
+    def output_dir_open_error_prefix(self) -> str:
+        return "Klasor acilamadi"
+
     def output_dir_open_error_text(self, exc: Exception) -> str:
-        return f"Klasor acilamadi: {self.output_dir_open_error_detail_text(exc)}"
+        return f"{self.output_dir_open_error_prefix()}: {self.output_dir_open_error_detail_text(exc)}"
 
     def set_output_dir_open_error_status(self, exc: Exception) -> None:
         self.set_status(self.output_dir_open_error_text(exc))
