@@ -1449,15 +1449,12 @@ class GuitarAmpRecorderApp:
                 self.set_status(self.empty_recent_exports_status_message())
             return
         shown_count = min(len(audio_files), 6)
-        visibility_suffix = self.recent_exports_status_suffix(
-            total_audio_count=len(audio_files),
-            shown_count=shown_count,
-        )
-        summary_suffix = ""
-        if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
-            summary_suffix = f" {self.summary_ready_status_message()}"
         self.set_status(
-            f"Durum guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{summary_suffix}"
+            self.recent_exports_audio_status_message(
+                total_audio_count=len(audio_files),
+                shown_count=shown_count,
+                has_summary=self.last_session_summary_path is not None and self.last_session_summary_path.exists(),
+            )
         )
 
     def format_display_path(self, path: Path) -> str:
@@ -1507,6 +1504,14 @@ class GuitarAmpRecorderApp:
         if shown_count == 1:
             return " Gr 1."
         return " Gr tumu. Yeni."
+
+    def recent_exports_audio_status_message(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
+        summary_suffix = f" {self.summary_ready_status_message()}" if has_summary else ""
+        return (
+            f"Durum guncel. {total_audio_count} ses dosyasi."
+            f"{self.recent_exports_status_suffix(total_audio_count, shown_count)}"
+            f"{summary_suffix}"
+        )
 
     def missing_output_dir_message(self, output_dir_text: str) -> str:
         return (

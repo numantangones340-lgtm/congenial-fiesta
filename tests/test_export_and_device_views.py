@@ -166,6 +166,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             " Gr 1.",
         )
 
+    def test_recent_exports_audio_status_message_matches_multi_file_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_audio_status_message(total_audio_count=2, shown_count=2, has_summary=False),
+            "Durum guncel. 2 ses dosyasi. Gr tumu. Yeni.",
+        )
+
+    def test_recent_exports_audio_status_message_matches_summary_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_audio_status_message(total_audio_count=1, shown_count=1, has_summary=True),
+            "Durum guncel. 1 ses dosyasi. Gr 1. Ozet hazir. Isterseniz acabilirsiniz.",
+        )
+
     def test_recent_export_line_marks_latest_export(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
