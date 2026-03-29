@@ -1173,6 +1173,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_output_dir_text.assert_called_once_with(missing_dir)
         recorder.missing_output_dir_status.assert_called_once_with("~/Missing")
 
+    def test_recent_exports_action_status_for_existing_dir_uses_existing_dir_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.recent_exports_existing_dir_status_message = mock.Mock(
+            return_value="Durum guncel. 2 ses dosyasi. Gr tumu. Yeni. Ozet hazir. Isterseniz acabilirsiniz."
+        )
+
+        status_message = recorder.recent_exports_action_status_for_existing_dir(
+            total_audio_count=2,
+            has_summary=True,
+        )
+
+        self.assertEqual(
+            status_message,
+            "Durum guncel. 2 ses dosyasi. Gr tumu. Yeni. Ozet hazir. Isterseniz acabilirsiniz.",
+        )
+        recorder.recent_exports_existing_dir_status_message.assert_called_once_with(
+            total_audio_count=2,
+            has_summary=True,
+        )
+
     def test_recent_exports_action_status_message_for_missing_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         missing_dir = Path("/tmp/does-not-exist-gar")
