@@ -1053,6 +1053,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             " Gr 1.",
         )
 
+    def test_recent_exports_status_visibility_suffix_matches_single_file_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_status_visibility_suffix(total_audio_count=1, shown_count=1),
+            " Gr 1.",
+        )
+
     def test_recent_exports_status_newest_suffix_matches_multi_file_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

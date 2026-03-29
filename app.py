@@ -1778,12 +1778,21 @@ class GuitarAmpRecorderApp:
         return ""
 
     def recent_exports_status_suffix(self, total_audio_count: int, shown_count: int) -> str:
+        return (
+            self.recent_exports_status_visibility_suffix(
+                total_audio_count=total_audio_count,
+                shown_count=shown_count,
+            )
+            + self.recent_exports_status_newest_suffix(shown_count)
+        )
+
+    def recent_exports_status_visibility_suffix(self, total_audio_count: int, shown_count: int) -> str:
         visibility_label = self.recent_exports_visibility_label(
             total_audio_count=total_audio_count,
             shown_count=shown_count,
             has_summary=False,
         )
-        return f" {visibility_label}.{self.recent_exports_status_newest_suffix(shown_count)}"
+        return f" {visibility_label}."
 
     def recent_exports_status_newest_suffix(self, shown_count: int) -> str:
         return " Yeni." if shown_count > 1 else ""
