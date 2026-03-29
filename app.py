@@ -2600,6 +2600,9 @@ class GuitarAmpRecorderApp:
     def run_recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> None:
         subprocess.run(self.recent_output_open_command(path, reveal_in_finder), check=False)
 
+    def handle_recent_output_open_success(self, path: Path, success_prefix: str) -> None:
+        self.set_recent_output_open_status(success_prefix, path)
+
     def recent_output_target_path(self, attribute_name: str) -> Optional[Path]:
         return getattr(self, attribute_name, None)
 
@@ -2620,7 +2623,7 @@ class GuitarAmpRecorderApp:
     ) -> None:
         try:
             self.run_recent_output_open_command(path, reveal_in_finder)
-            self.set_recent_output_open_status(success_prefix, path)
+            self.handle_recent_output_open_success(path, success_prefix)
         except Exception as exc:
             self.set_recent_output_open_error_status(error_prefix, exc)
 

@@ -795,6 +795,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", "-R", "/tmp/take.wav"], check=False)
 
+    def test_handle_recent_output_open_success_reports_status(self) -> None:
+        recorder = self.make_app()
+        path = Path("/tmp/take.wav")
+
+        recorder.handle_recent_output_open_success(path, "Son export Finder'da gosteriliyor")
+
+        self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
+
     def test_recent_output_target_path_reads_named_attribute(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = Path("/tmp/take.wav")
