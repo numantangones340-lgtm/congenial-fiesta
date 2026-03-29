@@ -448,6 +448,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Klasor hazirlandi ve acildi: ~/new-session-folder",
         )
 
+    def test_output_dir_open_status_status_text_formats_created_copy(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/new-session-folder")
+        output_dir = Path("/tmp/new-session-folder")
+
+        self.assertEqual(
+            recorder.output_dir_open_status_status_text(output_dir, created_now=True),
+            "Klasor hazirlandi ve acildi: ~/new-session-folder",
+        )
+
     def test_set_output_dir_open_status_reports_created_folder(self) -> None:
         recorder = self.make_app()
         recorder.recent_output_dir_text = mock.Mock(return_value="~/new-session-folder")
