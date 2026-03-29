@@ -557,6 +557,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIsNone(recorder.last_export_path)
         self.assertIsNone(recorder.last_session_summary_path)
 
+    def test_recent_output_dir_text_uses_format_display_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+        output_dir_text = recorder.recent_output_dir_text(output_dir)
+
+        self.assertEqual(output_dir_text, "~/Demo")
+        recorder.format_display_path.assert_called_once_with(output_dir)
+
     def test_show_recent_exports_for_output_dir_uses_display_context(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
@@ -566,13 +576,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "count_line": "Top 0",
             "hidden_count": 0,
         }
-        recorder.format_display_path = mock.Mock(return_value="~/Demo")
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/Demo")
         recorder.restore_session_summary_from_output_dir = mock.Mock()
         recorder.recent_exports_display_context = mock.Mock(return_value=display_context)
         recorder.show_recent_exports_from_context = mock.Mock()
 
         recorder.show_recent_exports_for_output_dir(output_dir)
 
+        recorder.recent_output_dir_text.assert_called_once_with(output_dir)
         recorder.restore_session_summary_from_output_dir.assert_called_once_with(output_dir)
         recorder.recent_exports_display_context.assert_called_once_with(output_dir)
         recorder.show_recent_exports_from_context.assert_called_once_with(output_dir, "~/Demo", display_context)
