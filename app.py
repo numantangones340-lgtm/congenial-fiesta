@@ -1505,14 +1505,13 @@ class GuitarAmpRecorderApp:
 
     def recent_exports_count_line(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         line = f"Top {total_audio_count}"
-        if total_audio_count > shown_count:
-            line += " | Gr son 6"
-        elif shown_count == 1:
-            line += " | Gr 1"
-        elif shown_count:
-            line += " | Gr tumu"
-        elif has_summary:
-            line += " | Ozet"
+        visibility_label = self.recent_exports_visibility_label(
+            total_audio_count=total_audio_count,
+            shown_count=shown_count,
+            has_summary=has_summary,
+        )
+        if visibility_label:
+            line += f" | {visibility_label}"
         if shown_count > 1:
             line += " | Yeni"
         return line
@@ -1523,12 +1522,27 @@ class GuitarAmpRecorderApp:
     def recent_exports_hidden_count(self, total_audio_count: int, shown_count: int) -> int:
         return max(0, total_audio_count - shown_count)
 
-    def recent_exports_status_suffix(self, total_audio_count: int, shown_count: int) -> str:
+    def recent_exports_visibility_label(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         if total_audio_count > shown_count:
-            return " Gr son 6. Yeni."
+            return "Gr son 6"
         if shown_count == 1:
-            return " Gr 1."
-        return " Gr tumu. Yeni."
+            return "Gr 1"
+        if shown_count:
+            return "Gr tumu"
+        if has_summary:
+            return "Ozet"
+        return ""
+
+    def recent_exports_status_suffix(self, total_audio_count: int, shown_count: int) -> str:
+        visibility_label = self.recent_exports_visibility_label(
+            total_audio_count=total_audio_count,
+            shown_count=shown_count,
+            has_summary=False,
+        )
+        suffix = f" {visibility_label}."
+        if shown_count > 1:
+            suffix += " Yeni."
+        return suffix
 
     def recent_exports_audio_status_message(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         summary_suffix = f" {self.summary_ready_status_message()}" if has_summary else ""

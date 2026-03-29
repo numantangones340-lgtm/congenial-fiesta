@@ -278,6 +278,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=7, shown_count=6), 1)
         self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=2, shown_count=2), 0)
 
+    def test_recent_exports_visibility_label_matches_truncated_list_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_visibility_label(total_audio_count=7, shown_count=6, has_summary=False),
+            "Gr son 6",
+        )
+
+    def test_recent_exports_visibility_label_matches_summary_only_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_visibility_label(total_audio_count=0, shown_count=0, has_summary=True),
+            "Ozet",
+        )
+
+    def test_recent_exports_visibility_label_is_empty_without_audio_or_summary(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_visibility_label(total_audio_count=0, shown_count=0, has_summary=False),
+            "",
+        )
+
     def test_recent_exports_status_suffix_matches_multi_file_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
