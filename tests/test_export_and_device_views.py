@@ -739,6 +739,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(context, {"total_audio_count": 0, "has_summary": True})
 
+    def test_recent_exports_action_status_inputs_extracts_count_and_summary_flag(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.recent_exports_status_context = mock.Mock(return_value={"total_audio_count": 2, "has_summary": True})
+
+        inputs = recorder.recent_exports_action_status_inputs(output_dir)
+
+        self.assertEqual(inputs, (2, True))
+        recorder.recent_exports_status_context.assert_called_once_with(output_dir)
+
     def test_recent_exports_display_context_matches_summary_only_state(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:

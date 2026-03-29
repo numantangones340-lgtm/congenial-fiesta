@@ -1625,12 +1625,16 @@ class GuitarAmpRecorderApp:
             has_summary=has_summary,
         )
 
-    def recent_exports_refresh_status_message(self, output_dir: Path) -> str:
+    def recent_exports_action_status_inputs(self, output_dir: Path) -> tuple[int, bool]:
         status_context = self.recent_exports_status_context(output_dir)
+        return int(status_context["total_audio_count"]), bool(status_context["has_summary"])
+
+    def recent_exports_refresh_status_message(self, output_dir: Path) -> str:
+        total_audio_count, has_summary = self.recent_exports_action_status_inputs(output_dir)
         return self.recent_exports_action_status_message(
             output_dir=output_dir,
-            total_audio_count=int(status_context["total_audio_count"]),
-            has_summary=bool(status_context["has_summary"]),
+            total_audio_count=total_audio_count,
+            has_summary=has_summary,
         )
 
     def set_recent_exports_refresh_status(self, output_dir: Path) -> None:
