@@ -1619,6 +1619,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             [],
         )
 
+    def test_recent_exports_file_tail_optional_lines_combines_hidden_and_summary(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_file_tail_optional_lines(1, "- session_summary.json (Ozet)"),
+            ["+1", "- session_summary.json (Ozet)"],
+        )
+
     def test_recent_exports_file_tail_lines_formats_hidden_count_and_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
