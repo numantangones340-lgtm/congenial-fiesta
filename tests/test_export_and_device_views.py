@@ -2020,6 +2020,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Klasor ~/Demo\nTop 0 | Ozet\nHenuz ses kaydi yok. Alttaki ozeti acabilirsiniz.\n- session_summary.json (Ozet)",
         )
 
+    def test_recent_exports_shown_text_uses_view_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_shown_text(
+                output_dir_text="~/Demo",
+                count_line="Top 0 | Ozet",
+                recent_files=[],
+                hidden_count=0,
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            "Klasor ~/Demo\nTop 0 | Ozet\nHenuz ses kaydi yok. Alttaki ozeti acabilirsiniz.\n- session_summary.json (Ozet)",
+        )
+
     def test_show_recent_exports_sets_text_and_disables_buttons_without_paths(self) -> None:
         recorder = self.make_app()
 
