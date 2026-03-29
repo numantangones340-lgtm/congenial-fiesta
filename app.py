@@ -1562,9 +1562,18 @@ class GuitarAmpRecorderApp:
         recent_files = self.limit_recent_export_audio_files(all_audio_files)
         return summary_line, all_audio_files, recent_files
 
-    def recent_exports_display_inputs(self, output_dir: Path) -> dict[str, object]:
+    def recent_exports_display_input_components(
+        self,
+        output_dir: Path,
+    ) -> tuple[str, list[Path], int, int]:
         summary_line, all_audio_files, recent_files = self.recent_exports_display_input_files(output_dir)
         total_audio_count, shown_count = self.recent_exports_display_input_counts(all_audio_files)
+        return summary_line, recent_files, total_audio_count, shown_count
+
+    def recent_exports_display_inputs(self, output_dir: Path) -> dict[str, object]:
+        summary_line, recent_files, total_audio_count, shown_count = self.recent_exports_display_input_components(
+            output_dir
+        )
         return self.recent_exports_display_input_payload(
             summary_line=summary_line,
             recent_files=recent_files,

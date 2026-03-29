@@ -843,6 +843,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.list_recent_export_audio_files.assert_called_once_with(output_dir)
         recorder.limit_recent_export_audio_files.assert_called_once_with([export_path])
 
+    def test_recent_exports_display_input_components_collects_payload_values(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        export_path = output_dir / "take.wav"
+        recorder.recent_exports_display_input_files = mock.Mock(
+            return_value=("- session_summary.json (Ozet)", [export_path], [export_path])
+        )
+        recorder.recent_exports_display_input_counts = mock.Mock(return_value=(1, 1))
+
+        components = recorder.recent_exports_display_input_components(output_dir)
+
+        self.assertEqual(components, ("- session_summary.json (Ozet)", [export_path], 1, 1))
+        recorder.recent_exports_display_input_files.assert_called_once_with(output_dir)
+        recorder.recent_exports_display_input_counts.assert_called_once_with([export_path])
+
     def test_recent_exports_display_context_inputs_extracts_render_values(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         export_path = Path("/tmp/demo-output/take.wav")
