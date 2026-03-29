@@ -1587,6 +1587,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["+1"],
         )
 
+    def test_recent_exports_file_tail_hidden_lines_if_present_skips_zero_count(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_file_tail_hidden_lines_if_present(0),
+            [],
+        )
+
     def test_recent_exports_file_tail_summary_line_returns_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

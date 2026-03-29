@@ -2028,6 +2028,11 @@ class GuitarAmpRecorderApp:
     def recent_exports_file_tail_hidden_lines(self, hidden_count: int) -> list[str]:
         return [self.recent_exports_file_tail_hidden_line(hidden_count)]
 
+    def recent_exports_file_tail_hidden_lines_if_present(self, hidden_count: int) -> list[str]:
+        if not self.recent_exports_has_hidden_count(hidden_count):
+            return []
+        return self.recent_exports_file_tail_hidden_lines(hidden_count)
+
     def recent_exports_file_tail_summary_line(self, summary_line: str) -> str:
         return summary_line
 
@@ -2036,8 +2041,7 @@ class GuitarAmpRecorderApp:
 
     def recent_exports_file_tail_lines(self, hidden_count: int, summary_line: str) -> list[str]:
         lines: list[str] = []
-        if self.recent_exports_has_hidden_count(hidden_count):
-            lines.extend(self.recent_exports_file_tail_hidden_lines(hidden_count))
+        lines.extend(self.recent_exports_file_tail_hidden_lines_if_present(hidden_count))
         if self.recent_exports_has_file_summary_line(summary_line):
             lines.extend(self.recent_exports_file_tail_summary_lines(summary_line))
         return lines
