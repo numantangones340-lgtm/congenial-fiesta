@@ -338,6 +338,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertFalse(created_now)
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
 
+    def test_open_output_dir_and_refresh_recent_exports_returns_created_state(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/new-session-folder")
+        recorder.open_output_dir = mock.Mock(return_value=True)
+        recorder.refresh_recent_exports = mock.Mock()
+
+        created_now = recorder.open_output_dir_and_refresh_recent_exports(output_dir)
+
+        self.assertTrue(created_now)
+        recorder.open_output_dir.assert_called_once_with(output_dir)
+        recorder.refresh_recent_exports.assert_called_once()
+
+    def test_open_output_dir_and_refresh_recent_exports_keeps_existing_state(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/existing-session-folder")
+        recorder.open_output_dir = mock.Mock(return_value=False)
+        recorder.refresh_recent_exports = mock.Mock()
+
+        created_now = recorder.open_output_dir_and_refresh_recent_exports(output_dir)
+
+        self.assertFalse(created_now)
+        recorder.open_output_dir.assert_called_once_with(output_dir)
+        recorder.refresh_recent_exports.assert_called_once()
+
     def test_output_dir_open_command_returns_open_command(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")

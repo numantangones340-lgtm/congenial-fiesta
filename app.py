@@ -1762,8 +1762,7 @@ class GuitarAmpRecorderApp:
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.resolve_output_dir()
         try:
-            created_now = self.open_output_dir(output_dir)
-            self.refresh_recent_exports()
+            created_now = self.open_output_dir_and_refresh_recent_exports(output_dir)
             self.set_output_dir_open_status(output_dir, created_now)
         except Exception as exc:
             self.set_status(f"Klasor acilamadi: {exc}")
@@ -1784,6 +1783,11 @@ class GuitarAmpRecorderApp:
         created_now = not output_dir.exists()
         output_dir.mkdir(parents=True, exist_ok=True)
         subprocess.run(self.output_dir_open_command(output_dir), check=False)
+        return created_now
+
+    def open_output_dir_and_refresh_recent_exports(self, output_dir: Path) -> bool:
+        created_now = self.open_output_dir(output_dir)
+        self.refresh_recent_exports()
         return created_now
 
     def output_dir_open_command(self, output_dir: Path) -> list[str]:
