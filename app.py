@@ -2473,6 +2473,10 @@ class GuitarAmpRecorderApp:
     def recent_output_target_path(self, attribute_name: str) -> Optional[Path]:
         return getattr(self, attribute_name, None)
 
+    def existing_recent_output_target_path(self, attribute_name: str) -> Optional[Path]:
+        path = self.recent_output_target_path(attribute_name)
+        return path if self.recent_output_exists(path) else None
+
     def open_recent_output_path(
         self,
         path: Path,
@@ -2496,8 +2500,8 @@ class GuitarAmpRecorderApp:
         reveal_in_finder: bool = False,
     ) -> None:
         self.refresh_recent_outputs_if_available()
-        path = self.recent_output_target_path(attribute_name)
-        if not self.recent_output_exists(path):
+        path = self.existing_recent_output_target_path(attribute_name)
+        if path is None:
             self.clear_missing_recent_output_target(attribute_name, missing_message)
             return
         self.open_recent_output_path(path, success_prefix, error_prefix, reveal_in_finder)

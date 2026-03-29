@@ -500,6 +500,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             Path("/tmp/take.wav"),
         )
 
+    def test_existing_recent_output_target_path_returns_existing_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            self.assertEqual(
+                recorder.existing_recent_output_target_path("last_export_path"),
+                export_path,
+            )
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
