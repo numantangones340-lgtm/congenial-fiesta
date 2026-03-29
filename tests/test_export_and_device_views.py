@@ -1992,6 +1992,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 "Klasor ~/Demo\nTop 3 | Gr son 6 | Yeni\n- take_002.mp3 (Export)\n- take_001.wav\n+1\n- session_summary.json (Ozet)",
         )
 
+    def test_recent_exports_view_content_uses_rendered_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_view_content(
+                output_dir_text="~/Demo",
+                count_line="Top 0 | Ozet",
+                recent_files=[],
+                hidden_count=0,
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            "Klasor ~/Demo\nTop 0 | Ozet\nHenuz ses kaydi yok. Alttaki ozeti acabilirsiniz.\n- session_summary.json (Ozet)",
+        )
+
     def test_recent_exports_view_text_uses_rendered_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
