@@ -328,6 +328,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
 
+    def test_recent_outputs_refresh_callback_returns_refresh_method(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_recent_exports = mock.Mock()
+
+        self.assertIs(recorder.recent_outputs_refresh_callback(), recorder.refresh_recent_exports)
+
     def test_clear_missing_recent_output_target_clears_path_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

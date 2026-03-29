@@ -2418,8 +2418,11 @@ class GuitarAmpRecorderApp:
         except TclError:
             pass
 
+    def recent_outputs_refresh_callback(self) -> Optional[object]:
+        return getattr(self, "refresh_recent_exports", None)
+
     def refresh_recent_outputs_if_available(self) -> None:
-        refresh = getattr(self, "refresh_recent_exports", None)
+        refresh = self.recent_outputs_refresh_callback()
         if callable(refresh):
             try:
                 refresh()
