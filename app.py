@@ -2869,13 +2869,26 @@ class GuitarAmpRecorderApp:
     ) -> dict[str, object]:
         return self.recent_output_open_args(
             attribute_name=attribute_name,
-            missing_message=self.recent_output_missing_message(target_name),
-            **self.recent_output_open_message_args(
+            **self.recent_output_open_target_message_args(
+                target_name=target_name,
                 success_prefix=success_prefix,
                 error_prefix=error_prefix,
             ),
             reveal_in_finder=reveal_in_finder,
         )
+
+    def recent_output_open_target_message_args(
+        self,
+        target_name: str,
+        success_prefix: str,
+        error_prefix: str,
+    ) -> dict[str, str]:
+        message_args = self.recent_output_open_message_args(
+            success_prefix=success_prefix,
+            error_prefix=error_prefix,
+        )
+        message_args["missing_message"] = self.recent_output_missing_message(target_name)
+        return message_args
 
     def open_last_export_in_finder_args(self) -> dict[str, object]:
         open_args = self.recent_output_open_target_args(
