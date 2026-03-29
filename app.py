@@ -1928,8 +1928,11 @@ class GuitarAmpRecorderApp:
     def recent_hidden_count_line(self, hidden_count: int) -> str:
         return f"+{hidden_count}"
 
+    def recent_summary_label(self) -> str:
+        return "Ozet"
+
     def recent_summary_line(self, filename: str) -> str:
-        return self.recent_output_line(filename, label="Ozet")
+        return self.recent_output_line(filename, label=self.recent_summary_label())
 
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         lines = [self.recent_exports_header_line(output_dir_text), count_line]
