@@ -1494,6 +1494,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             summary_line="- session_summary.json (Ozet)",
         )
 
+    def test_recent_exports_primary_file_returns_first_recent_file(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        first_path = Path("/tmp/demo-output/take_1.wav")
+        second_path = Path("/tmp/demo-output/take_2.wav")
+
+        primary = recorder.recent_exports_primary_file([first_path, second_path])
+
+        self.assertEqual(primary, first_path)
+
     def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

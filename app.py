@@ -1737,7 +1737,10 @@ class GuitarAmpRecorderApp:
         if not recent_files:
             self.last_export_path = None
             return
-        self.refresh_last_export_path(output_dir, recent_files[0])
+        self.refresh_last_export_path(output_dir, self.recent_exports_primary_file(recent_files))
+
+    def recent_exports_primary_file(self, recent_files: list[Path]) -> Path:
+        return recent_files[0]
 
     def recent_exports_visibility_label(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         if total_audio_count > shown_count:
