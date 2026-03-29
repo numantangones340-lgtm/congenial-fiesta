@@ -328,6 +328,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
 
+    def test_clear_recent_output_target_path_clears_named_attribute(self) -> None:
+        recorder = self.make_app()
+        recorder.last_export_path = Path("/tmp/take.wav")
+
+        recorder.clear_recent_output_target_path("last_export_path")
+
+        self.assertIsNone(recorder.last_export_path)
+
     def test_recent_outputs_refresh_callback_returns_refresh_method(self) -> None:
         recorder = self.make_app()
         recorder.refresh_recent_exports = mock.Mock()

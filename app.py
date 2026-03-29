@@ -2444,8 +2444,11 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Klasor acilamadi: {exc}")
 
-    def clear_missing_recent_output_target(self, attribute_name: str, status_message: str) -> None:
+    def clear_recent_output_target_path(self, attribute_name: str) -> None:
         setattr(self, attribute_name, None)
+
+    def clear_missing_recent_output_target(self, attribute_name: str, status_message: str) -> None:
+        self.clear_recent_output_target_path(attribute_name)
         self.refresh_recent_output_buttons()
         self.set_status(status_message)
 
