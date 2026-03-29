@@ -1193,6 +1193,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             has_summary=True,
         )
 
+    def test_recent_exports_action_status_for_missing_dir_uses_missing_dir_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        missing_dir = Path("/tmp/does-not-exist-gar")
+        recorder.recent_exports_missing_dir_status_message = mock.Mock(
+            return_value="Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
+        )
+
+        status_message = recorder.recent_exports_action_status_for_missing_dir(missing_dir)
+
+        self.assertEqual(
+            status_message,
+            "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+        )
+        recorder.recent_exports_missing_dir_status_message.assert_called_once_with(missing_dir)
+
     def test_recent_exports_action_status_message_for_missing_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         missing_dir = Path("/tmp/does-not-exist-gar")

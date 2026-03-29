@@ -1841,9 +1841,12 @@ class GuitarAmpRecorderApp:
             has_summary=has_summary,
         )
 
+    def recent_exports_action_status_for_missing_dir(self, output_dir: Path) -> str:
+        return self.recent_exports_missing_dir_status_message(output_dir)
+
     def recent_exports_action_status_message(self, output_dir: Path, total_audio_count: int, has_summary: bool) -> str:
         if not output_dir.exists():
-            return self.recent_exports_missing_dir_status_message(output_dir)
+            return self.recent_exports_action_status_for_missing_dir(output_dir)
         return self.recent_exports_action_status_for_existing_dir(
             total_audio_count=total_audio_count,
             has_summary=has_summary,
