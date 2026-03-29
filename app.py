@@ -1395,11 +1395,14 @@ class GuitarAmpRecorderApp:
         return str(path)
 
     def show_missing_recent_exports(self, output_dir: Path) -> None:
-        self.last_export_path = None
-        self.last_session_summary_path = None
+        self.clear_recent_output_paths()
         output_dir_text = self.format_display_path(output_dir)
         self.recent_exports_text.set(self.missing_output_dir_message(output_dir_text))
         self.refresh_recent_output_buttons()
+
+    def clear_recent_output_paths(self) -> None:
+        self.last_export_path = None
+        self.last_session_summary_path = None
 
     def current_recent_output_dir(self) -> Path:
         return self.resolve_output_dir()

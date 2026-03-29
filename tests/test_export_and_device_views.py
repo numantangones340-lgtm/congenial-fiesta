@@ -542,6 +542,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
 
+    def test_clear_recent_output_paths_clears_export_and_summary(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            summary_path = Path(tmpdir) / "session_summary.json"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_export_path = export_path
+            recorder.last_session_summary_path = summary_path
+
+            recorder.clear_recent_output_paths()
+
+        self.assertIsNone(recorder.last_export_path)
+        self.assertIsNone(recorder.last_session_summary_path)
+
     def test_show_recent_exports_for_output_dir_uses_display_context(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
