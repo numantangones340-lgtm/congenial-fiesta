@@ -489,6 +489,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Klasor acilamadi: boom",
         )
 
+    def test_set_output_dir_open_error_status_reports_exception(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_output_dir_open_error_status(RuntimeError("boom"))
+
+        self.assertEqual(recorder.status_messages[-1], "Klasor acilamadi: boom")
+
     def test_open_resolved_output_dir_in_finder_reports_created_directory(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/new-session-folder")
