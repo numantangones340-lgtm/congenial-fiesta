@@ -287,6 +287,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             (recorder.open_last_export_button, recorder.open_last_summary_button),
         )
 
+    def test_recent_output_button_paths_returns_export_and_summary_paths(self) -> None:
+        recorder = self.make_app()
+        recorder.last_export_path = Path("/tmp/take.wav")
+        recorder.last_session_summary_path = Path("/tmp/session_summary.json")
+
+        self.assertEqual(
+            recorder.recent_output_button_paths(),
+            (Path("/tmp/take.wav"), Path("/tmp/session_summary.json")),
+        )
+
     def test_clear_missing_recent_output_target_clears_path_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
