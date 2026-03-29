@@ -962,6 +962,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Son export Finder'da gosteriliyor",
         )
 
+    def test_perform_recent_output_open_error_reports_failure(self) -> None:
+        recorder = self.make_app()
+        recorder.handle_recent_output_open_error = mock.Mock()
+        error = RuntimeError("boom")
+
+        recorder.perform_recent_output_open_error("Finder acilamadi", error)
+
+        recorder.handle_recent_output_open_error.assert_called_once_with(
+            "Finder acilamadi",
+            error,
+        )
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
