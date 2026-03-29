@@ -470,6 +470,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_output_dir.assert_called_once_with(output_dir)
         recorder.refresh_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
+    def test_open_output_dir_with_status_reports_created_state(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/new-session-folder")
+        recorder.open_output_dir_and_refresh_recent_exports = mock.Mock(return_value=True)
+        recorder.set_output_dir_open_status = mock.Mock()
+
+        recorder.open_output_dir_with_status(output_dir)
+
+        recorder.open_output_dir_and_refresh_recent_exports.assert_called_once_with(output_dir)
+        recorder.set_output_dir_open_status.assert_called_once_with(output_dir, True)
+
     def test_open_resolved_output_dir_in_finder_reports_created_directory(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/new-session-folder")
