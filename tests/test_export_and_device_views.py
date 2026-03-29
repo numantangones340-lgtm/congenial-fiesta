@@ -392,6 +392,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.output_dir_open_status_prefix(True), "Klasor hazirlandi ve acildi")
         self.assertEqual(recorder.output_dir_open_status_prefix(False), "Klasor acildi")
 
+    def test_output_dir_open_status_target_text_uses_recent_output_dir_text(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/new-session-folder")
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/new-session-folder")
+
+        self.assertEqual(
+            recorder.output_dir_open_status_target_text(output_dir),
+            "~/new-session-folder",
+        )
+        recorder.recent_output_dir_text.assert_called_once_with(output_dir)
+
     def test_output_dir_open_status_text_formats_created_copy(self) -> None:
         recorder = self.make_app()
         recorder.recent_output_dir_text = mock.Mock(return_value="~/new-session-folder")

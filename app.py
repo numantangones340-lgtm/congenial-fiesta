@@ -2476,9 +2476,12 @@ class GuitarAmpRecorderApp:
     def output_dir_open_status_prefix(self, created_now: bool) -> str:
         return "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
 
+    def output_dir_open_status_target_text(self, output_dir: Path) -> str:
+        return self.recent_output_dir_text(output_dir)
+
     def output_dir_open_status_text(self, output_dir: Path, created_now: bool) -> str:
         prefix = self.output_dir_open_status_prefix(created_now)
-        return f"{prefix}: {self.recent_output_dir_text(output_dir)}"
+        return f"{prefix}: {self.output_dir_open_status_target_text(output_dir)}"
 
     def set_output_dir_open_status(self, output_dir: Path, created_now: bool) -> None:
         self.set_status(self.output_dir_open_status_text(output_dir, created_now))
