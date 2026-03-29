@@ -382,6 +382,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Klasor acilamadi: boom")
 
+    def test_open_current_output_dir_in_finder_resolves_and_delegates(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/current-session-folder")
+        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+        recorder.open_resolved_output_dir_in_finder = mock.Mock()
+
+        resolved_output_dir = recorder.open_current_output_dir_in_finder()
+
+        self.assertEqual(resolved_output_dir, output_dir)
+        recorder.resolve_output_dir.assert_called_once_with()
+        recorder.open_resolved_output_dir_in_finder.assert_called_once_with(output_dir)
+
     def test_output_dir_open_command_returns_open_command(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
@@ -1552,14 +1564,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
     def test_open_output_dir_in_finder_resolves_and_delegates(self) -> None:
         recorder = self.make_app()
-        output_dir = Path("/tmp/current-session-folder")
-        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
-        recorder.open_resolved_output_dir_in_finder = mock.Mock()
+        recorder.open_current_output_dir_in_finder = mock.Mock()
 
         recorder.open_output_dir_in_finder()
 
-        recorder.resolve_output_dir.assert_called_once_with()
-        recorder.open_resolved_output_dir_in_finder.assert_called_once_with(output_dir)
+        recorder.open_current_output_dir_in_finder.assert_called_once_with()
 
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
         recorder = self.make_app()

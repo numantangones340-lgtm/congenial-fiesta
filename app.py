@@ -1760,8 +1760,12 @@ class GuitarAmpRecorderApp:
                 pass
 
     def open_output_dir_in_finder(self) -> None:
+        self.open_current_output_dir_in_finder()
+
+    def open_current_output_dir_in_finder(self) -> Path:
         output_dir = self.resolve_output_dir()
         self.open_resolved_output_dir_in_finder(output_dir)
+        return output_dir
 
     def open_resolved_output_dir_in_finder(self, output_dir: Path) -> None:
         try:
