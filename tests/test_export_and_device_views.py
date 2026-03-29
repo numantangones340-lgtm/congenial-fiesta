@@ -369,6 +369,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
 
+    def test_recent_output_open_status_text_formats_filename(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        path = Path("/tmp/take.wav")
+
+        self.assertEqual(
+            recorder.recent_output_open_status_text("Son export Finder'da gosteriliyor", path),
+            "Son export Finder'da gosteriliyor: take.wav",
+        )
+
     def test_output_dir_open_status_prefix_matches_created_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
