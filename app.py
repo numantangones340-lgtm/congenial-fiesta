@@ -1435,22 +1435,11 @@ class GuitarAmpRecorderApp:
     def refresh_recent_exports_from_action(self) -> None:
         self.refresh_recent_exports()
         output_dir = self.resolve_output_dir()
-        if not output_dir.exists():
-            self.set_status(self.missing_output_dir_status(self.format_display_path(output_dir)))
-            return
         audio_files = self.list_recent_export_audio_files(output_dir)
-        if not audio_files:
-            self.set_status(
-                self.recent_exports_empty_status_message(
-                    has_summary=self.last_session_summary_path is not None and self.last_session_summary_path.exists()
-                )
-            )
-            return
-        shown_count = min(len(audio_files), 6)
         self.set_status(
-            self.recent_exports_audio_status_message(
+            self.recent_exports_action_status_message(
+                output_dir=output_dir,
                 total_audio_count=len(audio_files),
-                shown_count=shown_count,
                 has_summary=self.last_session_summary_path is not None and self.last_session_summary_path.exists(),
             )
         )
@@ -1468,6 +1457,8 @@ class GuitarAmpRecorderApp:
         return str(path)
 
     def list_recent_export_audio_files(self, output_dir: Path) -> list[Path]:
+        if not output_dir.exists():
+            return []
         return [
             path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
         ]
@@ -1526,6 +1517,18 @@ class GuitarAmpRecorderApp:
             f"Durum guncel. {total_audio_count} ses dosyasi."
             f"{self.recent_exports_status_suffix(total_audio_count, shown_count)}"
             f"{summary_suffix}"
+        )
+
+    def recent_exports_action_status_message(self, output_dir: Path, total_audio_count: int, has_summary: bool) -> str:
+        if not output_dir.exists():
+            return self.missing_output_dir_status(self.format_display_path(output_dir))
+        if total_audio_count == 0:
+            return self.recent_exports_empty_status_message(has_summary=has_summary)
+        shown_count = min(total_audio_count, 6)
+        return self.recent_exports_audio_status_message(
+            total_audio_count=total_audio_count,
+            shown_count=shown_count,
+            has_summary=has_summary,
         )
 
     def missing_output_dir_message(self, output_dir_text: str) -> str:

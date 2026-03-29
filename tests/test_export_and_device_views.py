@@ -230,6 +230,50 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Durum guncel. 1 ses dosyasi. Gr 1. Ozet hazir. Isterseniz acabilirsiniz.",
         )
 
+    def test_recent_exports_action_status_message_for_missing_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        missing_dir = Path("/tmp/does-not-exist-gar")
+        recorder.format_display_path = mock.Mock(return_value="~/Missing")
+
+        self.assertEqual(
+            recorder.recent_exports_action_status_message(
+                output_dir=missing_dir,
+                total_audio_count=0,
+                has_summary=False,
+            ),
+            "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+        )
+
+    def test_recent_exports_action_status_message_for_empty_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            self.assertEqual(
+                recorder.recent_exports_action_status_message(
+                    output_dir=output_dir,
+                    total_audio_count=0,
+                    has_summary=False,
+                ),
+                "Durum guncel. Yeni kayitlar burada gosterilir.",
+            )
+
+    def test_recent_exports_action_status_message_for_audio_files(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.format_display_path = mock.Mock(return_value="~/Demo")
+
+            self.assertEqual(
+                recorder.recent_exports_action_status_message(
+                    output_dir=output_dir,
+                    total_audio_count=2,
+                    has_summary=True,
+                ),
+                "Durum guncel. 2 ses dosyasi. Gr tumu. Yeni. Ozet hazir. Isterseniz acabilirsiniz.",
+            )
+
     def test_recent_export_line_marks_latest_export(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
