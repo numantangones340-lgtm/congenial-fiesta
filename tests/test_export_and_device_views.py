@@ -250,6 +250,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             self.assertEqual(recorder.recent_output_button_state(path), "normal")
 
+    def test_clear_missing_recent_output_target_clears_path_and_updates_status(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            recorder.clear_missing_recent_output_target(
+                "last_export_path",
+                "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            )
+
+        self.assertIsNone(recorder.last_export_path)
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi; son ciktilar yenilendi.")
+
     def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
