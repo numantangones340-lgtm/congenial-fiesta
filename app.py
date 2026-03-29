@@ -1415,12 +1415,12 @@ class GuitarAmpRecorderApp:
     def refresh_recent_exports_from_action(self) -> None:
         self.refresh_recent_exports()
         output_dir = self.resolve_output_dir()
-        audio_files = self.list_recent_export_audio_files(output_dir)
+        status_context = self.recent_exports_status_context(output_dir)
         self.set_status(
             self.recent_exports_action_status_message(
                 output_dir=output_dir,
-                total_audio_count=len(audio_files),
-                has_summary=self.has_recent_session_summary(),
+                total_audio_count=int(status_context["total_audio_count"]),
+                has_summary=bool(status_context["has_summary"]),
             )
         )
 
@@ -1449,6 +1449,12 @@ class GuitarAmpRecorderApp:
         return [
             path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
         ]
+
+    def recent_exports_status_context(self, output_dir: Path) -> dict[str, object]:
+        return {
+            "total_audio_count": len(self.list_recent_export_audio_files(output_dir)),
+            "has_summary": self.has_recent_session_summary(),
+        }
 
     def limit_recent_export_audio_files(self, audio_files: list[Path]) -> list[Path]:
         return sorted(

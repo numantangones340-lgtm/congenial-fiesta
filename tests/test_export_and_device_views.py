@@ -302,6 +302,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=7, shown_count=6), 1)
         self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=2, shown_count=2), 0)
 
+    def test_recent_exports_status_context_without_summary(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.last_session_summary_path = None
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            (output_dir / "take.wav").write_text("audio", encoding="utf-8")
+            (output_dir / "notes.txt").write_text("skip", encoding="utf-8")
+
+            context = recorder.recent_exports_status_context(output_dir)
+
+        self.assertEqual(context, {"total_audio_count": 1, "has_summary": False})
+
+    def test_recent_exports_status_context_with_summary(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+
+            context = recorder.recent_exports_status_context(output_dir)
+
+        self.assertEqual(context, {"total_audio_count": 0, "has_summary": True})
+
     def test_recent_exports_display_context_matches_summary_only_state(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:
