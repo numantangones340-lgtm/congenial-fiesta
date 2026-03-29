@@ -1522,6 +1522,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_file_tail_lines_formats_hidden_count_and_summary(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_file_tail_lines(1, "- session_summary.json (Ozet)"),
+            ["+1", "- session_summary.json (Ozet)"],
+        )
+
     def test_build_recent_exports_file_lines_with_hidden_count(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recent_files = [Path("take_002.mp3"), Path("take_001.wav")]
