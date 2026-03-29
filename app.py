@@ -2078,6 +2078,17 @@ class GuitarAmpRecorderApp:
             return []
         return self.recent_exports_file_body_lines(recent_files)
 
+    def recent_exports_file_content_lines(
+        self,
+        recent_files: list[Path],
+        hidden_count: int,
+        summary_line: str,
+    ) -> list[str]:
+        lines: list[str] = []
+        lines.extend(self.recent_exports_file_body_lines_if_present(recent_files))
+        lines.extend(self.recent_exports_file_tail_lines(hidden_count, summary_line))
+        return lines
+
     def build_recent_exports_file_lines(
         self,
         output_dir_text: str,
@@ -2087,8 +2098,7 @@ class GuitarAmpRecorderApp:
         summary_line: str,
     ) -> list[str]:
         lines = self.recent_exports_intro_lines(output_dir_text, count_line)
-        lines.extend(self.recent_exports_file_body_lines_if_present(recent_files))
-        lines.extend(self.recent_exports_file_tail_lines(hidden_count, summary_line))
+        lines.extend(self.recent_exports_file_content_lines(recent_files, hidden_count, summary_line))
         return lines
 
     def recent_exports_file_count(self, recent_files: list[Path]) -> int:

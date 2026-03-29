@@ -1684,6 +1684,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["- take_002.mp3 (Export)", "- take_001.wav"],
         )
 
+    def test_recent_exports_file_content_lines_combines_body_and_tail(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recent_files = [Path("take_002.mp3"), Path("take_001.wav")]
+
+        self.assertEqual(
+            recorder.recent_exports_file_content_lines(
+                recent_files,
+                hidden_count=1,
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            [
+                "- take_002.mp3 (Export)",
+                "- take_001.wav",
+                "+1",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
     def test_build_recent_exports_file_lines_with_hidden_count(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recent_files = [Path("take_002.mp3"), Path("take_001.wav")]
