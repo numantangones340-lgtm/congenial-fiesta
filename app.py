@@ -3004,9 +3004,12 @@ class GuitarAmpRecorderApp:
         target_name: str,
     ) -> tuple[dict[str, str], dict[str, str]]:
         return (
-            self.recent_output_message_args(message_args),
+            self.recent_output_message_base_args(message_args),
             self.recent_output_missing_message_args(target_name),
         )
+
+    def recent_output_message_base_args(self, message_args: dict[str, str]) -> dict[str, str]:
+        return self.recent_output_message_args(message_args)
 
     def recent_output_message_args(self, message_args: dict[str, str]) -> dict[str, str]:
         return dict(message_args)
