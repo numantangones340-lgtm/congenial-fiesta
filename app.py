@@ -2558,10 +2558,13 @@ class GuitarAmpRecorderApp:
     def ensure_output_dir_exists(self, output_dir: Path) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
 
+    def run_output_dir_open_command(self, output_dir: Path) -> None:
+        subprocess.run(self.output_dir_open_command(output_dir), check=False)
+
     def open_output_dir(self, output_dir: Path) -> bool:
         created_now = self.output_dir_was_missing(output_dir)
         self.ensure_output_dir_exists(output_dir)
-        subprocess.run(self.output_dir_open_command(output_dir), check=False)
+        self.run_output_dir_open_command(output_dir)
         return created_now
 
     def refresh_recent_exports_after_output_dir_open(self, output_dir: Path) -> None:

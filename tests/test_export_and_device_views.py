@@ -558,6 +558,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertTrue(output_dir.exists())
             self.assertTrue(output_dir.is_dir())
 
+    def test_run_output_dir_open_command_runs_open_command(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/new-session-folder")
+
+        with mock.patch.object(app.subprocess, "run") as run_mock:
+            recorder.run_output_dir_open_command(output_dir)
+
+        run_mock.assert_called_once_with(["open", "/tmp/new-session-folder"], check=False)
+
     def test_open_output_dir_creates_missing_directory_and_reports_created(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:
