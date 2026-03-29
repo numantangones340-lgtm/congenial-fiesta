@@ -1613,12 +1613,14 @@ class GuitarAmpRecorderApp:
             suffix += " Yeni."
         return suffix
 
+    def recent_exports_audio_status_summary_suffix(self, has_summary: bool) -> str:
+        return f" {self.summary_ready_status_message()}" if has_summary else ""
+
     def recent_exports_audio_status_message(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
-        summary_suffix = f" {self.summary_ready_status_message()}" if has_summary else ""
         return (
             f"Durum guncel. {total_audio_count} ses dosyasi."
             f"{self.recent_exports_status_suffix(total_audio_count, shown_count)}"
-            f"{summary_suffix}"
+            f"{self.recent_exports_audio_status_summary_suffix(has_summary)}"
         )
 
     def recent_exports_existing_dir_status_inputs(self, total_audio_count: int, has_summary: bool) -> tuple[int, int, bool]:
