@@ -861,6 +861,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Durum guncel. 1 ses dosyasi. Gr 1. Ozet hazir. Isterseniz acabilirsiniz.",
         )
 
+    def test_recent_exports_existing_dir_status_inputs_extracts_shown_count(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.recent_exports_shown_count = mock.Mock(return_value=2)
+
+        inputs = recorder.recent_exports_existing_dir_status_inputs(total_audio_count=2, has_summary=True)
+
+        self.assertEqual(inputs, (2, 2, True))
+        recorder.recent_exports_shown_count.assert_called_once_with(2)
+
     def test_recent_exports_existing_dir_status_message_for_empty_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
