@@ -1778,6 +1778,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
 
+    def test_update_recent_exports_text_sets_text(self) -> None:
+        recorder = self.make_app()
+
+        recorder.update_recent_exports_text("Demo metni")
+
+        self.assertEqual(recorder.recent_exports_text.get(), "Demo metni")
+
     def test_set_recent_exports_view_sets_text_and_refreshes_buttons(self) -> None:
         recorder = self.make_app()
 

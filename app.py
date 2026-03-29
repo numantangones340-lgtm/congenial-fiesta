@@ -2154,8 +2154,11 @@ class GuitarAmpRecorderApp:
             )
         )
 
-    def set_recent_exports_view(self, text: str) -> None:
+    def update_recent_exports_text(self, text: str) -> None:
         self.recent_exports_text.set(text)
+
+    def set_recent_exports_view(self, text: str) -> None:
+        self.update_recent_exports_text(text)
         self.refresh_recent_output_buttons()
 
     def resolved_recent_session_summary_path(self, output_dir: Path) -> Optional[Path]:
