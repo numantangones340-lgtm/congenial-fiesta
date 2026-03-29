@@ -1410,8 +1410,7 @@ class GuitarAmpRecorderApp:
             )
             self.refresh_recent_output_buttons()
             return
-        if self.should_refresh_last_export_path(self.last_export_path, output_dir, recent_files[0]):
-            self.last_export_path = recent_files[0]
+        self.refresh_last_export_path(output_dir, recent_files[0])
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         self.recent_exports_text.set(
             "\n".join(
@@ -1476,6 +1475,10 @@ class GuitarAmpRecorderApp:
             or current_export.parent != output_dir
             or current_export != newest_export
         )
+
+    def refresh_last_export_path(self, output_dir: Path, newest_export: Path) -> None:
+        if self.should_refresh_last_export_path(self.last_export_path, output_dir, newest_export):
+            self.last_export_path = newest_export
 
     def empty_recent_exports_message(self) -> str:
         return "Henuz ses kaydi yok. Yeni kayitlar burada gosterilir."
