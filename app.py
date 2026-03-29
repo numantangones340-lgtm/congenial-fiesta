@@ -22,7 +22,7 @@ from tkinter import (
     Frame,
     Scrollbar,
 )
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 import sounddevice as sd
@@ -2808,8 +2808,14 @@ class GuitarAmpRecorderApp:
     def open_recent_output_from_args(self, open_args: dict[str, object]) -> None:
         self.open_recent_output_target(**open_args)
 
+    def open_recent_output_from_args_factory(
+        self,
+        open_args_factory: Callable[[], dict[str, object]],
+    ) -> None:
+        self.open_recent_output_from_args(open_args_factory())
+
     def open_last_export_in_finder(self) -> None:
-        self.open_recent_output_from_args(self.open_last_export_in_finder_args())
+        self.open_recent_output_from_args_factory(self.open_last_export_in_finder_args)
 
     def open_last_session_summary_args(self) -> dict[str, object]:
         return self.recent_output_open_args(
@@ -2820,7 +2826,7 @@ class GuitarAmpRecorderApp:
         )
 
     def open_last_session_summary(self) -> None:
-        self.open_recent_output_from_args(self.open_last_session_summary_args())
+        self.open_recent_output_from_args_factory(self.open_last_session_summary_args)
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
