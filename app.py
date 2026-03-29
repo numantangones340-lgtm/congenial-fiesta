@@ -2099,6 +2099,9 @@ class GuitarAmpRecorderApp:
             summary_line=summary_line,
         )
 
+    def recent_exports_text_content(self, lines: list[str]) -> str:
+        return "\n".join(lines)
+
     def render_recent_exports_text(
         self,
         output_dir_text: str,
@@ -2107,7 +2110,7 @@ class GuitarAmpRecorderApp:
         hidden_count: int,
         summary_line: str,
     ) -> str:
-        return "\n".join(
+        return self.recent_exports_text_content(
             self.recent_exports_text_lines(
                 output_dir_text=output_dir_text,
                 count_line=count_line,

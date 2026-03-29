@@ -1709,6 +1709,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_text_content_joins_lines(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_text_content(["Klasor ~/Demo", "Top 2 | Gr son 2"]),
+            "Klasor ~/Demo\nTop 2 | Gr son 2",
+        )
+
     def test_render_recent_exports_text_joins_empty_lines(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
