@@ -2114,8 +2114,11 @@ class GuitarAmpRecorderApp:
             summary_line=summary_line,
         )
 
+    def recent_exports_text_separator(self) -> str:
+        return "\n"
+
     def recent_exports_text_content(self, lines: list[str]) -> str:
-        return "\n".join(lines)
+        return self.recent_exports_text_separator().join(lines)
 
     def render_recent_exports_text(
         self,
