@@ -342,25 +342,25 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = self.make_app()
         output_dir = Path("/tmp/new-session-folder")
         recorder.open_output_dir = mock.Mock(return_value=True)
-        recorder.refresh_recent_exports = mock.Mock()
+        recorder.refresh_recent_exports_for_resolved_output_dir = mock.Mock()
 
         created_now = recorder.open_output_dir_and_refresh_recent_exports(output_dir)
 
         self.assertTrue(created_now)
         recorder.open_output_dir.assert_called_once_with(output_dir)
-        recorder.refresh_recent_exports.assert_called_once()
+        recorder.refresh_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_open_output_dir_and_refresh_recent_exports_keeps_existing_state(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/existing-session-folder")
         recorder.open_output_dir = mock.Mock(return_value=False)
-        recorder.refresh_recent_exports = mock.Mock()
+        recorder.refresh_recent_exports_for_resolved_output_dir = mock.Mock()
 
         created_now = recorder.open_output_dir_and_refresh_recent_exports(output_dir)
 
         self.assertFalse(created_now)
         recorder.open_output_dir.assert_called_once_with(output_dir)
-        recorder.refresh_recent_exports.assert_called_once()
+        recorder.refresh_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_open_resolved_output_dir_in_finder_reports_created_directory(self) -> None:
         recorder = self.make_app()
@@ -393,6 +393,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(resolved_output_dir, output_dir)
         recorder.current_recent_output_dir.assert_called_once_with()
         recorder.open_resolved_output_dir_in_finder.assert_called_once_with(output_dir)
+
+    def test_refresh_recent_exports_for_resolved_output_dir_returns_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.show_recent_exports_for_resolved_output_dir = mock.Mock()
+
+        resolved = recorder.refresh_recent_exports_for_resolved_output_dir(output_dir)
+
+        self.assertEqual(resolved, output_dir)
+        recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_output_dir_open_command_returns_open_command(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
@@ -579,13 +589,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
         recorder.current_recent_output_dir = mock.Mock(return_value=output_dir)
-        recorder.show_recent_exports_for_resolved_output_dir = mock.Mock()
+        recorder.refresh_recent_exports_for_resolved_output_dir = mock.Mock(return_value=output_dir)
 
         resolved = recorder.refresh_recent_exports_for_current_output_dir()
 
         self.assertEqual(resolved, output_dir)
         recorder.current_recent_output_dir.assert_called_once_with()
-        recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
+        recorder.refresh_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_set_recent_exports_refresh_status_for_current_output_dir_uses_resolved_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
@@ -1554,7 +1564,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
     def test_open_output_dir_in_finder_creates_missing_directory(self) -> None:
         recorder = self.make_app()
-        recorder.refresh_recent_exports = mock.Mock()
+        recorder.show_recent_exports_for_resolved_output_dir = mock.Mock()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir) / "new-session-folder"
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
@@ -1564,12 +1574,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.open_output_dir_in_finder()
                 self.assertTrue(output_dir.exists())
                 run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
-                recorder.refresh_recent_exports.assert_called_once()
+                recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
                 self.assertEqual(recorder.status_messages[-1], "Klasor hazirlandi ve acildi: ~/new-session-folder")
 
     def test_open_output_dir_in_finder_reports_existing_directory(self) -> None:
         recorder = self.make_app()
-        recorder.refresh_recent_exports = mock.Mock()
+        recorder.show_recent_exports_for_resolved_output_dir = mock.Mock()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
@@ -1579,7 +1589,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.open_output_dir_in_finder()
 
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
-        recorder.refresh_recent_exports.assert_called_once()
+        recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
         self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
 
     def test_open_output_dir_in_finder_resolves_and_delegates(self) -> None:

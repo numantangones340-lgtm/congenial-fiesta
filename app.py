@@ -1404,10 +1404,13 @@ class GuitarAmpRecorderApp:
     def current_recent_output_dir(self) -> Path:
         return self.resolve_output_dir()
 
-    def refresh_recent_exports_for_current_output_dir(self) -> Path:
-        output_dir = self.current_recent_output_dir()
+    def refresh_recent_exports_for_resolved_output_dir(self, output_dir: Path) -> Path:
         self.show_recent_exports_for_resolved_output_dir(output_dir)
         return output_dir
+
+    def refresh_recent_exports_for_current_output_dir(self) -> Path:
+        output_dir = self.current_recent_output_dir()
+        return self.refresh_recent_exports_for_resolved_output_dir(output_dir)
 
     def set_recent_exports_refresh_status_for_current_output_dir(self) -> None:
         output_dir = self.current_recent_output_dir()
@@ -1801,7 +1804,7 @@ class GuitarAmpRecorderApp:
 
     def open_output_dir_and_refresh_recent_exports(self, output_dir: Path) -> bool:
         created_now = self.open_output_dir(output_dir)
-        self.refresh_recent_exports()
+        self.refresh_recent_exports_for_resolved_output_dir(output_dir)
         return created_now
 
     def output_dir_open_command(self, output_dir: Path) -> list[str]:
