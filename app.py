@@ -1888,8 +1888,11 @@ class GuitarAmpRecorderApp:
             has_summary=has_summary,
         )
 
+    def set_recent_exports_refresh_status_message(self, status_message: str) -> None:
+        self.set_status(status_message)
+
     def set_recent_exports_refresh_status(self, output_dir: Path) -> None:
-        self.set_status(self.recent_exports_refresh_status_message(output_dir))
+        self.set_recent_exports_refresh_status_message(self.recent_exports_refresh_status_message(output_dir))
 
     def missing_output_dir_message(self, output_dir_text: str) -> str:
         return (

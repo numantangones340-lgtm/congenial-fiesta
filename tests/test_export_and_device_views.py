@@ -1325,6 +1325,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             has_summary=False,
         )
 
+    def test_set_recent_exports_refresh_status_message_uses_set_status(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recent_exports_refresh_status_message("Durum guncel. Test.")
+
+        self.assertEqual(recorder.status_messages[-1], "Durum guncel. Test.")
+
     def test_set_recent_exports_refresh_status_uses_refresh_status_message(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/demo-output")
