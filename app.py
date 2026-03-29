@@ -1616,7 +1616,7 @@ class GuitarAmpRecorderApp:
 
     def recent_exports_action_status_message(self, output_dir: Path, total_audio_count: int, has_summary: bool) -> str:
         if not output_dir.exists():
-            return self.missing_output_dir_status(self.format_display_path(output_dir))
+            return self.missing_output_dir_status(self.recent_output_dir_text(output_dir))
         return self.recent_exports_existing_dir_status_message(
             total_audio_count=total_audio_count,
             has_summary=has_summary,
@@ -1813,7 +1813,7 @@ class GuitarAmpRecorderApp:
 
     def set_output_dir_open_status(self, output_dir: Path, created_now: bool) -> None:
         prefix = "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
-        self.set_status(f"{prefix}: {self.format_display_path(output_dir)}")
+        self.set_status(f"{prefix}: {self.recent_output_dir_text(output_dir)}")
 
     def open_output_dir(self, output_dir: Path) -> bool:
         created_now = not output_dir.exists()

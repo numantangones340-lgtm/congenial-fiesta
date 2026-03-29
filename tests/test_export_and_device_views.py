@@ -297,22 +297,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
     def test_set_output_dir_open_status_reports_created_folder(self) -> None:
         recorder = self.make_app()
-        recorder.format_display_path = mock.Mock(return_value="~/new-session-folder")
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/new-session-folder")
         output_dir = Path("/tmp/new-session-folder")
 
         recorder.set_output_dir_open_status(output_dir, created_now=True)
 
-        recorder.format_display_path.assert_called_once_with(output_dir)
+        recorder.recent_output_dir_text.assert_called_once_with(output_dir)
         self.assertEqual(recorder.status_messages[-1], "Klasor hazirlandi ve acildi: ~/new-session-folder")
 
     def test_set_output_dir_open_status_reports_existing_folder(self) -> None:
         recorder = self.make_app()
-        recorder.format_display_path = mock.Mock(return_value="~/existing-session-folder")
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/existing-session-folder")
         output_dir = Path("/tmp/existing-session-folder")
 
         recorder.set_output_dir_open_status(output_dir, created_now=False)
 
-        recorder.format_display_path.assert_called_once_with(output_dir)
+        recorder.recent_output_dir_text.assert_called_once_with(output_dir)
         self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
 
     def test_open_output_dir_creates_missing_directory_and_reports_created(self) -> None:
@@ -832,7 +832,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_recent_exports_action_status_message_for_missing_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         missing_dir = Path("/tmp/does-not-exist-gar")
-        recorder.format_display_path = mock.Mock(return_value="~/Missing")
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/Missing")
 
         self.assertEqual(
             recorder.recent_exports_action_status_message(
@@ -842,6 +842,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ),
             "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
+        recorder.recent_output_dir_text.assert_called_once_with(missing_dir)
 
     def test_recent_exports_action_status_message_for_empty_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
