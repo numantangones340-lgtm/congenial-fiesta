@@ -856,6 +856,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(resolved, export_path)
         recorder.refreshed_recent_output_target_path.assert_called_once_with("last_export_path")
 
+    def test_recent_output_target_path_for_open_returns_resolved_path(self) -> None:
+        recorder = self.make_app()
+        export_path = Path("/tmp/take.wav")
+        recorder.resolved_recent_output_target_path_for_open = mock.Mock(return_value=export_path)
+
+        resolved = recorder.recent_output_target_path_for_open("last_export_path")
+
+        self.assertEqual(resolved, export_path)
+        recorder.resolved_recent_output_target_path_for_open.assert_called_once_with("last_export_path")
+
     def test_open_resolved_recent_output_target_delegates_to_open_path(self) -> None:
         recorder = self.make_app()
         export_path = Path("/tmp/take.wav")
