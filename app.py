@@ -1390,9 +1390,10 @@ class GuitarAmpRecorderApp:
         summary_line = self.recent_session_summary_line(output_dir)
         all_audio_files = self.list_recent_export_audio_files(output_dir)
         recent_files = self.limit_recent_export_audio_files(all_audio_files)
+        shown_count = self.recent_exports_shown_count(len(all_audio_files))
         count_line = self.recent_exports_count_line(
             total_audio_count=len(all_audio_files),
-            shown_count=len(recent_files),
+            shown_count=shown_count,
             has_summary=bool(summary_line),
         )
         if not recent_files:
@@ -1411,7 +1412,10 @@ class GuitarAmpRecorderApp:
             self.refresh_recent_output_buttons()
             return
         self.refresh_last_export_path(output_dir, recent_files[0])
-        hidden_count = max(0, len(all_audio_files) - len(recent_files))
+        hidden_count = self.recent_exports_hidden_count(
+            total_audio_count=len(all_audio_files),
+            shown_count=shown_count,
+        )
         self.recent_exports_text.set(
             "\n".join(
                 self.build_recent_exports_lines(
@@ -1517,6 +1521,12 @@ class GuitarAmpRecorderApp:
             line += " | Yeni"
         return line
 
+    def recent_exports_shown_count(self, total_audio_count: int) -> int:
+        return min(total_audio_count, 6)
+
+    def recent_exports_hidden_count(self, total_audio_count: int, shown_count: int) -> int:
+        return max(0, total_audio_count - shown_count)
+
     def recent_exports_status_suffix(self, total_audio_count: int, shown_count: int) -> str:
         if total_audio_count > shown_count:
             return " Gr son 6. Yeni."
@@ -1537,7 +1547,7 @@ class GuitarAmpRecorderApp:
             return self.missing_output_dir_status(self.format_display_path(output_dir))
         if total_audio_count == 0:
             return self.recent_exports_empty_status_message(has_summary=has_summary)
-        shown_count = min(total_audio_count, 6)
+        shown_count = self.recent_exports_shown_count(total_audio_count)
         return self.recent_exports_audio_status_message(
             total_audio_count=total_audio_count,
             shown_count=shown_count,

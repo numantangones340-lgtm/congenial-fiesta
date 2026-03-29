@@ -266,6 +266,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Top 0 | Ozet",
         )
 
+    def test_recent_exports_shown_count_limits_to_six(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_exports_shown_count(7), 6)
+        self.assertEqual(recorder.recent_exports_shown_count(2), 2)
+
+    def test_recent_exports_hidden_count_returns_remaining_total(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=7, shown_count=6), 1)
+        self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=2, shown_count=2), 0)
+
     def test_recent_exports_status_suffix_matches_multi_file_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
