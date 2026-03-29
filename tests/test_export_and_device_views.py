@@ -267,6 +267,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi; son ciktilar yenilendi.")
 
+    def test_set_recent_output_open_status_reports_filename(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+
+            recorder.set_recent_output_open_status("Son export Finder'da gosteriliyor", export_path)
+
+        self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
+
     def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

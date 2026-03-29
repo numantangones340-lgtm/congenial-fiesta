@@ -1773,6 +1773,9 @@ class GuitarAmpRecorderApp:
         self.refresh_recent_output_buttons()
         self.set_status(status_message)
 
+    def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
+        self.set_status(f"{prefix}: {path.name}")
+
     def open_last_export_in_finder(self) -> None:
         self.refresh_recent_outputs_if_available()
         if self.last_export_path is None or not self.last_export_path.exists():
@@ -1783,7 +1786,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
-            self.set_status(f"Son export Finder'da gosteriliyor: {self.last_export_path.name}")
+            self.set_recent_output_open_status("Son export Finder'da gosteriliyor", self.last_export_path)
         except Exception as exc:
             self.set_status(f"Finder acilamadi: {exc}")
 
@@ -1797,7 +1800,7 @@ class GuitarAmpRecorderApp:
             return
         try:
             subprocess.run(["open", str(self.last_session_summary_path)], check=False)
-            self.set_status(f"Oturum ozeti aciliyor: {self.last_session_summary_path.name}")
+            self.set_recent_output_open_status("Oturum ozeti aciliyor", self.last_session_summary_path)
         except Exception as exc:
             self.set_status(f"Ozet acilamadi: {exc}")
 
