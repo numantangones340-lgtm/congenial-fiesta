@@ -2939,11 +2939,21 @@ class GuitarAmpRecorderApp:
         error_prefix: str,
     ) -> dict[str, str]:
         return self.recent_output_message_args_with_missing(
-            self.recent_output_open_message_args(
+            self.recent_output_open_target_message_base_args(
                 success_prefix=success_prefix,
                 error_prefix=error_prefix,
             ),
             target_name,
+        )
+
+    def recent_output_open_target_message_base_args(
+        self,
+        success_prefix: str,
+        error_prefix: str,
+    ) -> dict[str, str]:
+        return self.recent_output_open_message_args(
+            success_prefix=success_prefix,
+            error_prefix=error_prefix,
         )
 
     def recent_output_message_args_with_missing(
