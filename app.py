@@ -2442,7 +2442,7 @@ class GuitarAmpRecorderApp:
         self.set_output_dir_open_status(output_dir, created_now)
 
     def output_dir_open_error_text(self, exc: Exception) -> str:
-        return f"Klasor acilamadi: {exc}"
+        return f"Klasor acilamadi: {self.output_dir_open_error_detail_text(exc)}"
 
     def set_output_dir_open_error_status(self, exc: Exception) -> None:
         self.set_status(self.output_dir_open_error_text(exc))
@@ -2477,6 +2477,9 @@ class GuitarAmpRecorderApp:
         self.set_status(self.recent_output_open_error_text(error_prefix, exc))
 
     def recent_output_open_error_detail_text(self, exc: Exception) -> str:
+        return str(exc)
+
+    def output_dir_open_error_detail_text(self, exc: Exception) -> str:
         return str(exc)
 
     def output_dir_open_status_prefix(self, created_now: bool) -> str:
