@@ -547,6 +547,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 "Durum guncel. 1 ses dosyasi. Gr 1.",
             )
 
+    def test_set_recent_exports_refresh_status_uses_refresh_status_message(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/demo-output")
+        recorder.recent_exports_refresh_status_message = mock.Mock(return_value="Durum guncel. Test.")
+
+        recorder.set_recent_exports_refresh_status(output_dir)
+
+        recorder.recent_exports_refresh_status_message.assert_called_once_with(output_dir)
+        self.assertEqual(recorder.status_messages[-1], "Durum guncel. Test.")
+
     def test_recent_export_line_marks_latest_export(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
@@ -802,6 +812,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.refresh_recent_exports()
 
         recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
+
+    def test_refresh_recent_exports_from_action_uses_refresh_status_setter(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.refresh_recent_exports = mock.Mock()
+        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+        recorder.set_recent_exports_refresh_status = mock.Mock()
+
+        recorder.refresh_recent_exports_from_action()
+
+        recorder.refresh_recent_exports.assert_called_once_with()
+        recorder.set_recent_exports_refresh_status.assert_called_once_with(output_dir)
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()

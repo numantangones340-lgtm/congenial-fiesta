@@ -1383,7 +1383,7 @@ class GuitarAmpRecorderApp:
     def refresh_recent_exports_from_action(self) -> None:
         self.refresh_recent_exports()
         output_dir = self.resolve_output_dir()
-        self.set_status(self.recent_exports_refresh_status_message(output_dir))
+        self.set_recent_exports_refresh_status(output_dir)
 
     def format_display_path(self, path: Path) -> str:
         try:
@@ -1593,6 +1593,9 @@ class GuitarAmpRecorderApp:
             total_audio_count=int(status_context["total_audio_count"]),
             has_summary=bool(status_context["has_summary"]),
         )
+
+    def set_recent_exports_refresh_status(self, output_dir: Path) -> None:
+        self.set_status(self.recent_exports_refresh_status_message(output_dir))
 
     def missing_output_dir_message(self, output_dir_text: str) -> str:
         return (
