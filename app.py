@@ -2772,13 +2772,16 @@ class GuitarAmpRecorderApp:
     def open_last_export_in_finder(self) -> None:
         self.open_recent_output_target(**self.open_last_export_in_finder_args())
 
+    def open_last_session_summary_args(self) -> dict[str, object]:
+        return {
+            "attribute_name": "last_session_summary_path",
+            "missing_message": "Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
+            "success_prefix": "Oturum ozeti aciliyor",
+            "error_prefix": "Ozet acilamadi",
+        }
+
     def open_last_session_summary(self) -> None:
-        self.open_recent_output_target(
-            attribute_name="last_session_summary_path",
-            missing_message="Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
-            success_prefix="Oturum ozeti aciliyor",
-            error_prefix="Ozet acilamadi",
-        )
+        self.open_recent_output_target(**self.open_last_session_summary_args())
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
