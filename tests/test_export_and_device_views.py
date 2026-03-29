@@ -315,6 +315,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.format_display_path.assert_called_once_with(output_dir)
         self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
 
+    def test_output_dir_open_command_returns_open_command(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+
+        self.assertEqual(
+            recorder.output_dir_open_command(output_dir),
+            ["open", "/tmp/demo-output"],
+        )
+
     def test_recent_output_open_command_for_finder_reveal(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         path = Path("/tmp/take.wav")
