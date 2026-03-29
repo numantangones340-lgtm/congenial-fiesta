@@ -635,8 +635,47 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 hidden_count=1,
                 summary_line="- session_summary.json (Ozet)",
             ),
-            "Klasor ~/Demo\nTop 3 | Gr son 6 | Yeni\n- take_002.mp3 (Export)\n- take_001.wav\n+1\n- session_summary.json (Ozet)",
+                "Klasor ~/Demo\nTop 3 | Gr son 6 | Yeni\n- take_002.mp3 (Export)\n- take_001.wav\n+1\n- session_summary.json (Ozet)",
         )
+
+    def test_show_recent_exports_sets_text_and_disables_buttons_without_paths(self) -> None:
+        recorder = self.make_app()
+
+        recorder.show_recent_exports(
+            output_dir_text="~/Demo",
+            count_line="Top 0 | Ozet",
+            recent_files=[],
+            hidden_count=0,
+            summary_line="- session_summary.json (Ozet)",
+        )
+
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            "Klasor ~/Demo\nTop 0 | Ozet\nHenuz ses kaydi yok. Alttaki ozeti acabilirsiniz.\n- session_summary.json (Ozet)",
+        )
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
+
+    def test_show_recent_exports_refreshes_buttons_with_existing_paths(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            summary_path = Path(tmpdir) / "session_summary.json"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_export_path = export_path
+            recorder.last_session_summary_path = summary_path
+
+            recorder.show_recent_exports(
+                output_dir_text="~/Demo",
+                count_line="Top 1 | Gr 1",
+                recent_files=[export_path],
+                hidden_count=0,
+                summary_line="- session_summary.json (Ozet)",
+            )
+
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
