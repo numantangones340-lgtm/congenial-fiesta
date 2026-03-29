@@ -1469,8 +1469,11 @@ class GuitarAmpRecorderApp:
     def summary_ready_status_message(self) -> str:
         return "Ozet hazir. Isterseniz acabilirsiniz."
 
+    def recent_output_exists(self, path: Optional[Path]) -> bool:
+        return path is not None and path.exists()
+
     def has_recent_session_summary(self) -> bool:
-        return self.last_session_summary_path is not None and self.last_session_summary_path.exists()
+        return self.recent_output_exists(self.last_session_summary_path)
 
     def empty_recent_exports_status_message(self) -> str:
         return "Durum guncel. Yeni kayitlar burada gosterilir."
@@ -1725,7 +1728,7 @@ class GuitarAmpRecorderApp:
     def resolved_recent_session_summary_path(self, output_dir: Path) -> Optional[Path]:
         candidate = output_dir / "session_summary.json"
         current = self.last_session_summary_path
-        if current is not None and current.exists() and current == candidate:
+        if self.recent_output_exists(current) and current == candidate:
             return current
         if candidate.exists():
             return candidate
@@ -1735,7 +1738,7 @@ class GuitarAmpRecorderApp:
         self.last_session_summary_path = self.resolved_recent_session_summary_path(output_dir)
 
     def recent_output_button_state(self, path: Optional[Path]) -> str:
-        return "normal" if path is not None and path.exists() else "disabled"
+        return "normal" if self.recent_output_exists(path) else "disabled"
 
     def refresh_recent_output_buttons(self) -> None:
         export_button = getattr(self, "open_last_export_button", None)
@@ -1789,7 +1792,7 @@ class GuitarAmpRecorderApp:
     ) -> None:
         self.refresh_recent_outputs_if_available()
         path = getattr(self, attribute_name, None)
-        if path is None or not path.exists():
+        if not self.recent_output_exists(path):
             self.clear_missing_recent_output_target(attribute_name, missing_message)
             return
         command = self.recent_output_open_command(path, reveal_in_finder)

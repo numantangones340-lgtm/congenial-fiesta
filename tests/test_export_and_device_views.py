@@ -187,6 +187,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Ozet hazir. Isterseniz acabilirsiniz.",
         )
 
+    def test_recent_output_exists_returns_false_without_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertFalse(recorder.recent_output_exists(None))
+
+    def test_recent_output_exists_returns_false_for_missing_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertFalse(recorder.recent_output_exists(Path("/tmp/does-not-exist-gar")))
+
+    def test_recent_output_exists_returns_true_for_existing_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "take.wav"
+            path.write_text("audio", encoding="utf-8")
+
+            self.assertTrue(recorder.recent_output_exists(path))
+
     def test_has_recent_session_summary_returns_false_without_path(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.last_session_summary_path = None
