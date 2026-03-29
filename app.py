@@ -2932,6 +2932,9 @@ class GuitarAmpRecorderApp:
         )
 
     def recent_output_open_target_base_args(self, attribute_name: str) -> dict[str, object]:
+        return self.recent_output_open_target_attribute_args(attribute_name)
+
+    def recent_output_open_target_attribute_args(self, attribute_name: str) -> dict[str, object]:
         return self.recent_output_attribute_args(attribute_name)
 
     def recent_output_attribute_args(self, attribute_name: str) -> dict[str, object]:
