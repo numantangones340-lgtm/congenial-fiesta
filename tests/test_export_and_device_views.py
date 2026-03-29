@@ -250,6 +250,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
 
+    def test_show_missing_recent_exports_clears_recent_paths_and_updates_text(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            summary_path = Path(tmpdir) / "session_summary.json"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_export_path = export_path
+            recorder.last_session_summary_path = summary_path
+            missing_dir = Path(tmpdir) / "missing"
+
+            recorder.show_missing_recent_exports(missing_dir)
+
+        self.assertIsNone(recorder.last_export_path)
+        self.assertIsNone(recorder.last_session_summary_path)
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            f"Cikis klasoru bulunamadi: {missing_dir}\n"
+            "Bu cikis klasorune su an ulasilamiyor.\n"
+            "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+        )
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
+
     def test_recent_exports_count_line_matches_truncated_list_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
