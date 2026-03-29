@@ -677,6 +677,55 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
 
+    def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            recorder.show_recent_exports_from_context(
+                output_dir=output_dir,
+                output_dir_text="~/Demo",
+                display_context={
+                    "summary_line": "",
+                    "recent_files": [],
+                    "count_line": "Top 0",
+                    "hidden_count": 0,
+                },
+            )
+
+        self.assertIsNone(recorder.last_export_path)
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            "Klasor ~/Demo\nTop 0\nHenuz ses kaydi yok. Yeni kayitlar burada gosterilir.",
+        )
+
+    def test_show_recent_exports_from_context_refreshes_last_export_for_files(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newest_path = output_dir / "take.wav"
+            newest_path.write_text("audio", encoding="utf-8")
+
+            recorder.show_recent_exports_from_context(
+                output_dir=output_dir,
+                output_dir_text="~/Demo",
+                display_context={
+                    "summary_line": "",
+                    "recent_files": [newest_path],
+                    "count_line": "Top 1 | Gr 1",
+                    "hidden_count": 0,
+                },
+            )
+
+        self.assertEqual(recorder.last_export_path, newest_path)
+        self.assertEqual(
+            recorder.recent_exports_text.get(),
+            "Klasor ~/Demo\nTop 1 | Gr 1\n- take.wav (Export)",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

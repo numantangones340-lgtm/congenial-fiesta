@@ -1384,27 +1384,7 @@ class GuitarAmpRecorderApp:
         output_dir_text = self.format_display_path(output_dir)
         self.restore_session_summary_from_output_dir(output_dir)
         display_context = self.recent_exports_display_context(output_dir)
-        summary_line = str(display_context["summary_line"])
-        recent_files = list(display_context["recent_files"])
-        count_line = str(display_context["count_line"])
-        if not recent_files:
-            self.last_export_path = None
-            self.show_recent_exports(
-                output_dir_text=output_dir_text,
-                count_line=count_line,
-                recent_files=recent_files,
-                hidden_count=int(display_context["hidden_count"]),
-                summary_line=summary_line,
-            )
-            return
-        self.refresh_last_export_path(output_dir, recent_files[0])
-        self.show_recent_exports(
-            output_dir_text=output_dir_text,
-            count_line=count_line,
-            recent_files=recent_files,
-            hidden_count=int(display_context["hidden_count"]),
-            summary_line=summary_line,
-        )
+        self.show_recent_exports_from_context(output_dir, output_dir_text, display_context)
 
     def refresh_recent_exports_from_action(self) -> None:
         self.refresh_recent_exports()
@@ -1538,6 +1518,26 @@ class GuitarAmpRecorderApp:
                 else 0
             ),
         }
+
+    def show_recent_exports_from_context(
+        self,
+        output_dir: Path,
+        output_dir_text: str,
+        display_context: dict[str, object],
+    ) -> None:
+        summary_line = str(display_context["summary_line"])
+        recent_files = list(display_context["recent_files"])
+        if not recent_files:
+            self.last_export_path = None
+        else:
+            self.refresh_last_export_path(output_dir, recent_files[0])
+        self.show_recent_exports(
+            output_dir_text=output_dir_text,
+            count_line=str(display_context["count_line"]),
+            recent_files=recent_files,
+            hidden_count=int(display_context["hidden_count"]),
+            summary_line=summary_line,
+        )
 
     def recent_exports_visibility_label(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         if total_audio_count > shown_count:
