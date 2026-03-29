@@ -1948,8 +1948,11 @@ class GuitarAmpRecorderApp:
     def recent_exports_header_separator(self) -> str:
         return " "
 
-    def recent_exports_header_line(self, output_dir_text: str) -> str:
+    def recent_exports_header_content(self, output_dir_text: str) -> str:
         return f"{self.recent_exports_header_label()}{self.recent_exports_header_separator()}{output_dir_text}"
+
+    def recent_exports_header_line(self, output_dir_text: str) -> str:
+        return self.recent_exports_header_content(output_dir_text)
 
     def recent_hidden_count_prefix(self) -> str:
         return "+"
