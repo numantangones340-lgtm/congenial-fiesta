@@ -1999,8 +1999,11 @@ class GuitarAmpRecorderApp:
     def recent_exports_empty_lines_without_summary(self) -> list[str]:
         return self.recent_exports_empty_message_lines()
 
+    def recent_exports_has_optional_line(self, line: str) -> bool:
+        return bool(line)
+
     def recent_exports_has_summary_line(self, summary_line: str) -> bool:
-        return bool(summary_line)
+        return self.recent_exports_has_optional_line(summary_line)
 
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         lines = self.recent_exports_intro_lines(output_dir_text, count_line)
@@ -2014,7 +2017,7 @@ class GuitarAmpRecorderApp:
         return bool(hidden_count)
 
     def recent_exports_has_file_summary_line(self, summary_line: str) -> bool:
-        return bool(summary_line)
+        return self.recent_exports_has_optional_line(summary_line)
 
     def recent_exports_file_tail_lines(self, hidden_count: int, summary_line: str) -> list[str]:
         lines: list[str] = []

@@ -1532,6 +1532,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["Henuz ses kaydi yok. Yeni kayitlar burada gosterilir."],
         )
 
+    def test_recent_exports_has_optional_line_detects_non_empty_line(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_exports_has_optional_line("- session_summary.json (Ozet)"))
+
     def test_recent_exports_has_summary_line_detects_non_empty_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
