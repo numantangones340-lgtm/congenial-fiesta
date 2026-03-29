@@ -989,6 +989,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             error,
         )
 
+    def test_perform_recent_output_target_open_dispatches_resolved_path(self) -> None:
+        recorder = self.make_app()
+        export_path = Path("/tmp/take.wav")
+        recorder.recent_output_target_path_for_open = mock.Mock(return_value=export_path)
+        recorder.handle_resolved_recent_output_target_for_open = mock.Mock()
+
+        recorder.perform_recent_output_target_open(
+            "last_export_path",
+            "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            "Son export Finder'da gosteriliyor",
+            "Finder acilamadi",
+            True,
+        )
+
+        recorder.recent_output_target_path_for_open.assert_called_once_with("last_export_path")
+        recorder.handle_resolved_recent_output_target_for_open.assert_called_once_with(
+            export_path,
+            "last_export_path",
+            "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            "Son export Finder'da gosteriliyor",
+            "Finder acilamadi",
+            True,
+        )
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
