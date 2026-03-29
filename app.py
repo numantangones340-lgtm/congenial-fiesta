@@ -3006,8 +3006,14 @@ class GuitarAmpRecorderApp:
                 success_prefix=success_prefix,
                 error_prefix=error_prefix,
             ),
-            self.recent_output_open_target_extra_args_message_extra_args(target_name),
+            self.recent_output_open_target_extra_args_message_parts_extra_args(target_name),
         )
+
+    def recent_output_open_target_extra_args_message_parts_extra_args(
+        self,
+        target_name: str,
+    ) -> dict[str, str]:
+        return self.recent_output_open_target_extra_args_message_extra_args(target_name)
 
     def recent_output_open_target_extra_args_base_args(
         self,
