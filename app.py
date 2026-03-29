@@ -1824,9 +1824,12 @@ class GuitarAmpRecorderApp:
             has_summary=has_summary,
         )
 
+    def recent_exports_existing_dir_empty_status_message(self, has_summary: bool) -> str:
+        return self.recent_exports_empty_status_message(has_summary=has_summary)
+
     def recent_exports_existing_dir_status_message(self, total_audio_count: int, has_summary: bool) -> str:
         if total_audio_count == 0:
-            return self.recent_exports_empty_status_message(has_summary=has_summary)
+            return self.recent_exports_existing_dir_empty_status_message(has_summary=has_summary)
         return self.recent_exports_existing_dir_audio_status_message(
             total_audio_count=total_audio_count,
             has_summary=has_summary,

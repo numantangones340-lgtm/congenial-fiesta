@@ -1132,6 +1132,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             has_summary=True,
         )
 
+    def test_recent_exports_existing_dir_empty_status_message_uses_empty_status_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.recent_exports_empty_status_message = mock.Mock(
+            return_value="Durum guncel. Ozet hazir. Isterseniz acabilirsiniz."
+        )
+
+        status_message = recorder.recent_exports_existing_dir_empty_status_message(has_summary=True)
+
+        self.assertEqual(status_message, "Durum guncel. Ozet hazir. Isterseniz acabilirsiniz.")
+        recorder.recent_exports_empty_status_message.assert_called_once_with(has_summary=True)
+
     def test_recent_exports_existing_dir_status_message_for_empty_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
