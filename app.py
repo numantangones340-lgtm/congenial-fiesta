@@ -2459,8 +2459,11 @@ class GuitarAmpRecorderApp:
         prefix = self.output_dir_open_status_prefix(created_now)
         self.set_status(f"{prefix}: {self.recent_output_dir_text(output_dir)}")
 
+    def output_dir_was_missing(self, output_dir: Path) -> bool:
+        return not output_dir.exists()
+
     def open_output_dir(self, output_dir: Path) -> bool:
-        created_now = not output_dir.exists()
+        created_now = self.output_dir_was_missing(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
         subprocess.run(self.output_dir_open_command(output_dir), check=False)
         return created_now

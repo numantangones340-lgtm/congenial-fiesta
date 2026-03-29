@@ -387,6 +387,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_output_dir_text.assert_called_once_with(output_dir)
         self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
 
+    def test_output_dir_was_missing_detects_missing_and_existing_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            existing_dir = Path(tmpdir)
+            missing_dir = existing_dir / "new-session-folder"
+
+            self.assertFalse(recorder.output_dir_was_missing(existing_dir))
+            self.assertTrue(recorder.output_dir_was_missing(missing_dir))
+
     def test_open_output_dir_creates_missing_directory_and_reports_created(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:
