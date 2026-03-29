@@ -1388,14 +1388,8 @@ class GuitarAmpRecorderApp:
         output_dir_text = self.format_display_path(output_dir)
         self.restore_session_summary_from_output_dir(output_dir)
         summary_line = self.recent_session_summary_line(output_dir)
-        all_audio_files = [
-            path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
-        ]
-        recent_files = sorted(
-            all_audio_files,
-            key=lambda path: path.stat().st_mtime,
-            reverse=True,
-        )[:6]
+        all_audio_files = self.list_recent_export_audio_files(output_dir)
+        recent_files = self.limit_recent_export_audio_files(all_audio_files)
         count_line = self.recent_exports_count_line(
             total_audio_count=len(all_audio_files),
             shown_count=len(recent_files),
@@ -1444,9 +1438,7 @@ class GuitarAmpRecorderApp:
         if not output_dir.exists():
             self.set_status(self.missing_output_dir_status(self.format_display_path(output_dir)))
             return
-        audio_files = [
-            path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
-        ]
+        audio_files = self.list_recent_export_audio_files(output_dir)
         if not audio_files:
             self.set_status(
                 self.recent_exports_empty_status_message(
@@ -1474,6 +1466,18 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
         return str(path)
+
+    def list_recent_export_audio_files(self, output_dir: Path) -> list[Path]:
+        return [
+            path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
+        ]
+
+    def limit_recent_export_audio_files(self, audio_files: list[Path]) -> list[Path]:
+        return sorted(
+            audio_files,
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )[:6]
 
     def empty_recent_exports_message(self) -> str:
         return "Henuz ses kaydi yok. Yeni kayitlar burada gosterilir."

@@ -86,6 +86,38 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Henuz ses kaydi yok. Yeni kayitlar burada gosterilir.",
         )
 
+    def test_list_recent_export_audio_files_filters_audio_only(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            wav_path = output_dir / "take_001.wav"
+            mp3_path = output_dir / "take_002.mp3"
+            txt_path = output_dir / "notes.txt"
+            wav_path.write_text("audio", encoding="utf-8")
+            mp3_path.write_text("audio", encoding="utf-8")
+            txt_path.write_text("skip", encoding="utf-8")
+
+            audio_files = recorder.list_recent_export_audio_files(output_dir)
+
+        self.assertEqual(sorted(path.name for path in audio_files), ["take_001.wav", "take_002.mp3"])
+
+    def test_limit_recent_export_audio_files_returns_newest_six(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            files = []
+            for index in range(7):
+                path = output_dir / f"take_{index}.wav"
+                path.write_text("audio", encoding="utf-8")
+                os.utime(path, (time.time() + index, time.time() + index))
+                files.append(path)
+
+            recent_files = recorder.limit_recent_export_audio_files(files)
+
+        self.assertEqual(len(recent_files), 6)
+        self.assertEqual(recent_files[0].name, "take_6.wav")
+        self.assertEqual(recent_files[-1].name, "take_1.wav")
+
     def test_empty_recent_exports_summary_message_matches_summary_only_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
