@@ -2594,8 +2594,11 @@ class GuitarAmpRecorderApp:
     def output_dir_open_command_text(self, output_dir: Path) -> str:
         return self.open_command_text(output_dir)
 
+    def output_dir_open_command_suffix(self) -> list[str]:
+        return []
+
     def output_dir_open_command_prefix(self) -> list[str]:
-        return self.open_command_prefix_with_suffix([])
+        return self.open_command_prefix_with_suffix(self.output_dir_open_command_suffix())
 
     def open_command_parts(self, path: Path) -> tuple[list[str], str]:
         return (
