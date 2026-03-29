@@ -1273,6 +1273,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 "Durum guncel. 2 ses dosyasi. Gr tumu. Yeni. Ozet hazir. Isterseniz acabilirsiniz.",
             )
 
+    def test_recent_exports_action_status_input_values_extracts_context_values(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        values = recorder.recent_exports_action_status_input_values(
+            {
+                "total_audio_count": 2,
+                "has_summary": True,
+            }
+        )
+
+        self.assertEqual(values, (2, True))
+
     def test_recent_exports_refresh_status_message_for_missing_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         missing_dir = Path("/tmp/does-not-exist-gar")

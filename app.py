@@ -1858,9 +1858,15 @@ class GuitarAmpRecorderApp:
             has_summary=has_summary,
         )
 
+    def recent_exports_action_status_input_values(
+        self,
+        status_context: dict[str, object],
+    ) -> tuple[int, bool]:
+        return int(status_context["total_audio_count"]), bool(status_context["has_summary"])
+
     def recent_exports_action_status_inputs(self, output_dir: Path) -> tuple[int, bool]:
         status_context = self.recent_exports_status_context(output_dir)
-        return int(status_context["total_audio_count"]), bool(status_context["has_summary"])
+        return self.recent_exports_action_status_input_values(status_context)
 
     def recent_exports_refresh_status_from_inputs(
         self,
