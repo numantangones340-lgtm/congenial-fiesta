@@ -1931,8 +1931,11 @@ class GuitarAmpRecorderApp:
     def recent_exports_header_line(self, output_dir_text: str) -> str:
         return f"{self.recent_exports_header_label()} {output_dir_text}"
 
+    def recent_hidden_count_prefix(self) -> str:
+        return "+"
+
     def recent_hidden_count_line(self, hidden_count: int) -> str:
-        return f"+{hidden_count}"
+        return f"{self.recent_hidden_count_prefix()}{hidden_count}"
 
     def recent_summary_label(self) -> str:
         return "Ozet"
