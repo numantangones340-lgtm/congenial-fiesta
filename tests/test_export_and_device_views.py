@@ -3750,6 +3750,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             },
         )
 
+    def test_recent_output_open_target_args_base_args_returns_attribute_payload(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_target_args_base_args("last_export_path"),
+            {
+                "attribute_name": "last_export_path",
+            },
+        )
+
     def test_recent_output_open_target_args_extra_args_returns_message_payload(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
