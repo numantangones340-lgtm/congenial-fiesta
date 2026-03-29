@@ -2025,12 +2025,15 @@ class GuitarAmpRecorderApp:
     def recent_exports_file_tail_hidden_line(self, hidden_count: int) -> str:
         return self.recent_hidden_count_line(hidden_count)
 
+    def recent_exports_file_tail_summary_line(self, summary_line: str) -> str:
+        return summary_line
+
     def recent_exports_file_tail_lines(self, hidden_count: int, summary_line: str) -> list[str]:
         lines: list[str] = []
         if self.recent_exports_has_hidden_count(hidden_count):
             lines.append(self.recent_exports_file_tail_hidden_line(hidden_count))
         if self.recent_exports_has_file_summary_line(summary_line):
-            lines.append(summary_line)
+            lines.append(self.recent_exports_file_tail_summary_line(summary_line))
         return lines
 
     def recent_exports_file_body_is_latest(self, index: int) -> bool:
