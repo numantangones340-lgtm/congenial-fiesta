@@ -278,6 +278,37 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=7, shown_count=6), 1)
         self.assertEqual(recorder.recent_exports_hidden_count(total_audio_count=2, shown_count=2), 0)
 
+    def test_recent_exports_display_context_matches_summary_only_state(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+
+            context = recorder.recent_exports_display_context(output_dir)
+
+        self.assertEqual(context["summary_line"], "- session_summary.json (Ozet)")
+        self.assertEqual(context["recent_files"], [])
+        self.assertEqual(context["count_line"], "Top 0 | Ozet")
+        self.assertEqual(context["hidden_count"], 0)
+
+    def test_recent_exports_display_context_matches_audio_file_state(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            for index in range(7):
+                path = output_dir / f"take_{index}.wav"
+                path.write_text("audio", encoding="utf-8")
+                os.utime(path, (time.time() + index, time.time() + index))
+            recorder.last_session_summary_path = None
+
+            context = recorder.recent_exports_display_context(output_dir)
+
+        self.assertEqual(len(context["recent_files"]), 6)
+        self.assertEqual(context["count_line"], "Top 7 | Gr son 6 | Yeni")
+        self.assertEqual(context["hidden_count"], 1)
+
     def test_recent_exports_visibility_label_matches_truncated_list_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
