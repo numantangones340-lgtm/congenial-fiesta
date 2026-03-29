@@ -1687,6 +1687,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_text_lines_uses_line_builder(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recent_files = [Path("take_002.mp3"), Path("take_001.wav")]
+
+        self.assertEqual(
+            recorder.recent_exports_text_lines(
+                output_dir_text="~/Demo",
+                count_line="Top 3 | Gr son 6 | Yeni",
+                recent_files=recent_files,
+                hidden_count=1,
+                summary_line="- session_summary.json (Ozet)",
+            ),
+            [
+                "Klasor ~/Demo",
+                "Top 3 | Gr son 6 | Yeni",
+                "- take_002.mp3 (Export)",
+                "- take_001.wav",
+                "+1",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
     def test_render_recent_exports_text_joins_empty_lines(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
