@@ -232,6 +232,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             self.assertIsNone(recorder.resolved_recent_session_summary_path(output_dir))
 
+    def test_recent_output_button_state_is_disabled_without_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_output_button_state(None), "disabled")
+
+    def test_recent_output_button_state_is_disabled_for_missing_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_output_button_state(Path("/tmp/does-not-exist-gar")), "disabled")
+
+    def test_recent_output_button_state_is_normal_for_existing_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "take.wav"
+            path.write_text("audio", encoding="utf-8")
+
+            self.assertEqual(recorder.recent_output_button_state(path), "normal")
+
     def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

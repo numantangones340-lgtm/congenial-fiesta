@@ -1734,18 +1734,17 @@ class GuitarAmpRecorderApp:
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
         self.last_session_summary_path = self.resolved_recent_session_summary_path(output_dir)
 
+    def recent_output_button_state(self, path: Optional[Path]) -> str:
+        return "normal" if path is not None and path.exists() else "disabled"
+
     def refresh_recent_output_buttons(self) -> None:
         export_button = getattr(self, "open_last_export_button", None)
         summary_button = getattr(self, "open_last_summary_button", None)
         try:
             if export_button is not None:
-                export_state = "normal" if self.last_export_path is not None and self.last_export_path.exists() else "disabled"
-                export_button.configure(state=export_state)
+                export_button.configure(state=self.recent_output_button_state(self.last_export_path))
             if summary_button is not None:
-                summary_state = (
-                    "normal" if self.last_session_summary_path is not None and self.last_session_summary_path.exists() else "disabled"
-                )
-                summary_button.configure(state=summary_state)
+                summary_button.configure(state=self.recent_output_button_state(self.last_session_summary_path))
         except TclError:
             pass
 
