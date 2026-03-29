@@ -1586,11 +1586,14 @@ class GuitarAmpRecorderApp:
             return ""
         return self.recent_summary_line(summary_path.name)
 
-    def recent_export_line(self, filename: str, is_latest: bool) -> str:
+    def recent_output_line(self, filename: str, label: str = "") -> str:
         line = f"- {filename}"
-        if is_latest:
-            line += " (Export)"
+        if label:
+            line += f" ({label})"
         return line
+
+    def recent_export_line(self, filename: str, is_latest: bool) -> str:
+        return self.recent_output_line(filename, label="Export" if is_latest else "")
 
     def recent_exports_header_line(self, output_dir_text: str) -> str:
         return f"Klasor {output_dir_text}"
@@ -1599,7 +1602,7 @@ class GuitarAmpRecorderApp:
         return f"+{hidden_count}"
 
     def recent_summary_line(self, filename: str) -> str:
-        return f"- {filename} (Ozet)"
+        return self.recent_output_line(filename, label="Ozet")
 
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         lines = [self.recent_exports_header_line(output_dir_text), count_line]

@@ -386,6 +386,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "- take_001.wav (Export)",
         )
 
+    def test_recent_output_line_without_label(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_line("take_001.wav"),
+            "- take_001.wav",
+        )
+
+    def test_recent_output_line_with_label(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_line("session_summary.json", label="Ozet"),
+            "- session_summary.json (Ozet)",
+        )
+
     def test_recent_summary_line_marks_summary_item(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
