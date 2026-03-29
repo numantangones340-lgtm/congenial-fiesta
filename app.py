@@ -1618,10 +1618,7 @@ class GuitarAmpRecorderApp:
         )
 
     def recent_session_summary_line(self, output_dir: Path) -> str:
-        summary_path = self.last_session_summary_path
-        if not self.has_recent_session_summary():
-            candidate = output_dir / "session_summary.json"
-            summary_path = candidate if candidate.exists() else None
+        summary_path = self.resolved_recent_session_summary_path(output_dir)
         if summary_path is None:
             return ""
         return self.recent_summary_line(summary_path.name)
@@ -1725,15 +1722,17 @@ class GuitarAmpRecorderApp:
         )
         self.refresh_recent_output_buttons()
 
-    def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
+    def resolved_recent_session_summary_path(self, output_dir: Path) -> Optional[Path]:
         candidate = output_dir / "session_summary.json"
         current = self.last_session_summary_path
         if current is not None and current.exists() and current == candidate:
-            return
+            return current
         if candidate.exists():
-            self.last_session_summary_path = candidate
-        else:
-            self.last_session_summary_path = None
+            return candidate
+        return None
+
+    def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
+        self.last_session_summary_path = self.resolved_recent_session_summary_path(output_dir)
 
     def refresh_recent_output_buttons(self) -> None:
         export_button = getattr(self, "open_last_export_button", None)

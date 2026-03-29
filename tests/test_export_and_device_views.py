@@ -202,6 +202,36 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             self.assertTrue(recorder.has_recent_session_summary())
 
+    def test_resolved_recent_session_summary_path_returns_matching_current_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+
+            self.assertEqual(recorder.resolved_recent_session_summary_path(output_dir), summary_path)
+
+    def test_resolved_recent_session_summary_path_returns_candidate_when_current_is_stale(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir, tempfile.TemporaryDirectory() as olddir:
+            output_dir = Path(tmpdir)
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            old_summary = Path(olddir) / "session_summary.json"
+            old_summary.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = old_summary
+
+            self.assertEqual(recorder.resolved_recent_session_summary_path(output_dir), summary_path)
+
+    def test_resolved_recent_session_summary_path_returns_none_when_missing(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.last_session_summary_path = None
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+
+            self.assertIsNone(recorder.resolved_recent_session_summary_path(output_dir))
+
     def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
