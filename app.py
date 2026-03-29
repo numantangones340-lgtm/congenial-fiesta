@@ -2473,6 +2473,20 @@ class GuitarAmpRecorderApp:
     def recent_output_target_path(self, attribute_name: str) -> Optional[Path]:
         return getattr(self, attribute_name, None)
 
+    def open_recent_output_path(
+        self,
+        path: Path,
+        success_prefix: str,
+        error_prefix: str,
+        reveal_in_finder: bool = False,
+    ) -> None:
+        command = self.recent_output_open_command(path, reveal_in_finder)
+        try:
+            subprocess.run(command, check=False)
+            self.set_recent_output_open_status(success_prefix, path)
+        except Exception as exc:
+            self.set_status(f"{error_prefix}: {exc}")
+
     def open_recent_output_target(
         self,
         attribute_name: str,
@@ -2486,12 +2500,7 @@ class GuitarAmpRecorderApp:
         if not self.recent_output_exists(path):
             self.clear_missing_recent_output_target(attribute_name, missing_message)
             return
-        command = self.recent_output_open_command(path, reveal_in_finder)
-        try:
-            subprocess.run(command, check=False)
-            self.set_recent_output_open_status(success_prefix, path)
-        except Exception as exc:
-            self.set_status(f"{error_prefix}: {exc}")
+        self.open_recent_output_path(path, success_prefix, error_prefix, reveal_in_finder)
 
     def open_last_export_in_finder(self) -> None:
         self.open_recent_output_target(

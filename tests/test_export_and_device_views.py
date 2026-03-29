@@ -500,6 +500,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             Path("/tmp/take.wav"),
         )
 
+    def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_recent_output_path(
+                    export_path,
+                    success_prefix="Son export Finder'da gosteriliyor",
+                    error_prefix="Finder acilamadi",
+                    reveal_in_finder=True,
+                )
+
+        run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
+
     def test_open_recent_output_target_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = None
