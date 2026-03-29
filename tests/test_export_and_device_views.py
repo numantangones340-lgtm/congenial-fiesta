@@ -3668,6 +3668,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(resolved, payload)
         self.assertIsNot(resolved, payload)
 
+    def test_recent_output_payload_with_args_returns_updated_payload(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        payload = {
+            "attribute_name": "last_export_path",
+            "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+        }
+
+        resolved = recorder.recent_output_payload_with_args(
+            payload,
+            {"reveal_in_finder": True},
+        )
+
+        self.assertEqual(
+            resolved,
+            {
+                "attribute_name": "last_export_path",
+                "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                "reveal_in_finder": True,
+            },
+        )
+        self.assertIsNot(resolved, payload)
+
     def test_recent_output_open_target_args_payload_returns_target_payload(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
