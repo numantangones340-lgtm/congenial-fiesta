@@ -1511,6 +1511,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIsNone(recorder.last_export_path)
 
+    def test_refresh_last_export_from_recent_files_uses_primary_file(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        first_path = output_dir / "take_1.wav"
+        second_path = output_dir / "take_2.wav"
+        recorder.recent_exports_primary_file = mock.Mock(return_value=first_path)
+        recorder.refresh_last_export_path = mock.Mock()
+
+        recorder.refresh_last_export_from_recent_files(output_dir, [first_path, second_path])
+
+        recorder.recent_exports_primary_file.assert_called_once_with([first_path, second_path])
+        recorder.refresh_last_export_path.assert_called_once_with(output_dir, first_path)
+
     def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
