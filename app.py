@@ -1403,7 +1403,7 @@ class GuitarAmpRecorderApp:
         )
         if not recent_files:
             self.last_export_path = None
-            lines = [f"Klasor {output_dir_text}"]
+            lines = [self.recent_exports_header_line(output_dir_text)]
             lines.append(count_line)
             if summary_line:
                 lines.append(self.empty_recent_exports_summary_message())
@@ -1421,15 +1421,13 @@ class GuitarAmpRecorderApp:
             or current_export != recent_files[0]
         ):
             self.last_export_path = recent_files[0]
-        lines = [f"Klasor {output_dir_text}"]
+        lines = [self.recent_exports_header_line(output_dir_text)]
         lines.append(count_line)
         for index, path in enumerate(recent_files):
             lines.append(self.recent_export_line(path.name, is_latest=(index == 0)))
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
-            lines.append(
-                f"+{hidden_count}"
-            )
+            lines.append(self.recent_hidden_count_line(hidden_count))
         if summary_line:
             lines.append(summary_line)
         self.recent_exports_text.set("\n".join(lines))
@@ -1537,6 +1535,12 @@ class GuitarAmpRecorderApp:
         if is_latest:
             line += " (Export)"
         return line
+
+    def recent_exports_header_line(self, output_dir_text: str) -> str:
+        return f"Klasor {output_dir_text}"
+
+    def recent_hidden_count_line(self, hidden_count: int) -> str:
+        return f"+{hidden_count}"
 
     def recent_summary_line(self, filename: str) -> str:
         return f"- {filename} (Ozet)"

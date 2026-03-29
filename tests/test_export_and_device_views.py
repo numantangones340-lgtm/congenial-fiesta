@@ -182,6 +182,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "- session_summary.json (Ozet)",
         )
 
+    def test_recent_exports_header_line_formats_folder_label(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_header_line("~/Demo"),
+            "Klasor ~/Demo",
+        )
+
+    def test_recent_hidden_count_line_formats_hidden_total(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_hidden_count_line(2),
+            "+2",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
