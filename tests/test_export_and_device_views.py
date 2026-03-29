@@ -538,6 +538,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "boom",
         )
 
+    def test_output_dir_open_error_status_detail_text_returns_exception_text(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.output_dir_open_error_status_detail_text(RuntimeError("boom")),
+            "boom",
+        )
+
     def test_output_dir_open_error_status_text_formats_exception(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
