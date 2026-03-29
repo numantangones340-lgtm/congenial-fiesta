@@ -2600,12 +2600,15 @@ class GuitarAmpRecorderApp:
             self.open_command_text(path),
         )
 
+    def open_command_from_parts(self, command_parts: tuple[list[str], str]) -> list[str]:
+        command_prefix, command_text = command_parts
+        return [*command_prefix, command_text]
+
     def output_dir_open_command_parts(self, output_dir: Path) -> tuple[list[str], str]:
         return self.open_command_parts(output_dir)
 
     def output_dir_open_command(self, output_dir: Path) -> list[str]:
-        command_prefix, command_text = self.output_dir_open_command_parts(output_dir)
-        return [*command_prefix, command_text]
+        return self.open_command_from_parts(self.output_dir_open_command_parts(output_dir))
 
     def recent_output_open_command_reveal_suffix(self, reveal_in_finder: bool) -> list[str]:
         return ["-R"] if reveal_in_finder else []
@@ -2625,8 +2628,7 @@ class GuitarAmpRecorderApp:
         return ([*command_prefix, *self.recent_output_open_command_reveal_suffix(reveal_in_finder)], command_text)
 
     def recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> list[str]:
-        command_prefix, command_text = self.recent_output_open_command_parts(path, reveal_in_finder)
-        return [*command_prefix, command_text]
+        return self.open_command_from_parts(self.recent_output_open_command_parts(path, reveal_in_finder))
 
     def run_recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> None:
         self.run_open_command(self.recent_output_open_command(path, reveal_in_finder))

@@ -778,6 +778,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             (["open"], "/tmp/demo-output"),
         )
 
+    def test_open_command_from_parts_returns_command_list(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.open_command_from_parts((["open", "-R"], "/tmp/take.wav")),
+            ["open", "-R", "/tmp/take.wav"],
+        )
+
     def test_output_dir_open_command_text_returns_path_string(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
