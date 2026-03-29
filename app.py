@@ -1960,8 +1960,11 @@ class GuitarAmpRecorderApp:
     def recent_hidden_count_content(self, hidden_count: int) -> str:
         return str(hidden_count)
 
-    def recent_hidden_count_line(self, hidden_count: int) -> str:
+    def recent_hidden_count_text(self, hidden_count: int) -> str:
         return f"{self.recent_hidden_count_prefix()}{self.recent_hidden_count_content(hidden_count)}"
+
+    def recent_hidden_count_line(self, hidden_count: int) -> str:
+        return self.recent_hidden_count_text(hidden_count)
 
     def recent_summary_label(self) -> str:
         return "Ozet"
