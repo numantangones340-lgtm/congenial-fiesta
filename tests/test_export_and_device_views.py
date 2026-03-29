@@ -277,6 +277,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
 
+    def test_recent_output_open_command_for_finder_reveal(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        path = Path("/tmp/take.wav")
+
+        self.assertEqual(
+            recorder.recent_output_open_command(path, reveal_in_finder=True),
+            ["open", "-R", "/tmp/take.wav"],
+        )
+
+    def test_recent_output_open_command_for_direct_open(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        path = Path("/tmp/session_summary.json")
+
+        self.assertEqual(
+            recorder.recent_output_open_command(path, reveal_in_finder=False),
+            ["open", "/tmp/session_summary.json"],
+        )
+
     def test_open_recent_output_target_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = None

@@ -1776,6 +1776,9 @@ class GuitarAmpRecorderApp:
     def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
         self.set_status(f"{prefix}: {path.name}")
 
+    def recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> list[str]:
+        return ["open", "-R", str(path)] if reveal_in_finder else ["open", str(path)]
+
     def open_recent_output_target(
         self,
         attribute_name: str,
@@ -1789,7 +1792,7 @@ class GuitarAmpRecorderApp:
         if path is None or not path.exists():
             self.clear_missing_recent_output_target(attribute_name, missing_message)
             return
-        command = ["open", "-R", str(path)] if reveal_in_finder else ["open", str(path)]
+        command = self.recent_output_open_command(path, reveal_in_finder)
         try:
             subprocess.run(command, check=False)
             self.set_recent_output_open_status(success_prefix, path)
