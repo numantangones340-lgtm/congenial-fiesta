@@ -1800,9 +1800,12 @@ class GuitarAmpRecorderApp:
     def recent_exports_audio_status_summary_suffix(self, has_summary: bool) -> str:
         return f" {self.summary_ready_status_message()}" if has_summary else ""
 
+    def recent_exports_audio_status_intro(self, total_audio_count: int) -> str:
+        return f"Durum guncel. {total_audio_count} ses dosyasi."
+
     def recent_exports_audio_status_message(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         return (
-            f"Durum guncel. {total_audio_count} ses dosyasi."
+            f"{self.recent_exports_audio_status_intro(total_audio_count)}"
             f"{self.recent_exports_status_suffix(total_audio_count, shown_count)}"
             f"{self.recent_exports_audio_status_summary_suffix(has_summary)}"
         )

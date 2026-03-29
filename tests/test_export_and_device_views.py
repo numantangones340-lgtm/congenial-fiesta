@@ -1076,6 +1076,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         )
         self.assertEqual(recorder.recent_exports_audio_status_summary_suffix(False), "")
 
+    def test_recent_exports_audio_status_intro_matches_audio_count_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_audio_status_intro(2),
+            "Durum guncel. 2 ses dosyasi.",
+        )
+
     def test_recent_exports_audio_status_message_matches_multi_file_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
