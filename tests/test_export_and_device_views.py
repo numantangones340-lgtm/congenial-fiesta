@@ -310,6 +310,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ),
         )
 
+    def test_apply_recent_output_button_bindings_configures_bound_buttons(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            summary_path = Path(tmpdir) / "session_summary.json"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+
+            recorder.apply_recent_output_button_bindings(
+                (
+                    (recorder.open_last_export_button, export_path),
+                    (recorder.open_last_summary_button, summary_path),
+                )
+            )
+
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
+
     def test_clear_missing_recent_output_target_clears_path_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
