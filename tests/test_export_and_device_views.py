@@ -1451,6 +1451,24 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ("- session_summary.json (Ozet)", [export_path], "Top 1 | Gr 1", 0),
         )
 
+    def test_recent_exports_context_view_source_collects_render_values(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        export_path = Path("/tmp/demo-output/take.wav")
+        display_context = {
+            "summary_line": "- session_summary.json (Ozet)",
+            "recent_files": [export_path],
+            "count_line": "Top 1 | Gr 1",
+            "hidden_count": 0,
+        }
+        recorder.recent_exports_context_view_inputs = mock.Mock(
+            return_value=("- session_summary.json (Ozet)", [export_path], "Top 1 | Gr 1", 0)
+        )
+
+        source = recorder.recent_exports_context_view_source(display_context)
+
+        self.assertEqual(source, ("- session_summary.json (Ozet)", [export_path], "Top 1 | Gr 1", 0))
+        recorder.recent_exports_context_view_inputs.assert_called_once_with(display_context)
+
     def test_show_recent_exports_context_view_applies_render_values(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")

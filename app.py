@@ -1689,7 +1689,9 @@ class GuitarAmpRecorderApp:
         output_dir_text: str,
         display_context: dict[str, object],
     ) -> None:
-        summary_line, recent_files, count_line, hidden_count = self.recent_exports_context_view_inputs(display_context)
+        summary_line, recent_files, count_line, hidden_count = self.recent_exports_context_view_source(
+            display_context
+        )
         self.show_recent_exports_context_view(
             output_dir=output_dir,
             output_dir_text=output_dir_text,
@@ -1698,6 +1700,12 @@ class GuitarAmpRecorderApp:
             count_line=count_line,
             hidden_count=hidden_count,
         )
+
+    def recent_exports_context_view_source(
+        self,
+        display_context: dict[str, object],
+    ) -> tuple[str, list[Path], str, int]:
+        return self.recent_exports_context_view_inputs(display_context)
 
     def show_recent_exports_context_view(
         self,
