@@ -1978,8 +1978,11 @@ class GuitarAmpRecorderApp:
     def recent_summary_line_label(self) -> str:
         return self.recent_summary_label() if self.recent_summary_has_label() else ""
 
-    def recent_summary_line(self, filename: str) -> str:
+    def recent_summary_line_text(self, filename: str) -> str:
         return self.recent_output_line(filename, label=self.recent_summary_line_label())
+
+    def recent_summary_line(self, filename: str) -> str:
+        return self.recent_summary_line_text(filename)
 
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         lines = [self.recent_exports_header_line(output_dir_text), count_line]

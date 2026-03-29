@@ -1432,6 +1432,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_summary_line_label(), "Ozet")
 
+    def test_recent_summary_line_text_formats_summary_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_summary_line_text("session_summary.json"),
+            "- session_summary.json (Ozet)",
+        )
+
     def test_recent_exports_header_line_formats_folder_label(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
