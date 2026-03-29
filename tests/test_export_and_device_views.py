@@ -294,6 +294,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_exports_display_context.assert_called_once_with(output_dir)
         recorder.show_recent_exports_from_context.assert_called_once_with(output_dir, "~/Demo", display_context)
 
+    def test_show_recent_exports_for_resolved_output_dir_uses_missing_helper(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        missing_dir = Path("/tmp/does-not-exist-gar")
+        recorder.show_missing_recent_exports = mock.Mock()
+        recorder.show_recent_exports_for_output_dir = mock.Mock()
+
+        recorder.show_recent_exports_for_resolved_output_dir(missing_dir)
+
+        recorder.show_missing_recent_exports.assert_called_once_with(missing_dir)
+        recorder.show_recent_exports_for_output_dir.assert_not_called()
+
+    def test_show_recent_exports_for_resolved_output_dir_uses_existing_dir_helper(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.show_missing_recent_exports = mock.Mock()
+            recorder.show_recent_exports_for_output_dir = mock.Mock()
+
+            recorder.show_recent_exports_for_resolved_output_dir(output_dir)
+
+        recorder.show_missing_recent_exports.assert_not_called()
+        recorder.show_recent_exports_for_output_dir.assert_called_once_with(output_dir)
+
     def test_recent_exports_count_line_matches_truncated_list_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
@@ -774,13 +797,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
             recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
-            recorder.show_missing_recent_exports = mock.Mock()
-            recorder.show_recent_exports_for_output_dir = mock.Mock()
+            recorder.show_recent_exports_for_resolved_output_dir = mock.Mock()
 
             recorder.refresh_recent_exports()
 
-        recorder.show_missing_recent_exports.assert_not_called()
-        recorder.show_recent_exports_for_output_dir.assert_called_once_with(output_dir)
+        recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
