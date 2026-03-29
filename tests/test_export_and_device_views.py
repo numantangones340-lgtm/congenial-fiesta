@@ -94,6 +94,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.",
         )
 
+    def test_summary_ready_status_message_matches_status_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.summary_ready_status_message(),
+            "Ozet hazir. Isterseniz acabilirsiniz.",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
