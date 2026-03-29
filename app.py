@@ -1440,7 +1440,7 @@ class GuitarAmpRecorderApp:
             self.recent_exports_action_status_message(
                 output_dir=output_dir,
                 total_audio_count=len(audio_files),
-                has_summary=self.last_session_summary_path is not None and self.last_session_summary_path.exists(),
+                has_summary=self.has_recent_session_summary(),
             )
         )
 
@@ -1478,6 +1478,9 @@ class GuitarAmpRecorderApp:
 
     def summary_ready_status_message(self) -> str:
         return "Ozet hazir. Isterseniz acabilirsiniz."
+
+    def has_recent_session_summary(self) -> bool:
+        return self.last_session_summary_path is not None and self.last_session_summary_path.exists()
 
     def empty_recent_exports_status_message(self) -> str:
         return "Durum guncel. Yeni kayitlar burada gosterilir."
@@ -1546,7 +1549,7 @@ class GuitarAmpRecorderApp:
 
     def recent_session_summary_line(self, output_dir: Path) -> str:
         summary_path = self.last_session_summary_path
-        if summary_path is None or not summary_path.exists():
+        if not self.has_recent_session_summary():
             candidate = output_dir / "session_summary.json"
             summary_path = candidate if candidate.exists() else None
         if summary_path is None:

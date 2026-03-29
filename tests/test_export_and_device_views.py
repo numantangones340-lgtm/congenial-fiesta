@@ -134,6 +134,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Ozet hazir. Isterseniz acabilirsiniz.",
         )
 
+    def test_has_recent_session_summary_returns_false_without_path(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.last_session_summary_path = None
+
+        self.assertFalse(recorder.has_recent_session_summary())
+
+    def test_has_recent_session_summary_returns_true_for_existing_file(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_session_summary_path = summary_path
+
+            self.assertTrue(recorder.has_recent_session_summary())
+
     def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
