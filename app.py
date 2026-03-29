@@ -2926,10 +2926,20 @@ class GuitarAmpRecorderApp:
         success_prefix: str,
         error_prefix: str,
     ) -> dict[str, str]:
-        message_args = self.recent_output_open_message_args(
-            success_prefix=success_prefix,
-            error_prefix=error_prefix,
+        return self.recent_output_message_args_with_missing(
+            self.recent_output_open_message_args(
+                success_prefix=success_prefix,
+                error_prefix=error_prefix,
+            ),
+            target_name,
         )
+
+    def recent_output_message_args_with_missing(
+        self,
+        message_args: dict[str, str],
+        target_name: str,
+    ) -> dict[str, str]:
+        message_args = dict(message_args)
         message_args.update(self.recent_output_missing_message_args(target_name))
         return message_args
 
