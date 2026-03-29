@@ -1527,6 +1527,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_has_hidden_count_detects_extra_files(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_exports_has_hidden_count(1))
+
     def test_recent_exports_file_tail_lines_formats_hidden_count_and_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
