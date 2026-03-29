@@ -378,6 +378,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Son export Finder'da gosteriliyor: take.wav",
         )
 
+    def test_recent_output_open_status_status_text_formats_filename(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        path = Path("/tmp/take.wav")
+
+        self.assertEqual(
+            recorder.recent_output_open_status_status_text("Son export Finder'da gosteriliyor", path),
+            "Son export Finder'da gosteriliyor: take.wav",
+        )
+
     def test_recent_output_open_status_name_returns_filename(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
