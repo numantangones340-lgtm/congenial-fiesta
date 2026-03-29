@@ -784,6 +784,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             (["open"], "/tmp/demo-output"),
         )
 
+    def test_recent_output_open_command_reveal_suffix_matches_mode(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_output_open_command_reveal_suffix(True), ["-R"])
+        self.assertEqual(recorder.recent_output_open_command_reveal_suffix(False), [])
+
     def test_recent_output_open_command_prefix_matches_reveal_mode(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
