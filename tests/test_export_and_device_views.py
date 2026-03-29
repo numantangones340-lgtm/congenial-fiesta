@@ -1255,11 +1255,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
             (output_dir / "take.wav").write_text("audio", encoding="utf-8")
-
             self.assertEqual(
                 recorder.recent_exports_refresh_status_message(output_dir),
                 "Durum guncel. 1 ses dosyasi. Gr 1.",
             )
+
+    def test_recent_exports_refresh_status_from_inputs_uses_action_status_message(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.recent_exports_action_status_message = mock.Mock(return_value="Durum guncel. Test.")
+
+        status_message = recorder.recent_exports_refresh_status_from_inputs(
+            output_dir=output_dir,
+            total_audio_count=1,
+            has_summary=False,
+        )
+
+        self.assertEqual(status_message, "Durum guncel. Test.")
+        recorder.recent_exports_action_status_message.assert_called_once_with(
+            output_dir=output_dir,
+            total_audio_count=1,
+            has_summary=False,
+        )
 
     def test_set_recent_exports_refresh_status_uses_refresh_status_message(self) -> None:
         recorder = self.make_app()
