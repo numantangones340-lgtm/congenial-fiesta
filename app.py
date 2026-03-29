@@ -2555,9 +2555,12 @@ class GuitarAmpRecorderApp:
     def output_dir_was_missing(self, output_dir: Path) -> bool:
         return not output_dir.exists()
 
+    def ensure_output_dir_exists(self, output_dir: Path) -> None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+
     def open_output_dir(self, output_dir: Path) -> bool:
         created_now = self.output_dir_was_missing(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        self.ensure_output_dir_exists(output_dir)
         subprocess.run(self.output_dir_open_command(output_dir), check=False)
         return created_now
 

@@ -548,6 +548,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertFalse(recorder.output_dir_was_missing(existing_dir))
             self.assertTrue(recorder.output_dir_was_missing(missing_dir))
 
+    def test_ensure_output_dir_exists_creates_directory(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "new-session-folder"
+
+            recorder.ensure_output_dir_exists(output_dir)
+
+            self.assertTrue(output_dir.exists())
+            self.assertTrue(output_dir.is_dir())
+
     def test_open_output_dir_creates_missing_directory_and_reports_created(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:
