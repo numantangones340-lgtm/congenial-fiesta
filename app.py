@@ -2760,25 +2760,43 @@ class GuitarAmpRecorderApp:
             reveal_in_finder,
         )
 
-    def open_last_export_in_finder_args(self) -> dict[str, object]:
-        return {
-            "attribute_name": "last_export_path",
-            "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
-            "success_prefix": "Son export Finder'da gosteriliyor",
-            "error_prefix": "Finder acilamadi",
-            "reveal_in_finder": True,
+    def recent_output_open_args(
+        self,
+        attribute_name: str,
+        missing_message: str,
+        success_prefix: str,
+        error_prefix: str,
+        reveal_in_finder: bool = False,
+    ) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "attribute_name": attribute_name,
+            "missing_message": missing_message,
+            "success_prefix": success_prefix,
+            "error_prefix": error_prefix,
         }
+        if reveal_in_finder:
+            payload["reveal_in_finder"] = True
+        return payload
+
+    def open_last_export_in_finder_args(self) -> dict[str, object]:
+        return self.recent_output_open_args(
+            attribute_name="last_export_path",
+            missing_message="Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            success_prefix="Son export Finder'da gosteriliyor",
+            error_prefix="Finder acilamadi",
+            reveal_in_finder=True,
+        )
 
     def open_last_export_in_finder(self) -> None:
         self.open_recent_output_target(**self.open_last_export_in_finder_args())
 
     def open_last_session_summary_args(self) -> dict[str, object]:
-        return {
-            "attribute_name": "last_session_summary_path",
-            "missing_message": "Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
-            "success_prefix": "Oturum ozeti aciliyor",
-            "error_prefix": "Ozet acilamadi",
-        }
+        return self.recent_output_open_args(
+            attribute_name="last_session_summary_path",
+            missing_message="Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
+            success_prefix="Oturum ozeti aciliyor",
+            error_prefix="Ozet acilamadi",
+        )
 
     def open_last_session_summary(self) -> None:
         self.open_recent_output_target(**self.open_last_session_summary_args())
