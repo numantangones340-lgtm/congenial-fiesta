@@ -2008,6 +2008,16 @@ class GuitarAmpRecorderApp:
     def recent_exports_has_summary_line(self, summary_line: str) -> bool:
         return self.recent_exports_has_optional_line(summary_line)
 
+    def recent_exports_content_lines_with_intro(
+        self,
+        output_dir_text: str,
+        count_line: str,
+        content_lines: list[str],
+    ) -> list[str]:
+        lines = self.recent_exports_intro_lines(output_dir_text, count_line)
+        lines.extend(content_lines)
+        return lines
+
     def recent_exports_empty_body_lines(self, summary_line: str) -> list[str]:
         if self.recent_exports_has_summary_line(summary_line):
             return self.recent_exports_empty_lines_with_summary(summary_line)
@@ -2019,9 +2029,11 @@ class GuitarAmpRecorderApp:
         count_line: str,
         summary_line: str,
     ) -> list[str]:
-        lines = self.recent_exports_intro_lines(output_dir_text, count_line)
-        lines.extend(self.recent_exports_empty_body_lines(summary_line))
-        return lines
+        return self.recent_exports_content_lines_with_intro(
+            output_dir_text,
+            count_line,
+            self.recent_exports_empty_body_lines(summary_line),
+        )
 
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         return self.recent_exports_empty_content_lines(output_dir_text, count_line, summary_line)
@@ -2105,9 +2117,11 @@ class GuitarAmpRecorderApp:
         hidden_count: int,
         summary_line: str,
     ) -> list[str]:
-        lines = self.recent_exports_intro_lines(output_dir_text, count_line)
-        lines.extend(self.recent_exports_file_content_lines(recent_files, hidden_count, summary_line))
-        return lines
+        return self.recent_exports_content_lines_with_intro(
+            output_dir_text,
+            count_line,
+            self.recent_exports_file_content_lines(recent_files, hidden_count, summary_line),
+        )
 
     def recent_exports_file_count(self, recent_files: list[Path]) -> int:
         return len(recent_files)

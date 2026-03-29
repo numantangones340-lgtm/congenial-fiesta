@@ -1547,6 +1547,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertTrue(recorder.recent_exports_has_summary_line("- session_summary.json (Ozet)"))
 
+    def test_recent_exports_content_lines_with_intro_combines_intro_and_content(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_content_lines_with_intro(
+                output_dir_text="~/Demo",
+                count_line="Top 2 | Gr son 2",
+                content_lines=["- take_002.mp3 (Export)", "+1"],
+            ),
+            [
+                "Klasor ~/Demo",
+                "Top 2 | Gr son 2",
+                "- take_002.mp3 (Export)",
+                "+1",
+            ],
+        )
+
     def test_recent_exports_empty_body_lines_uses_summary_block_when_present(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
