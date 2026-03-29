@@ -1397,8 +1397,7 @@ class GuitarAmpRecorderApp:
     def show_missing_recent_exports(self, output_dir: Path) -> None:
         self.clear_recent_output_paths()
         output_dir_text = self.format_display_path(output_dir)
-        self.recent_exports_text.set(self.missing_output_dir_message(output_dir_text))
-        self.refresh_recent_output_buttons()
+        self.set_recent_exports_view(self.missing_output_dir_message(output_dir_text))
 
     def clear_recent_output_paths(self) -> None:
         self.last_export_path = None
@@ -1735,7 +1734,7 @@ class GuitarAmpRecorderApp:
         hidden_count: int,
         summary_line: str,
     ) -> None:
-        self.recent_exports_text.set(
+        self.set_recent_exports_view(
             self.render_recent_exports_text(
                 output_dir_text=output_dir_text,
                 count_line=count_line,
@@ -1744,6 +1743,9 @@ class GuitarAmpRecorderApp:
                 summary_line=summary_line,
             )
         )
+
+    def set_recent_exports_view(self, text: str) -> None:
+        self.recent_exports_text.set(text)
         self.refresh_recent_output_buttons()
 
     def resolved_recent_session_summary_path(self, output_dir: Path) -> Optional[Path]:

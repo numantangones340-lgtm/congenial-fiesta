@@ -1070,6 +1070,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
 
+    def test_set_recent_exports_view_sets_text_and_refreshes_buttons(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recent_exports_view("Demo metni")
+
+        self.assertEqual(recorder.recent_exports_text.get(), "Demo metni")
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
+
     def test_show_recent_exports_refreshes_buttons_with_existing_paths(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
