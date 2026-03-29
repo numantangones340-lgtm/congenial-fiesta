@@ -618,6 +618,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(resolved, output_dir)
         recorder.set_recent_exports_refresh_status.assert_called_once_with(output_dir)
 
+    def test_refresh_recent_exports_from_action_for_resolved_output_dir_returns_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.refresh_recent_exports_for_resolved_output_dir = mock.Mock(return_value=output_dir)
+        recorder.set_recent_exports_refresh_status_for_resolved_output_dir = mock.Mock(return_value=output_dir)
+
+        resolved = recorder.refresh_recent_exports_from_action_for_resolved_output_dir(output_dir)
+
+        self.assertEqual(resolved, output_dir)
+        recorder.refresh_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
+        recorder.set_recent_exports_refresh_status_for_resolved_output_dir.assert_called_once_with(output_dir)
+
     def test_current_recent_output_dir_uses_resolve_output_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/current-recent-output")
@@ -1132,14 +1144,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_refresh_recent_exports_from_action_for_current_output_dir_reuses_resolved_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/current-session-folder")
-        recorder.refresh_recent_exports_for_current_output_dir = mock.Mock(return_value=output_dir)
-        recorder.set_recent_exports_refresh_status = mock.Mock()
+        recorder.current_recent_output_dir = mock.Mock(return_value=output_dir)
+        recorder.refresh_recent_exports_from_action_for_resolved_output_dir = mock.Mock(return_value=output_dir)
 
         resolved_output_dir = recorder.refresh_recent_exports_from_action_for_current_output_dir()
 
         self.assertEqual(resolved_output_dir, output_dir)
-        recorder.refresh_recent_exports_for_current_output_dir.assert_called_once_with()
-        recorder.set_recent_exports_refresh_status.assert_called_once_with(output_dir)
+        recorder.current_recent_output_dir.assert_called_once_with()
+        recorder.refresh_recent_exports_from_action_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()

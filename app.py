@@ -1420,10 +1420,14 @@ class GuitarAmpRecorderApp:
         output_dir = self.current_recent_output_dir()
         self.set_recent_exports_refresh_status_for_resolved_output_dir(output_dir)
 
-    def refresh_recent_exports_from_action_for_current_output_dir(self) -> Path:
-        output_dir = self.refresh_recent_exports_for_current_output_dir()
+    def refresh_recent_exports_from_action_for_resolved_output_dir(self, output_dir: Path) -> Path:
+        self.refresh_recent_exports_for_resolved_output_dir(output_dir)
         self.set_recent_exports_refresh_status_for_resolved_output_dir(output_dir)
         return output_dir
+
+    def refresh_recent_exports_from_action_for_current_output_dir(self) -> Path:
+        output_dir = self.current_recent_output_dir()
+        return self.refresh_recent_exports_from_action_for_resolved_output_dir(output_dir)
 
     def show_recent_exports_for_resolved_output_dir(self, output_dir: Path) -> None:
         if not output_dir.exists():
