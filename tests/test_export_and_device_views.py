@@ -803,6 +803,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
 
+    def test_handle_recent_output_open_error_reports_status(self) -> None:
+        recorder = self.make_app()
+
+        recorder.handle_recent_output_open_error("Finder acilamadi", RuntimeError("boom"))
+
+        self.assertEqual(recorder.status_messages[-1], "Finder acilamadi: boom")
+
     def test_recent_output_target_path_reads_named_attribute(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = Path("/tmp/take.wav")
