@@ -2037,6 +2037,9 @@ class GuitarAmpRecorderApp:
         lines.extend(self.recent_exports_file_tail_lines(hidden_count, summary_line))
         return lines
 
+    def recent_exports_has_files(self, recent_files: list[Path]) -> bool:
+        return bool(recent_files)
+
     def build_recent_exports_lines(
         self,
         output_dir_text: str,
@@ -2045,7 +2048,7 @@ class GuitarAmpRecorderApp:
         hidden_count: int,
         summary_line: str,
     ) -> list[str]:
-        if not recent_files:
+        if not self.recent_exports_has_files(recent_files):
             return self.build_recent_exports_empty_lines(output_dir_text, count_line, summary_line)
         return self.build_recent_exports_file_lines(
             output_dir_text=output_dir_text,

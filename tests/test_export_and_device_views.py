@@ -1584,6 +1584,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ],
         )
 
+    def test_recent_exports_has_files_detects_non_empty_recent_files(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_exports_has_files([Path("take_001.wav")]))
+
     def test_build_recent_exports_lines_uses_empty_builder_when_no_files(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
