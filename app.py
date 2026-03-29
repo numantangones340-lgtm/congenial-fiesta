@@ -1913,8 +1913,11 @@ class GuitarAmpRecorderApp:
             return ""
         return self.recent_summary_line(summary_path.name)
 
+    def recent_output_line_prefix(self) -> str:
+        return "- "
+
     def recent_output_line(self, filename: str, label: str = "") -> str:
-        line = f"- {filename}"
+        line = f"{self.recent_output_line_prefix()}{filename}"
         if label:
             line += f" ({label})"
         return line
