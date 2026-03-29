@@ -2464,6 +2464,9 @@ class GuitarAmpRecorderApp:
     def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
         self.set_status(f"{prefix}: {path.name}")
 
+    def set_recent_output_open_error_status(self, error_prefix: str, exc: Exception) -> None:
+        self.set_status(self.recent_output_open_error_text(error_prefix, exc))
+
     def output_dir_open_status_prefix(self, created_now: bool) -> str:
         return "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
 
@@ -2532,7 +2535,7 @@ class GuitarAmpRecorderApp:
             subprocess.run(command, check=False)
             self.set_recent_output_open_status(success_prefix, path)
         except Exception as exc:
-            self.set_status(self.recent_output_open_error_text(error_prefix, exc))
+            self.set_recent_output_open_error_status(error_prefix, exc)
 
     def recent_output_open_error_text(self, error_prefix: str, exc: Exception) -> str:
         return f"{error_prefix}: {exc}"

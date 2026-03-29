@@ -649,6 +649,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Finder acilamadi: boom",
         )
 
+    def test_set_recent_output_open_error_status_reports_exception(self) -> None:
+        recorder = self.make_app()
+
+        recorder.set_recent_output_open_error_status("Finder acilamadi", RuntimeError("boom"))
+
+        self.assertEqual(recorder.status_messages[-1], "Finder acilamadi: boom")
+
     def test_open_recent_output_target_clears_missing_path(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = None
