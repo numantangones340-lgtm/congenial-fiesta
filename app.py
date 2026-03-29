@@ -2002,6 +2002,9 @@ class GuitarAmpRecorderApp:
     def recent_exports_has_optional_line(self, line: str) -> bool:
         return bool(line)
 
+    def recent_exports_has_count(self, count: int) -> bool:
+        return bool(count)
+
     def recent_exports_has_summary_line(self, summary_line: str) -> bool:
         return self.recent_exports_has_optional_line(summary_line)
 
@@ -2014,7 +2017,7 @@ class GuitarAmpRecorderApp:
         return lines
 
     def recent_exports_has_hidden_count(self, hidden_count: int) -> bool:
-        return bool(hidden_count)
+        return self.recent_exports_has_count(hidden_count)
 
     def recent_exports_has_file_summary_line(self, summary_line: str) -> bool:
         return self.recent_exports_has_optional_line(summary_line)

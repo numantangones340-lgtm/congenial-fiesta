@@ -1537,6 +1537,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertTrue(recorder.recent_exports_has_optional_line("- session_summary.json (Ozet)"))
 
+    def test_recent_exports_has_count_detects_non_zero_count(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_exports_has_count(1))
+
     def test_recent_exports_has_summary_line_detects_non_empty_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
