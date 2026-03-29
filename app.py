@@ -2018,6 +2018,12 @@ class GuitarAmpRecorderApp:
             lines.append(summary_line)
         return lines
 
+    def recent_exports_file_body_lines(self, recent_files: list[Path]) -> list[str]:
+        lines: list[str] = []
+        for index, path in enumerate(recent_files):
+            lines.append(self.recent_export_line(path.name, is_latest=(index == 0)))
+        return lines
+
     def build_recent_exports_file_lines(
         self,
         output_dir_text: str,
@@ -2027,8 +2033,7 @@ class GuitarAmpRecorderApp:
         summary_line: str,
     ) -> list[str]:
         lines = self.recent_exports_intro_lines(output_dir_text, count_line)
-        for index, path in enumerate(recent_files):
-            lines.append(self.recent_export_line(path.name, is_latest=(index == 0)))
+        lines.extend(self.recent_exports_file_body_lines(recent_files))
         lines.extend(self.recent_exports_file_tail_lines(hidden_count, summary_line))
         return lines
 
