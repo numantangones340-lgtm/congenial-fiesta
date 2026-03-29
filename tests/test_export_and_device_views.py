@@ -1582,6 +1582,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["+1", "- session_summary.json (Ozet)"],
         )
 
+    def test_recent_exports_file_body_is_latest_detects_first_item(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_exports_file_body_is_latest(0))
+
     def test_recent_exports_file_body_line_formats_latest_item(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

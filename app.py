@@ -2030,8 +2030,11 @@ class GuitarAmpRecorderApp:
             lines.append(summary_line)
         return lines
 
+    def recent_exports_file_body_is_latest(self, index: int) -> bool:
+        return index == 0
+
     def recent_exports_file_body_line(self, path: Path, index: int) -> str:
-        return self.recent_export_line(path.name, is_latest=(index == 0))
+        return self.recent_export_line(path.name, is_latest=self.recent_exports_file_body_is_latest(index))
 
     def recent_exports_file_body_lines(self, recent_files: list[Path]) -> list[str]:
         lines: list[str] = []
