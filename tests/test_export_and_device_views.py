@@ -166,6 +166,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             " Gr 1.",
         )
 
+    def test_recent_export_line_marks_latest_export(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_export_line("take_001.wav", is_latest=True),
+            "- take_001.wav (Export)",
+        )
+
+    def test_recent_summary_line_marks_summary_item(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_summary_line("session_summary.json"),
+            "- session_summary.json (Ozet)",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

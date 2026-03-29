@@ -1424,10 +1424,7 @@ class GuitarAmpRecorderApp:
         lines = [f"Klasor {output_dir_text}"]
         lines.append(count_line)
         for index, path in enumerate(recent_files):
-            label = f"- {path.name}"
-            if index == 0:
-                label += " (Export)"
-            lines.append(label)
+            lines.append(self.recent_export_line(path.name, is_latest=(index == 0)))
         hidden_count = max(0, len(all_audio_files) - len(recent_files))
         if hidden_count:
             lines.append(
@@ -1533,7 +1530,16 @@ class GuitarAmpRecorderApp:
             summary_path = candidate if candidate.exists() else None
         if summary_path is None:
             return ""
-        return "- session_summary.json (Ozet)"
+        return self.recent_summary_line(summary_path.name)
+
+    def recent_export_line(self, filename: str, is_latest: bool) -> str:
+        line = f"- {filename}"
+        if is_latest:
+            line += " (Export)"
+        return line
+
+    def recent_summary_line(self, filename: str) -> str:
+        return f"- {filename} (Ozet)"
 
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
         candidate = output_dir / "session_summary.json"
