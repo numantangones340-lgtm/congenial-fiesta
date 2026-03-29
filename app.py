@@ -2449,8 +2449,11 @@ class GuitarAmpRecorderApp:
     def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
         self.set_status(f"{prefix}: {path.name}")
 
+    def output_dir_open_status_prefix(self, created_now: bool) -> str:
+        return "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
+
     def set_output_dir_open_status(self, output_dir: Path, created_now: bool) -> None:
-        prefix = "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
+        prefix = self.output_dir_open_status_prefix(created_now)
         self.set_status(f"{prefix}: {self.recent_output_dir_text(output_dir)}")
 
     def open_output_dir(self, output_dir: Path) -> bool:
