@@ -2993,6 +2993,9 @@ class GuitarAmpRecorderApp:
         )
 
     def recent_output_open_target_extra_args_extra_args(self, target_name: str) -> dict[str, str]:
+        return self.recent_output_open_target_extra_args_missing_args(target_name)
+
+    def recent_output_open_target_extra_args_missing_args(self, target_name: str) -> dict[str, str]:
         return self.recent_output_open_target_message_extra_args(target_name)
 
     def recent_output_open_target_message_args(
