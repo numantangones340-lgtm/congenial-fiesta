@@ -2395,12 +2395,20 @@ class GuitarAmpRecorderApp:
     def recent_output_button_paths(self) -> Tuple[Optional[Path], Optional[Path]]:
         return self.last_export_path, self.last_session_summary_path
 
-    def refresh_recent_output_buttons(self) -> None:
+    def recent_output_button_bindings(
+        self,
+    ) -> Tuple[Tuple[Optional[object], Optional[Path]], Tuple[Optional[object], Optional[Path]]]:
         export_button, summary_button = self.recent_output_buttons()
         export_path, summary_path = self.recent_output_button_paths()
+        return (
+            (export_button, export_path),
+            (summary_button, summary_path),
+        )
+
+    def refresh_recent_output_buttons(self) -> None:
         try:
-            self.apply_recent_output_button_state(export_button, export_path)
-            self.apply_recent_output_button_state(summary_button, summary_path)
+            for button, path in self.recent_output_button_bindings():
+                self.apply_recent_output_button_state(button, path)
         except TclError:
             pass
 
