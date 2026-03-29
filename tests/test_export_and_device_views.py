@@ -1503,6 +1503,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(primary, first_path)
 
+    def test_clear_last_export_path_resets_last_export(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.last_export_path = Path("/tmp/demo-output/take.wav")
+
+        recorder.clear_last_export_path()
+
+        self.assertIsNone(recorder.last_export_path)
+
     def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
