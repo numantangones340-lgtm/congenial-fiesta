@@ -1766,8 +1766,7 @@ class GuitarAmpRecorderApp:
             output_dir.mkdir(parents=True, exist_ok=True)
             subprocess.run(["open", str(output_dir)], check=False)
             self.refresh_recent_exports()
-            prefix = "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
-            self.set_status(f"{prefix}: {self.format_display_path(output_dir)}")
+            self.set_output_dir_open_status(output_dir, created_now)
         except Exception as exc:
             self.set_status(f"Klasor acilamadi: {exc}")
 
@@ -1778,6 +1777,10 @@ class GuitarAmpRecorderApp:
 
     def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
         self.set_status(f"{prefix}: {path.name}")
+
+    def set_output_dir_open_status(self, output_dir: Path, created_now: bool) -> None:
+        prefix = "Klasor hazirlandi ve acildi" if created_now else "Klasor acildi"
+        self.set_status(f"{prefix}: {self.format_display_path(output_dir)}")
 
     def recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> list[str]:
         return ["open", "-R", str(path)] if reveal_in_finder else ["open", str(path)]

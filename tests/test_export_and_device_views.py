@@ -295,6 +295,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
 
+    def test_set_output_dir_open_status_reports_created_folder(self) -> None:
+        recorder = self.make_app()
+        recorder.format_display_path = mock.Mock(return_value="~/new-session-folder")
+        output_dir = Path("/tmp/new-session-folder")
+
+        recorder.set_output_dir_open_status(output_dir, created_now=True)
+
+        recorder.format_display_path.assert_called_once_with(output_dir)
+        self.assertEqual(recorder.status_messages[-1], "Klasor hazirlandi ve acildi: ~/new-session-folder")
+
+    def test_set_output_dir_open_status_reports_existing_folder(self) -> None:
+        recorder = self.make_app()
+        recorder.format_display_path = mock.Mock(return_value="~/existing-session-folder")
+        output_dir = Path("/tmp/existing-session-folder")
+
+        recorder.set_output_dir_open_status(output_dir, created_now=False)
+
+        recorder.format_display_path.assert_called_once_with(output_dir)
+        self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
+
     def test_recent_output_open_command_for_finder_reveal(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         path = Path("/tmp/take.wav")
