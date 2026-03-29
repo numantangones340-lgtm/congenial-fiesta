@@ -578,6 +578,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", "/tmp/new-session-folder"], check=False)
 
+    def test_run_open_command_runs_subprocess(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        with mock.patch.object(app.subprocess, "run") as run_mock:
+            recorder.run_open_command(["open", "/tmp/demo"])
+
+        run_mock.assert_called_once_with(["open", "/tmp/demo"], check=False)
+
     def test_open_output_dir_creates_missing_directory_and_reports_created(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:

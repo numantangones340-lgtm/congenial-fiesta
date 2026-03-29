@@ -2563,8 +2563,11 @@ class GuitarAmpRecorderApp:
         self.ensure_output_dir_exists(output_dir)
         return created_now
 
+    def run_open_command(self, command: list[str]) -> None:
+        subprocess.run(command, check=False)
+
     def run_output_dir_open_command(self, output_dir: Path) -> None:
-        subprocess.run(self.output_dir_open_command(output_dir), check=False)
+        self.run_open_command(self.output_dir_open_command(output_dir))
 
     def open_output_dir(self, output_dir: Path) -> bool:
         created_now = self.prepare_output_dir_for_open(output_dir)
@@ -2616,7 +2619,7 @@ class GuitarAmpRecorderApp:
         return [*command_prefix, command_text]
 
     def run_recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> None:
-        subprocess.run(self.recent_output_open_command(path, reveal_in_finder), check=False)
+        self.run_open_command(self.recent_output_open_command(path, reveal_in_finder))
 
     def handle_recent_output_open_success(self, path: Path, success_prefix: str) -> None:
         self.set_recent_output_open_status(success_prefix, path)
