@@ -394,6 +394,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "take.wav",
         )
 
+    def test_recent_output_open_status_prefix_returns_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_status_prefix("Son export Finder'da gosteriliyor"),
+            "Son export Finder'da gosteriliyor",
+        )
+
     def test_output_dir_open_status_prefix_matches_created_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
