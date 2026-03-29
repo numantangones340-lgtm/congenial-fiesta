@@ -1776,33 +1776,42 @@ class GuitarAmpRecorderApp:
     def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
         self.set_status(f"{prefix}: {path.name}")
 
-    def open_last_export_in_finder(self) -> None:
+    def open_recent_output_target(
+        self,
+        attribute_name: str,
+        missing_message: str,
+        success_prefix: str,
+        error_prefix: str,
+        reveal_in_finder: bool = False,
+    ) -> None:
         self.refresh_recent_outputs_if_available()
-        if self.last_export_path is None or not self.last_export_path.exists():
-            self.clear_missing_recent_output_target(
-                "last_export_path",
-                "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
-            )
+        path = getattr(self, attribute_name, None)
+        if path is None or not path.exists():
+            self.clear_missing_recent_output_target(attribute_name, missing_message)
             return
+        command = ["open", "-R", str(path)] if reveal_in_finder else ["open", str(path)]
         try:
-            subprocess.run(["open", "-R", str(self.last_export_path)], check=False)
-            self.set_recent_output_open_status("Son export Finder'da gosteriliyor", self.last_export_path)
+            subprocess.run(command, check=False)
+            self.set_recent_output_open_status(success_prefix, path)
         except Exception as exc:
-            self.set_status(f"Finder acilamadi: {exc}")
+            self.set_status(f"{error_prefix}: {exc}")
+
+    def open_last_export_in_finder(self) -> None:
+        self.open_recent_output_target(
+            attribute_name="last_export_path",
+            missing_message="Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            success_prefix="Son export Finder'da gosteriliyor",
+            error_prefix="Finder acilamadi",
+            reveal_in_finder=True,
+        )
 
     def open_last_session_summary(self) -> None:
-        self.refresh_recent_outputs_if_available()
-        if self.last_session_summary_path is None or not self.last_session_summary_path.exists():
-            self.clear_missing_recent_output_target(
-                "last_session_summary_path",
-                "Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
-            )
-            return
-        try:
-            subprocess.run(["open", str(self.last_session_summary_path)], check=False)
-            self.set_recent_output_open_status("Oturum ozeti aciliyor", self.last_session_summary_path)
-        except Exception as exc:
-            self.set_status(f"Ozet acilamadi: {exc}")
+        self.open_recent_output_target(
+            attribute_name="last_session_summary_path",
+            missing_message="Son oturum ozeti bulunamadi; son ciktilar yenilendi.",
+            success_prefix="Oturum ozeti aciliyor",
+            error_prefix="Ozet acilamadi",
+        )
 
     def build_device_summary(self) -> str:
         inputs = list_input_devices()

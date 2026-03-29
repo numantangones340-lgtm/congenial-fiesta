@@ -277,6 +277,45 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
 
+    def test_open_recent_output_target_clears_missing_path(self) -> None:
+        recorder = self.make_app()
+        recorder.last_export_path = None
+        recorder.refresh_recent_exports = mock.Mock()
+
+        recorder.open_recent_output_target(
+            attribute_name="last_export_path",
+            missing_message="Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            success_prefix="Son export Finder'da gosteriliyor",
+            error_prefix="Finder acilamadi",
+            reveal_in_finder=True,
+        )
+
+        recorder.refresh_recent_exports.assert_called_once()
+        self.assertIsNone(recorder.last_export_path)
+        self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
+        self.assertEqual(recorder.status_messages[-1], "Son export dosyasi bulunamadi; son ciktilar yenilendi.")
+
+    def test_open_recent_output_target_reports_success(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_recent_exports = mock.Mock()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_recent_output_target(
+                    attribute_name="last_export_path",
+                    missing_message="Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                    success_prefix="Son export Finder'da gosteriliyor",
+                    error_prefix="Finder acilamadi",
+                    reveal_in_finder=True,
+                )
+
+        recorder.refresh_recent_exports.assert_called_once()
+        run_mock.assert_called_once_with(["open", "-R", str(export_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Son export Finder'da gosteriliyor: take.wav")
+
     def test_empty_recent_exports_status_message_matches_status_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
