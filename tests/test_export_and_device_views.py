@@ -889,6 +889,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
         )
 
+    def test_handle_resolved_recent_output_target_for_open_clears_missing_path(self) -> None:
+        recorder = self.make_app()
+        recorder.handle_missing_recent_output_target_for_open = mock.Mock()
+        recorder.open_resolved_recent_output_target = mock.Mock()
+
+        recorder.handle_resolved_recent_output_target_for_open(
+            None,
+            "last_export_path",
+            "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            "Son export Finder'da gosteriliyor",
+            "Finder acilamadi",
+            True,
+        )
+
+        recorder.handle_missing_recent_output_target_for_open.assert_called_once_with(
+            "last_export_path",
+            "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+        )
+        recorder.open_resolved_recent_output_target.assert_not_called()
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
