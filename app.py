@@ -2714,6 +2714,24 @@ class GuitarAmpRecorderApp:
         reveal_in_finder: bool = False,
     ) -> None:
         path = self.recent_output_target_path_for_open(attribute_name)
+        self.dispatch_recent_output_target_open(
+            path,
+            attribute_name,
+            missing_message,
+            success_prefix,
+            error_prefix,
+            reveal_in_finder,
+        )
+
+    def dispatch_recent_output_target_open(
+        self,
+        path: Optional[Path],
+        attribute_name: str,
+        missing_message: str,
+        success_prefix: str,
+        error_prefix: str,
+        reveal_in_finder: bool = False,
+    ) -> None:
         self.handle_resolved_recent_output_target_for_open(
             path,
             attribute_name,
