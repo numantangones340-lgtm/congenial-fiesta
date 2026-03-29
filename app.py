@@ -2582,8 +2582,11 @@ class GuitarAmpRecorderApp:
         self.refresh_recent_exports_after_output_dir_open(output_dir)
         return created_now
 
+    def open_command_text(self, path: Path) -> str:
+        return str(path)
+
     def output_dir_open_command_text(self, output_dir: Path) -> str:
-        return str(output_dir)
+        return self.open_command_text(output_dir)
 
     def output_dir_open_command_prefix(self) -> list[str]:
         return ["open"]
@@ -2602,7 +2605,7 @@ class GuitarAmpRecorderApp:
         return ["open", "-R"] if reveal_in_finder else ["open"]
 
     def recent_output_open_command_text(self, path: Path) -> str:
-        return str(path)
+        return self.open_command_text(path)
 
     def recent_output_open_command_parts(
         self,
