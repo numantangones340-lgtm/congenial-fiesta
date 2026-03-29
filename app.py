@@ -2830,6 +2830,16 @@ class GuitarAmpRecorderApp:
     def recent_output_missing_message(self, target_name: str) -> str:
         return f"{target_name} bulunamadi; son ciktilar yenilendi."
 
+    def recent_output_open_message_args(
+        self,
+        success_prefix: str,
+        error_prefix: str,
+    ) -> dict[str, str]:
+        return {
+            "success_prefix": success_prefix,
+            "error_prefix": error_prefix,
+        }
+
     def recent_output_open_args_payload(
         self,
         attribute_name: str,
@@ -2850,13 +2860,16 @@ class GuitarAmpRecorderApp:
         return {"reveal_in_finder": True}
 
     def open_last_export_in_finder_args(self) -> dict[str, object]:
-        return self.recent_output_open_args(
+        open_args = self.recent_output_open_args(
             attribute_name="last_export_path",
             missing_message=self.recent_output_missing_message("Son export dosyasi"),
-            success_prefix="Son export Finder'da gosteriliyor",
-            error_prefix="Finder acilamadi",
+            **self.recent_output_open_message_args(
+                success_prefix="Son export Finder'da gosteriliyor",
+                error_prefix="Finder acilamadi",
+            ),
             reveal_in_finder=True,
         )
+        return open_args
 
     def open_recent_output_from_args(self, open_args: dict[str, object]) -> None:
         self.open_recent_output_target(**open_args)
@@ -2877,12 +2890,15 @@ class GuitarAmpRecorderApp:
         self.open_recent_output_from_args_factory(self.open_last_export_in_finder_args)
 
     def open_last_session_summary_args(self) -> dict[str, object]:
-        return self.recent_output_open_args(
+        open_args = self.recent_output_open_args(
             attribute_name="last_session_summary_path",
             missing_message=self.recent_output_missing_message("Son oturum ozeti"),
-            success_prefix="Oturum ozeti aciliyor",
-            error_prefix="Ozet acilamadi",
+            **self.recent_output_open_message_args(
+                success_prefix="Oturum ozeti aciliyor",
+                error_prefix="Ozet acilamadi",
+            ),
         )
+        return open_args
 
     def open_last_session_summary(self) -> None:
         self.open_recent_output_from_args_factory(self.open_last_session_summary_args)
