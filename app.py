@@ -1621,6 +1621,21 @@ class GuitarAmpRecorderApp:
     ) -> tuple[bool, bool]:
         return bool(summary_line), bool(recent_files)
 
+    def recent_exports_display_context_metrics(
+        self,
+        summary_line: str,
+        recent_files: list[Path],
+        total_audio_count: int,
+        shown_count: int,
+    ) -> tuple[str, int]:
+        has_summary, has_recent_files = self.recent_exports_display_metric_flags(summary_line, recent_files)
+        return self.recent_exports_display_metrics(
+            total_audio_count=total_audio_count,
+            shown_count=shown_count,
+            has_summary=has_summary,
+            has_recent_files=has_recent_files,
+        )
+
     def recent_exports_display_context_payload(
         self,
         summary_line: str,
@@ -1640,12 +1655,11 @@ class GuitarAmpRecorderApp:
         summary_line, recent_files, total_audio_count, shown_count = self.recent_exports_display_context_inputs(
             display_inputs
         )
-        has_summary, has_recent_files = self.recent_exports_display_metric_flags(summary_line, recent_files)
-        count_line, hidden_count = self.recent_exports_display_metrics(
+        count_line, hidden_count = self.recent_exports_display_context_metrics(
+            summary_line=summary_line,
+            recent_files=recent_files,
             total_audio_count=total_audio_count,
             shown_count=shown_count,
-            has_summary=has_summary,
-            has_recent_files=has_recent_files,
         )
         return self.recent_exports_display_context_payload(
             summary_line=summary_line,
