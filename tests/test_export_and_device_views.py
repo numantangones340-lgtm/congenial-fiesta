@@ -856,6 +856,25 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(resolved, export_path)
         recorder.refreshed_recent_output_target_path.assert_called_once_with("last_export_path")
 
+    def test_open_resolved_recent_output_target_delegates_to_open_path(self) -> None:
+        recorder = self.make_app()
+        export_path = Path("/tmp/take.wav")
+        recorder.open_recent_output_path = mock.Mock()
+
+        recorder.open_resolved_recent_output_target(
+            export_path,
+            success_prefix="Son export Finder'da gosteriliyor",
+            error_prefix="Finder acilamadi",
+            reveal_in_finder=True,
+        )
+
+        recorder.open_recent_output_path.assert_called_once_with(
+            export_path,
+            "Son export Finder'da gosteriliyor",
+            "Finder acilamadi",
+            True,
+        )
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
