@@ -2768,14 +2768,28 @@ class GuitarAmpRecorderApp:
         error_prefix: str,
         reveal_in_finder: bool = False,
     ) -> dict[str, object]:
-        payload: dict[str, object] = {
+        payload = self.recent_output_open_args_payload(
+            attribute_name,
+            missing_message,
+            success_prefix,
+            error_prefix,
+        )
+        payload.update(self.recent_output_open_reveal_args(reveal_in_finder))
+        return payload
+
+    def recent_output_open_args_payload(
+        self,
+        attribute_name: str,
+        missing_message: str,
+        success_prefix: str,
+        error_prefix: str,
+    ) -> dict[str, object]:
+        return {
             "attribute_name": attribute_name,
             "missing_message": missing_message,
             "success_prefix": success_prefix,
             "error_prefix": error_prefix,
         }
-        payload.update(self.recent_output_open_reveal_args(reveal_in_finder))
-        return payload
 
     def recent_output_open_reveal_args(self, reveal_in_finder: bool) -> dict[str, object]:
         if not reveal_in_finder:
