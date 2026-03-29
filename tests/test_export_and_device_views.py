@@ -601,11 +601,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
         recorder.current_recent_output_dir = mock.Mock(return_value=output_dir)
-        recorder.set_recent_exports_refresh_status = mock.Mock()
+        recorder.set_recent_exports_refresh_status_for_resolved_output_dir = mock.Mock(return_value=output_dir)
 
         recorder.set_recent_exports_refresh_status_for_current_output_dir()
 
         recorder.current_recent_output_dir.assert_called_once_with()
+        recorder.set_recent_exports_refresh_status_for_resolved_output_dir.assert_called_once_with(output_dir)
+
+    def test_set_recent_exports_refresh_status_for_resolved_output_dir_returns_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        recorder.set_recent_exports_refresh_status = mock.Mock()
+
+        resolved = recorder.set_recent_exports_refresh_status_for_resolved_output_dir(output_dir)
+
+        self.assertEqual(resolved, output_dir)
         recorder.set_recent_exports_refresh_status.assert_called_once_with(output_dir)
 
     def test_current_recent_output_dir_uses_resolve_output_dir(self) -> None:
