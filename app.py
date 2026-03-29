@@ -519,7 +519,7 @@ class GuitarAmpRecorderApp:
         self.stop_recording_requested = False
         self.last_export_path: Optional[Path] = None
         self.last_session_summary_path: Optional[Path] = None
-        self.recent_exports_text = StringVar(value="Henuz ses kaydi yok. Yeni kayitlar burada gosterilir.")
+        self.recent_exports_text = StringVar(value=self.empty_recent_exports_message())
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
         self.output_device_options = ["Varsayılan macOS çıkışı"]
@@ -1417,10 +1417,10 @@ class GuitarAmpRecorderApp:
             lines = [f"Klasor {output_dir_text}"]
             lines.append(count_line)
             if summary_line:
-                lines.append("Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.")
+                lines.append(self.empty_recent_exports_summary_message())
                 lines.append(summary_line)
             else:
-                lines.append("Henuz ses kaydi yok. Yeni kayitlar burada gosterilir.")
+                lines.append(self.empty_recent_exports_message())
             self.recent_exports_text.set("\n".join(lines))
             self.refresh_recent_output_buttons()
             return
@@ -1499,6 +1499,12 @@ class GuitarAmpRecorderApp:
         except Exception:
             pass
         return str(path)
+
+    def empty_recent_exports_message(self) -> str:
+        return "Henuz ses kaydi yok. Yeni kayitlar burada gosterilir."
+
+    def empty_recent_exports_summary_message(self) -> str:
+        return "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz."
 
     def recent_session_summary_line(self, output_dir: Path) -> str:
         summary_path = self.last_session_summary_path

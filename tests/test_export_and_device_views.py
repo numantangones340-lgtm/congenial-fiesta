@@ -78,6 +78,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_summary_button = FakeButton()
         return recorder
 
+    def test_empty_recent_exports_message_matches_empty_state_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.empty_recent_exports_message(),
+            "Henuz ses kaydi yok. Yeni kayitlar burada gosterilir.",
+        )
+
+    def test_empty_recent_exports_summary_message_matches_summary_only_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.empty_recent_exports_summary_message(),
+            "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
