@@ -763,6 +763,12 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.open_command_prefix(), ["open"])
 
+    def test_open_command_prefix_with_suffix_appends_suffix(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.open_command_prefix_with_suffix([]), ["open"])
+        self.assertEqual(recorder.open_command_prefix_with_suffix(["-R"]), ["open", "-R"])
+
     def test_open_command_text_returns_path_string(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         path = Path("/tmp/demo-output")
