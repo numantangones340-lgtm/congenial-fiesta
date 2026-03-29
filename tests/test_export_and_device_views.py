@@ -118,6 +118,35 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recent_files[0].name, "take_6.wav")
         self.assertEqual(recent_files[-1].name, "take_1.wav")
 
+    def test_should_refresh_last_export_path_when_missing(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newest = output_dir / "take_002.wav"
+            newest.write_text("audio", encoding="utf-8")
+
+            self.assertTrue(recorder.should_refresh_last_export_path(None, output_dir, newest))
+
+    def test_should_refresh_last_export_path_when_stale(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            current = output_dir / "take_001.wav"
+            newest = output_dir / "take_002.wav"
+            current.write_text("audio", encoding="utf-8")
+            newest.write_text("audio", encoding="utf-8")
+
+            self.assertTrue(recorder.should_refresh_last_export_path(current, output_dir, newest))
+
+    def test_should_refresh_last_export_path_when_current_is_latest(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newest = output_dir / "take_002.wav"
+            newest.write_text("audio", encoding="utf-8")
+
+            self.assertFalse(recorder.should_refresh_last_export_path(newest, output_dir, newest))
+
     def test_empty_recent_exports_summary_message_matches_summary_only_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
