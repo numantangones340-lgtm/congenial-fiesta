@@ -481,6 +481,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_output_dir_and_refresh_recent_exports.assert_called_once_with(output_dir)
         recorder.set_output_dir_open_status.assert_called_once_with(output_dir, True)
 
+    def test_output_dir_open_error_text_formats_exception(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.output_dir_open_error_text(RuntimeError("boom")),
+            "Klasor acilamadi: boom",
+        )
+
     def test_open_resolved_output_dir_in_finder_reports_created_directory(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/new-session-folder")
