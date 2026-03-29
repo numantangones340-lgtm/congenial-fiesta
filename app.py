@@ -1930,8 +1930,11 @@ class GuitarAmpRecorderApp:
     def recent_export_label(self) -> str:
         return "Export"
 
+    def recent_export_line_label(self, is_latest: bool) -> str:
+        return self.recent_export_label() if is_latest else ""
+
     def recent_export_line(self, filename: str, is_latest: bool) -> str:
-        return self.recent_output_line(filename, label=self.recent_export_label() if is_latest else "")
+        return self.recent_output_line(filename, label=self.recent_export_line_label(is_latest))
 
     def recent_exports_header_label(self) -> str:
         return "Klasor"
