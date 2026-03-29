@@ -1556,10 +1556,7 @@ class GuitarAmpRecorderApp:
     ) -> None:
         summary_line = str(display_context["summary_line"])
         recent_files = list(display_context["recent_files"])
-        if not recent_files:
-            self.last_export_path = None
-        else:
-            self.refresh_last_export_path(output_dir, recent_files[0])
+        self.sync_last_export_from_recent_files(output_dir, recent_files)
         self.show_recent_exports(
             output_dir_text=output_dir_text,
             count_line=str(display_context["count_line"]),
@@ -1567,6 +1564,12 @@ class GuitarAmpRecorderApp:
             hidden_count=int(display_context["hidden_count"]),
             summary_line=summary_line,
         )
+
+    def sync_last_export_from_recent_files(self, output_dir: Path, recent_files: list[Path]) -> None:
+        if not recent_files:
+            self.last_export_path = None
+            return
+        self.refresh_last_export_path(output_dir, recent_files[0])
 
     def recent_exports_visibility_label(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
         if total_audio_count > shown_count:

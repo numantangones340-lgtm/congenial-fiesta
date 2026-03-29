@@ -1100,6 +1100,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "normal"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "normal"})
 
+    def test_sync_last_export_from_recent_files_clears_path_when_empty(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.wav"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            recorder.sync_last_export_from_recent_files(output_dir, [])
+
+        self.assertIsNone(recorder.last_export_path)
+
+    def test_sync_last_export_from_recent_files_refreshes_newest_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newest_path = output_dir / "take.wav"
+            newest_path.write_text("audio", encoding="utf-8")
+
+            recorder.sync_last_export_from_recent_files(output_dir, [newest_path])
+
+        self.assertEqual(recorder.last_export_path, newest_path)
+
     def test_show_recent_exports_from_context_clears_last_export_when_empty(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
