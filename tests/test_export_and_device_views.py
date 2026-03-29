@@ -362,6 +362,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_output_dir.assert_called_once_with(output_dir)
         recorder.refresh_recent_exports.assert_called_once()
 
+    def test_open_resolved_output_dir_in_finder_reports_created_directory(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/new-session-folder")
+        recorder.open_output_dir_and_refresh_recent_exports = mock.Mock(return_value=True)
+        recorder.set_output_dir_open_status = mock.Mock()
+
+        recorder.open_resolved_output_dir_in_finder(output_dir)
+
+        recorder.open_output_dir_and_refresh_recent_exports.assert_called_once_with(output_dir)
+        recorder.set_output_dir_open_status.assert_called_once_with(output_dir, True)
+
+    def test_open_resolved_output_dir_in_finder_reports_open_error(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/broken-session-folder")
+        recorder.open_output_dir_and_refresh_recent_exports = mock.Mock(side_effect=RuntimeError("boom"))
+
+        recorder.open_resolved_output_dir_in_finder(output_dir)
+
+        self.assertEqual(recorder.status_messages[-1], "Klasor acilamadi: boom")
+
     def test_output_dir_open_command_returns_open_command(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
@@ -1529,6 +1549,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
         recorder.refresh_recent_exports.assert_called_once()
         self.assertEqual(recorder.status_messages[-1], "Klasor acildi: ~/existing-session-folder")
+
+    def test_open_output_dir_in_finder_resolves_and_delegates(self) -> None:
+        recorder = self.make_app()
+        output_dir = Path("/tmp/current-session-folder")
+        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+        recorder.open_resolved_output_dir_in_finder = mock.Mock()
+
+        recorder.open_output_dir_in_finder()
+
+        recorder.resolve_output_dir.assert_called_once_with()
+        recorder.open_resolved_output_dir_in_finder.assert_called_once_with(output_dir)
 
     def test_open_last_session_summary_handles_missing_summary(self) -> None:
         recorder = self.make_app()
