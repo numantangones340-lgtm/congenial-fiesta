@@ -1414,6 +1414,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_summary_label(), "Ozet")
 
+    def test_recent_summary_has_label_defaults_true(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertTrue(recorder.recent_summary_has_label())
+
     def test_recent_summary_line_label_matches_summary_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
