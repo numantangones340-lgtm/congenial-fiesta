@@ -948,7 +948,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder = self.make_app()
         export_path = Path("/tmp/take.wav")
         recorder.run_recent_output_open_command = mock.Mock()
-        recorder.handle_recent_output_open_success = mock.Mock()
+        recorder.perform_recent_output_open_success = mock.Mock()
 
         recorder.perform_recent_output_open(
             export_path,
@@ -957,6 +957,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         )
 
         recorder.run_recent_output_open_command.assert_called_once_with(export_path, True)
+        recorder.perform_recent_output_open_success.assert_called_once_with(
+            export_path,
+            "Son export Finder'da gosteriliyor",
+        )
+
+    def test_perform_recent_output_open_success_reports_status(self) -> None:
+        recorder = self.make_app()
+        export_path = Path("/tmp/take.wav")
+        recorder.handle_recent_output_open_success = mock.Mock()
+
+        recorder.perform_recent_output_open_success(
+            export_path,
+            "Son export Finder'da gosteriliyor",
+        )
+
         recorder.handle_recent_output_open_success.assert_called_once_with(
             export_path,
             "Son export Finder'da gosteriliyor",

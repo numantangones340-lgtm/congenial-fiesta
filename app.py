@@ -2677,6 +2677,13 @@ class GuitarAmpRecorderApp:
         reveal_in_finder: bool = False,
     ) -> None:
         self.run_recent_output_open_command(path, reveal_in_finder)
+        self.perform_recent_output_open_success(path, success_prefix)
+
+    def perform_recent_output_open_success(
+        self,
+        path: Path,
+        success_prefix: str,
+    ) -> None:
         self.handle_recent_output_open_success(path, success_prefix)
 
     def perform_recent_output_open_error(
