@@ -2907,13 +2907,16 @@ class GuitarAmpRecorderApp:
         error_prefix: str,
     ) -> dict[str, object]:
         return self.recent_output_payload_with_args(
-            self.recent_output_attribute_args(attribute_name),
+            self.recent_output_open_target_base_args(attribute_name),
             self.recent_output_open_target_extra_args(
                 target_name=target_name,
                 success_prefix=success_prefix,
                 error_prefix=error_prefix,
             ),
         )
+
+    def recent_output_open_target_base_args(self, attribute_name: str) -> dict[str, object]:
+        return self.recent_output_attribute_args(attribute_name)
 
     def recent_output_attribute_args(self, attribute_name: str) -> dict[str, object]:
         return {
