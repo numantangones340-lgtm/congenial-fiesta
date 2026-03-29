@@ -2386,9 +2386,14 @@ class GuitarAmpRecorderApp:
         if button is not None:
             button.configure(state=self.recent_output_button_state(path))
 
+    def recent_output_buttons(self) -> Tuple[Optional[object], Optional[object]]:
+        return (
+            getattr(self, "open_last_export_button", None),
+            getattr(self, "open_last_summary_button", None),
+        )
+
     def refresh_recent_output_buttons(self) -> None:
-        export_button = getattr(self, "open_last_export_button", None)
-        summary_button = getattr(self, "open_last_summary_button", None)
+        export_button, summary_button = self.recent_output_buttons()
         try:
             self.apply_recent_output_button_state(export_button, self.last_export_path)
             self.apply_recent_output_button_state(summary_button, self.last_session_summary_path)

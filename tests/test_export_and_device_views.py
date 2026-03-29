@@ -279,6 +279,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(button.config_calls[-1], {"state": "normal"})
 
+    def test_recent_output_buttons_returns_export_and_summary_buttons(self) -> None:
+        recorder = self.make_app()
+
+        self.assertEqual(
+            recorder.recent_output_buttons(),
+            (recorder.open_last_export_button, recorder.open_last_summary_button),
+        )
+
     def test_clear_missing_recent_output_target_clears_path_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
