@@ -1399,14 +1399,12 @@ class GuitarAmpRecorderApp:
         if not recent_files:
             self.last_export_path = None
             self.recent_exports_text.set(
-                "\n".join(
-                    self.build_recent_exports_lines(
-                        output_dir_text=output_dir_text,
-                        count_line=count_line,
-                        recent_files=recent_files,
-                        hidden_count=0,
-                        summary_line=summary_line,
-                    )
+                self.render_recent_exports_text(
+                    output_dir_text=output_dir_text,
+                    count_line=count_line,
+                    recent_files=recent_files,
+                    hidden_count=0,
+                    summary_line=summary_line,
                 )
             )
             self.refresh_recent_output_buttons()
@@ -1417,14 +1415,12 @@ class GuitarAmpRecorderApp:
             shown_count=shown_count,
         )
         self.recent_exports_text.set(
-            "\n".join(
-                self.build_recent_exports_lines(
-                    output_dir_text=output_dir_text,
-                    count_line=count_line,
-                    recent_files=recent_files,
-                    hidden_count=hidden_count,
-                    summary_line=summary_line,
-                )
+            self.render_recent_exports_text(
+                output_dir_text=output_dir_text,
+                count_line=count_line,
+                recent_files=recent_files,
+                hidden_count=hidden_count,
+                summary_line=summary_line,
             )
         )
         self.refresh_recent_output_buttons()
@@ -1633,6 +1629,24 @@ class GuitarAmpRecorderApp:
             recent_files=recent_files,
             hidden_count=hidden_count,
             summary_line=summary_line,
+        )
+
+    def render_recent_exports_text(
+        self,
+        output_dir_text: str,
+        count_line: str,
+        recent_files: list[Path],
+        hidden_count: int,
+        summary_line: str,
+    ) -> str:
+        return "\n".join(
+            self.build_recent_exports_lines(
+                output_dir_text=output_dir_text,
+                count_line=count_line,
+                recent_files=recent_files,
+                hidden_count=hidden_count,
+                summary_line=summary_line,
+            )
         )
 
     def restore_session_summary_from_output_dir(self, output_dir: Path) -> None:
