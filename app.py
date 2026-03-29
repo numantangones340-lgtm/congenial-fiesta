@@ -2859,14 +2859,30 @@ class GuitarAmpRecorderApp:
             return {}
         return {"reveal_in_finder": True}
 
-    def open_last_export_in_finder_args(self) -> dict[str, object]:
-        open_args = self.recent_output_open_args(
-            attribute_name="last_export_path",
-            missing_message=self.recent_output_missing_message("Son export dosyasi"),
+    def recent_output_open_target_args(
+        self,
+        attribute_name: str,
+        target_name: str,
+        success_prefix: str,
+        error_prefix: str,
+        reveal_in_finder: bool = False,
+    ) -> dict[str, object]:
+        return self.recent_output_open_args(
+            attribute_name=attribute_name,
+            missing_message=self.recent_output_missing_message(target_name),
             **self.recent_output_open_message_args(
-                success_prefix="Son export Finder'da gosteriliyor",
-                error_prefix="Finder acilamadi",
+                success_prefix=success_prefix,
+                error_prefix=error_prefix,
             ),
+            reveal_in_finder=reveal_in_finder,
+        )
+
+    def open_last_export_in_finder_args(self) -> dict[str, object]:
+        open_args = self.recent_output_open_target_args(
+            attribute_name="last_export_path",
+            target_name="Son export dosyasi",
+            success_prefix="Son export Finder'da gosteriliyor",
+            error_prefix="Finder acilamadi",
             reveal_in_finder=True,
         )
         return open_args
@@ -2890,13 +2906,11 @@ class GuitarAmpRecorderApp:
         self.open_recent_output_from_args_factory(self.open_last_export_in_finder_args)
 
     def open_last_session_summary_args(self) -> dict[str, object]:
-        open_args = self.recent_output_open_args(
+        open_args = self.recent_output_open_target_args(
             attribute_name="last_session_summary_path",
-            missing_message=self.recent_output_missing_message("Son oturum ozeti"),
-            **self.recent_output_open_message_args(
-                success_prefix="Oturum ozeti aciliyor",
-                error_prefix="Ozet acilamadi",
-            ),
+            target_name="Son oturum ozeti",
+            success_prefix="Oturum ozeti aciliyor",
+            error_prefix="Ozet acilamadi",
         )
         return open_args
 
