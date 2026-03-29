@@ -2464,8 +2464,11 @@ class GuitarAmpRecorderApp:
     def recent_output_open_status_name(self, path: Path) -> str:
         return path.name
 
+    def recent_output_open_status_target_text(self, path: Path) -> str:
+        return self.recent_output_open_status_name(path)
+
     def recent_output_open_status_text(self, prefix: str, path: Path) -> str:
-        return f"{prefix}: {self.recent_output_open_status_name(path)}"
+        return f"{prefix}: {self.recent_output_open_status_target_text(path)}"
 
     def set_recent_output_open_status(self, prefix: str, path: Path) -> None:
         self.set_status(self.recent_output_open_status_text(prefix, path))
