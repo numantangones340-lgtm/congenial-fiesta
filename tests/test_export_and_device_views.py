@@ -815,6 +815,27 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ("- session_summary.json (Ozet)", [export_path], 1, 1),
         )
 
+    def test_recent_exports_display_context_payload_builds_render_dict(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        export_path = Path("/tmp/demo-output/take.wav")
+
+        payload = recorder.recent_exports_display_context_payload(
+            summary_line="- session_summary.json (Ozet)",
+            recent_files=[export_path],
+            count_line="Top 1 | Gr 1",
+            hidden_count=0,
+        )
+
+        self.assertEqual(
+            payload,
+            {
+                "summary_line": "- session_summary.json (Ozet)",
+                "recent_files": [export_path],
+                "count_line": "Top 1 | Gr 1",
+                "hidden_count": 0,
+            },
+        )
+
     def test_recent_exports_display_context_matches_summary_only_state(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         with tempfile.TemporaryDirectory() as tmpdir:

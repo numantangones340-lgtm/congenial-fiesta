@@ -1577,6 +1577,20 @@ class GuitarAmpRecorderApp:
             int(display_inputs["shown_count"]),
         )
 
+    def recent_exports_display_context_payload(
+        self,
+        summary_line: str,
+        recent_files: list[Path],
+        count_line: str,
+        hidden_count: int,
+    ) -> dict[str, object]:
+        return {
+            "summary_line": summary_line,
+            "recent_files": recent_files,
+            "count_line": count_line,
+            "hidden_count": hidden_count,
+        }
+
     def recent_exports_display_context(self, output_dir: Path) -> dict[str, object]:
         display_inputs = self.recent_exports_display_inputs(output_dir)
         summary_line, recent_files, total_audio_count, shown_count = self.recent_exports_display_context_inputs(
@@ -1588,12 +1602,12 @@ class GuitarAmpRecorderApp:
             has_summary=bool(summary_line),
             has_recent_files=bool(recent_files),
         )
-        return {
-            "summary_line": summary_line,
-            "recent_files": recent_files,
-            "count_line": count_line,
-            "hidden_count": hidden_count,
-        }
+        return self.recent_exports_display_context_payload(
+            summary_line=summary_line,
+            recent_files=recent_files,
+            count_line=count_line,
+            hidden_count=hidden_count,
+        )
 
     def show_recent_exports_from_context(
         self,
