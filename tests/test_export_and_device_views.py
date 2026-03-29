@@ -1437,6 +1437,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_header_label(), "Klasor")
 
+    def test_recent_exports_header_separator_matches_copy_spacing(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_exports_header_separator(), " ")
+
     def test_recent_hidden_count_content_formats_numeric_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
