@@ -1813,9 +1813,7 @@ class GuitarAmpRecorderApp:
     def recent_exports_existing_dir_status_inputs(self, total_audio_count: int, has_summary: bool) -> tuple[int, int, bool]:
         return total_audio_count, self.recent_exports_shown_count(total_audio_count), has_summary
 
-    def recent_exports_existing_dir_status_message(self, total_audio_count: int, has_summary: bool) -> str:
-        if total_audio_count == 0:
-            return self.recent_exports_empty_status_message(has_summary=has_summary)
+    def recent_exports_existing_dir_audio_status_message(self, total_audio_count: int, has_summary: bool) -> str:
         total_audio_count, shown_count, has_summary = self.recent_exports_existing_dir_status_inputs(
             total_audio_count=total_audio_count,
             has_summary=has_summary,
@@ -1823,6 +1821,14 @@ class GuitarAmpRecorderApp:
         return self.recent_exports_audio_status_message(
             total_audio_count=total_audio_count,
             shown_count=shown_count,
+            has_summary=has_summary,
+        )
+
+    def recent_exports_existing_dir_status_message(self, total_audio_count: int, has_summary: bool) -> str:
+        if total_audio_count == 0:
+            return self.recent_exports_empty_status_message(has_summary=has_summary)
+        return self.recent_exports_existing_dir_audio_status_message(
+            total_audio_count=total_audio_count,
             has_summary=has_summary,
         )
 
