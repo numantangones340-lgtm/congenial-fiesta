@@ -1547,6 +1547,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertTrue(recorder.recent_exports_has_summary_line("- session_summary.json (Ozet)"))
 
+    def test_recent_exports_empty_body_lines_uses_summary_block_when_present(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_empty_body_lines("- session_summary.json (Ozet)"),
+            [
+                "Henuz ses kaydi yok. Alttaki ozeti acabilirsiniz.",
+                "- session_summary.json (Ozet)",
+            ],
+        )
+
     def test_build_recent_exports_empty_lines_with_summary(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 

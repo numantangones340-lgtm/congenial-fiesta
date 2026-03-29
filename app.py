@@ -2008,12 +2008,14 @@ class GuitarAmpRecorderApp:
     def recent_exports_has_summary_line(self, summary_line: str) -> bool:
         return self.recent_exports_has_optional_line(summary_line)
 
+    def recent_exports_empty_body_lines(self, summary_line: str) -> list[str]:
+        if self.recent_exports_has_summary_line(summary_line):
+            return self.recent_exports_empty_lines_with_summary(summary_line)
+        return self.recent_exports_empty_lines_without_summary()
+
     def build_recent_exports_empty_lines(self, output_dir_text: str, count_line: str, summary_line: str) -> list[str]:
         lines = self.recent_exports_intro_lines(output_dir_text, count_line)
-        if self.recent_exports_has_summary_line(summary_line):
-            lines.extend(self.recent_exports_empty_lines_with_summary(summary_line))
-        else:
-            lines.extend(self.recent_exports_empty_lines_without_summary())
+        lines.extend(self.recent_exports_empty_body_lines(summary_line))
         return lines
 
     def recent_exports_has_hidden_count(self, hidden_count: int) -> bool:
