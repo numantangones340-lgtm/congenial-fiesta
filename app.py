@@ -2471,9 +2471,12 @@ class GuitarAmpRecorderApp:
         subprocess.run(self.output_dir_open_command(output_dir), check=False)
         return created_now
 
+    def refresh_recent_exports_after_output_dir_open(self, output_dir: Path) -> None:
+        self.refresh_recent_exports_for_resolved_output_dir(output_dir)
+
     def open_output_dir_and_refresh_recent_exports(self, output_dir: Path) -> bool:
         created_now = self.open_output_dir(output_dir)
-        self.refresh_recent_exports_for_resolved_output_dir(output_dir)
+        self.refresh_recent_exports_after_output_dir_open(output_dir)
         return created_now
 
     def output_dir_open_command(self, output_dir: Path) -> list[str]:
