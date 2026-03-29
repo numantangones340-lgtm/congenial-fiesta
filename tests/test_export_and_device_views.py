@@ -797,6 +797,27 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             shown_count=6,
         )
 
+    def test_recent_exports_display_input_payload_builds_render_dict(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        export_path = Path("/tmp/demo-output/take.wav")
+
+        payload = recorder.recent_exports_display_input_payload(
+            summary_line="- session_summary.json (Ozet)",
+            recent_files=[export_path],
+            total_audio_count=1,
+            shown_count=1,
+        )
+
+        self.assertEqual(
+            payload,
+            {
+                "summary_line": "- session_summary.json (Ozet)",
+                "recent_files": [export_path],
+                "total_audio_count": 1,
+                "shown_count": 1,
+            },
+        )
+
     def test_recent_exports_display_context_inputs_extracts_render_values(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         export_path = Path("/tmp/demo-output/take.wav")
