@@ -102,6 +102,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Ozet hazir. Isterseniz acabilirsiniz.",
         )
 
+    def test_missing_output_dir_message_matches_empty_view_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.missing_output_dir_message("~/missing-output"),
+            "Cikis klasoru bulunamadi: ~/missing-output\nBu cikis klasorune su an ulasilamiyor.\n'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+        )
+
+    def test_missing_output_dir_status_matches_status_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.missing_output_dir_status("~/Missing"),
+            "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -1382,11 +1382,7 @@ class GuitarAmpRecorderApp:
             self.last_export_path = None
             self.last_session_summary_path = None
             output_dir_text = self.format_display_path(output_dir)
-            self.recent_exports_text.set(
-                f"Cikis klasoru bulunamadi: {output_dir_text}\n"
-                "Bu cikis klasorune su an ulasilamiyor.\n"
-                "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
-            )
+            self.recent_exports_text.set(self.missing_output_dir_message(output_dir_text))
             self.refresh_recent_output_buttons()
             return
         output_dir_text = self.format_display_path(output_dir)
@@ -1453,10 +1449,7 @@ class GuitarAmpRecorderApp:
         self.refresh_recent_exports()
         output_dir = self.resolve_output_dir()
         if not output_dir.exists():
-            self.set_status(
-                f"Durum guncel. Cikis klasoru bulunamadi: {self.format_display_path(output_dir)}. "
-                "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
-            )
+            self.set_status(self.missing_output_dir_status(self.format_display_path(output_dir)))
             return
         audio_files = [
             path for path in output_dir.iterdir() if path.is_file() and path.suffix.lower() in {".mp3", ".wav"}
@@ -1507,6 +1500,19 @@ class GuitarAmpRecorderApp:
 
     def summary_ready_status_message(self) -> str:
         return "Ozet hazir. Isterseniz acabilirsiniz."
+
+    def missing_output_dir_message(self, output_dir_text: str) -> str:
+        return (
+            f"Cikis klasoru bulunamadi: {output_dir_text}\n"
+            "Bu cikis klasorune su an ulasilamiyor.\n"
+            "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
+        )
+
+    def missing_output_dir_status(self, output_dir_text: str) -> str:
+        return (
+            f"Durum guncel. Cikis klasoru bulunamadi: {output_dir_text}. "
+            "'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz."
+        )
 
     def recent_session_summary_line(self, output_dir: Path) -> str:
         summary_path = self.last_session_summary_path
