@@ -2980,9 +2980,19 @@ class GuitarAmpRecorderApp:
         message_args: dict[str, str],
         target_name: str,
     ) -> dict[str, str]:
-        message_args = self.recent_output_message_args(message_args)
-        message_args.update(self.recent_output_missing_message_args(target_name))
-        return message_args
+        return self.recent_output_payload_with_args(
+            *self.recent_output_message_args_parts(message_args, target_name)
+        )
+
+    def recent_output_message_args_parts(
+        self,
+        message_args: dict[str, str],
+        target_name: str,
+    ) -> tuple[dict[str, str], dict[str, str]]:
+        return (
+            self.recent_output_message_args(message_args),
+            self.recent_output_missing_message_args(target_name),
+        )
 
     def recent_output_message_args(self, message_args: dict[str, str]) -> dict[str, str]:
         return dict(message_args)

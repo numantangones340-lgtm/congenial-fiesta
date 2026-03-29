@@ -3814,6 +3814,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             },
         )
 
+    def test_recent_output_message_args_parts_returns_message_parts(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_message_args_parts(
+                {
+                    "success_prefix": "Son export Finder'da gosteriliyor",
+                    "error_prefix": "Finder acilamadi",
+                },
+                "Son export dosyasi",
+            ),
+            (
+                {
+                    "success_prefix": "Son export Finder'da gosteriliyor",
+                    "error_prefix": "Finder acilamadi",
+                },
+                {
+                    "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                },
+            ),
+        )
+
     def test_recent_output_message_args_returns_message_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         message_args = {
