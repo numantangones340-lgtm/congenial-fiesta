@@ -1437,6 +1437,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_header_label(), "Klasor")
 
+    def test_recent_hidden_count_content_formats_numeric_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_hidden_count_content(2), "2")
+
     def test_recent_hidden_count_line_formats_hidden_total(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
