@@ -2808,11 +2808,17 @@ class GuitarAmpRecorderApp:
     def open_recent_output_from_args(self, open_args: dict[str, object]) -> None:
         self.open_recent_output_target(**open_args)
 
+    def recent_output_args_from_factory(
+        self,
+        open_args_factory: Callable[[], dict[str, object]],
+    ) -> dict[str, object]:
+        return open_args_factory()
+
     def open_recent_output_from_args_factory(
         self,
         open_args_factory: Callable[[], dict[str, object]],
     ) -> None:
-        self.open_recent_output_from_args(open_args_factory())
+        self.open_recent_output_from_args(self.recent_output_args_from_factory(open_args_factory))
 
     def open_last_export_in_finder(self) -> None:
         self.open_recent_output_from_args_factory(self.open_last_export_in_finder_args)

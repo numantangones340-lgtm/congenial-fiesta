@@ -3476,6 +3476,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         open_args_factory.assert_called_once_with()
         recorder.open_recent_output_from_args.assert_called_once_with(open_args)
 
+    def test_recent_output_args_from_factory_returns_factory_payload(self) -> None:
+        recorder = self.make_app()
+        open_args = {
+            "attribute_name": "last_export_path",
+            "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+            "success_prefix": "Son export Finder'da gosteriliyor",
+            "error_prefix": "Finder acilamadi",
+            "reveal_in_finder": True,
+        }
+        open_args_factory = mock.Mock(return_value=open_args)
+
+        resolved = recorder.recent_output_args_from_factory(open_args_factory)
+
+        open_args_factory.assert_called_once_with()
+        self.assertEqual(resolved, open_args)
+
     def test_recent_output_open_args_returns_payload(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
