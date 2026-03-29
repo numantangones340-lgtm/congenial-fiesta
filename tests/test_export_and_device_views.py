@@ -588,6 +588,27 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_exports_display_context.assert_called_once_with(output_dir)
         recorder.show_recent_exports_from_context.assert_called_once_with(output_dir, "~/Demo", display_context)
 
+    def test_recent_exports_display_payload_restores_summary_and_returns_context(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        display_context = {
+            "summary_line": "",
+            "recent_files": [],
+            "count_line": "Top 0",
+            "hidden_count": 0,
+        }
+        recorder.recent_output_dir_text = mock.Mock(return_value="~/Demo")
+        recorder.restore_session_summary_from_output_dir = mock.Mock()
+        recorder.recent_exports_display_context = mock.Mock(return_value=display_context)
+
+        output_dir_text, payload = recorder.recent_exports_display_payload(output_dir)
+
+        self.assertEqual(output_dir_text, "~/Demo")
+        self.assertEqual(payload, display_context)
+        recorder.recent_output_dir_text.assert_called_once_with(output_dir)
+        recorder.restore_session_summary_from_output_dir.assert_called_once_with(output_dir)
+        recorder.recent_exports_display_context.assert_called_once_with(output_dir)
+
     def test_show_recent_exports_for_resolved_output_dir_uses_missing_helper(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         missing_dir = Path("/tmp/does-not-exist-gar")
