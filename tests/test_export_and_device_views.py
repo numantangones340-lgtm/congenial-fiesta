@@ -3479,6 +3479,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             },
         )
 
+    def test_recent_output_open_reveal_args_returns_optional_payload(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_output_open_reveal_args(False), {})
+        self.assertEqual(
+            recorder.recent_output_open_reveal_args(True),
+            {"reveal_in_finder": True},
+        )
+
     def test_open_last_export_in_finder_reports_success(self) -> None:
         recorder = self.make_app()
         recorder.refresh_recent_exports = mock.Mock()

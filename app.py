@@ -2774,9 +2774,13 @@ class GuitarAmpRecorderApp:
             "success_prefix": success_prefix,
             "error_prefix": error_prefix,
         }
-        if reveal_in_finder:
-            payload["reveal_in_finder"] = True
+        payload.update(self.recent_output_open_reveal_args(reveal_in_finder))
         return payload
+
+    def recent_output_open_reveal_args(self, reveal_in_finder: bool) -> dict[str, object]:
+        if not reveal_in_finder:
+            return {}
+        return {"reveal_in_finder": True}
 
     def open_last_export_in_finder_args(self) -> dict[str, object]:
         return self.recent_output_open_args(
