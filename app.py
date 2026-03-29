@@ -1396,18 +1396,11 @@ class GuitarAmpRecorderApp:
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )[:6]
-        count_line = f"Top {len(all_audio_files)}"
-        if len(all_audio_files) > len(recent_files):
-            count_line += " | Gr son 6"
-        elif len(recent_files) == 1:
-            count_line += " | Gr 1"
-        elif recent_files:
-            count_line += " | Gr tumu"
-        else:
-            if summary_line:
-                count_line += " | Ozet"
-        if len(recent_files) > 1:
-            count_line += " | Yeni"
+        count_line = self.recent_exports_count_line(
+            total_audio_count=len(all_audio_files),
+            shown_count=len(recent_files),
+            has_summary=bool(summary_line),
+        )
         if not recent_files:
             self.last_export_path = None
             lines = [f"Klasor {output_dir_text}"]
@@ -1466,18 +1459,15 @@ class GuitarAmpRecorderApp:
                 )
             return
         shown_count = min(len(audio_files), 6)
-        if len(audio_files) > shown_count:
-            visibility_suffix = " Gr son 6."
-        elif shown_count == 1:
-            visibility_suffix = " Gr 1."
-        else:
-            visibility_suffix = " Gr tumu."
-        sort_suffix = " Yeni." if shown_count > 1 else ""
+        visibility_suffix = self.recent_exports_status_suffix(
+            total_audio_count=len(audio_files),
+            shown_count=shown_count,
+        )
         summary_suffix = ""
         if self.last_session_summary_path is not None and self.last_session_summary_path.exists():
             summary_suffix = f" {self.summary_ready_status_message()}"
         self.set_status(
-            f"Durum guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{sort_suffix}{summary_suffix}"
+            f"Durum guncel. {len(audio_files)} ses dosyasi.{visibility_suffix}{summary_suffix}"
         )
 
     def format_display_path(self, path: Path) -> str:
@@ -1500,6 +1490,27 @@ class GuitarAmpRecorderApp:
 
     def summary_ready_status_message(self) -> str:
         return "Ozet hazir. Isterseniz acabilirsiniz."
+
+    def recent_exports_count_line(self, total_audio_count: int, shown_count: int, has_summary: bool) -> str:
+        line = f"Top {total_audio_count}"
+        if total_audio_count > shown_count:
+            line += " | Gr son 6"
+        elif shown_count == 1:
+            line += " | Gr 1"
+        elif shown_count:
+            line += " | Gr tumu"
+        elif has_summary:
+            line += " | Ozet"
+        if shown_count > 1:
+            line += " | Yeni"
+        return line
+
+    def recent_exports_status_suffix(self, total_audio_count: int, shown_count: int) -> str:
+        if total_audio_count > shown_count:
+            return " Gr son 6. Yeni."
+        if shown_count == 1:
+            return " Gr 1."
+        return " Gr tumu. Yeni."
 
     def missing_output_dir_message(self, output_dir_text: str) -> str:
         return (

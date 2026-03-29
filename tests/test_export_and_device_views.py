@@ -118,6 +118,38 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
         )
 
+    def test_recent_exports_count_line_matches_truncated_list_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_count_line(total_audio_count=7, shown_count=6, has_summary=False),
+            "Top 7 | Gr son 6 | Yeni",
+        )
+
+    def test_recent_exports_count_line_matches_summary_only_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_count_line(total_audio_count=0, shown_count=0, has_summary=True),
+            "Top 0 | Ozet",
+        )
+
+    def test_recent_exports_status_suffix_matches_multi_file_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_status_suffix(total_audio_count=2, shown_count=2),
+            " Gr tumu. Yeni.",
+        )
+
+    def test_recent_exports_status_suffix_matches_single_file_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_exports_status_suffix(total_audio_count=1, shown_count=1),
+            " Gr 1.",
+        )
+
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
