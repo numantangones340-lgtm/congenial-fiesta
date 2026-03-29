@@ -846,6 +846,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         recorder.refresh_recent_exports.assert_called_once()
 
+    def test_resolved_recent_output_target_path_for_open_returns_refreshed_path(self) -> None:
+        recorder = self.make_app()
+        export_path = Path("/tmp/take.wav")
+        recorder.refreshed_recent_output_target_path = mock.Mock(return_value=export_path)
+
+        resolved = recorder.resolved_recent_output_target_path_for_open("last_export_path")
+
+        self.assertEqual(resolved, export_path)
+        recorder.refreshed_recent_output_target_path.assert_called_once_with("last_export_path")
+
     def test_open_recent_output_path_runs_open_command_and_reports_success(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
