@@ -2594,8 +2594,19 @@ class GuitarAmpRecorderApp:
     def recent_output_open_command_text(self, path: Path) -> str:
         return str(path)
 
+    def recent_output_open_command_parts(
+        self,
+        path: Path,
+        reveal_in_finder: bool,
+    ) -> tuple[list[str], str]:
+        return (
+            self.recent_output_open_command_prefix(reveal_in_finder),
+            self.recent_output_open_command_text(path),
+        )
+
     def recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> list[str]:
-        return [*self.recent_output_open_command_prefix(reveal_in_finder), self.recent_output_open_command_text(path)]
+        command_prefix, command_text = self.recent_output_open_command_parts(path, reveal_in_finder)
+        return [*command_prefix, command_text]
 
     def run_recent_output_open_command(self, path: Path, reveal_in_finder: bool) -> None:
         subprocess.run(self.recent_output_open_command(path, reveal_in_finder), check=False)

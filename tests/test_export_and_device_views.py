@@ -768,6 +768,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_output_open_command_text(path), "/tmp/take.wav")
 
+    def test_recent_output_open_command_parts_returns_prefix_and_text(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        path = Path("/tmp/take.wav")
+
+        self.assertEqual(
+            recorder.recent_output_open_command_parts(path, True),
+            (["open", "-R"], "/tmp/take.wav"),
+        )
+
     def test_recent_output_open_command_for_finder_reveal(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         path = Path("/tmp/take.wav")
