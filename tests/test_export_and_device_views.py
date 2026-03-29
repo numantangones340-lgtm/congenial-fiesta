@@ -274,6 +274,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.open_last_export_button.config_calls[-1], {"state": "disabled"})
         self.assertEqual(recorder.open_last_summary_button.config_calls[-1], {"state": "disabled"})
 
+    def test_show_recent_exports_for_output_dir_uses_display_context(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/demo-output")
+        display_context = {
+            "summary_line": "",
+            "recent_files": [],
+            "count_line": "Top 0",
+            "hidden_count": 0,
+        }
+        recorder.format_display_path = mock.Mock(return_value="~/Demo")
+        recorder.restore_session_summary_from_output_dir = mock.Mock()
+        recorder.recent_exports_display_context = mock.Mock(return_value=display_context)
+        recorder.show_recent_exports_from_context = mock.Mock()
+
+        recorder.show_recent_exports_for_output_dir(output_dir)
+
+        recorder.restore_session_summary_from_output_dir.assert_called_once_with(output_dir)
+        recorder.recent_exports_display_context.assert_called_once_with(output_dir)
+        recorder.show_recent_exports_from_context.assert_called_once_with(output_dir, "~/Demo", display_context)
+
     def test_recent_exports_count_line_matches_truncated_list_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
@@ -748,6 +768,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.recent_exports_text.get(),
             "Klasor ~/Demo\nTop 1 | Gr 1\n- take.wav (Export)",
         )
+
+    def test_refresh_recent_exports_uses_existing_dir_helper(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.show_missing_recent_exports = mock.Mock()
+            recorder.show_recent_exports_for_output_dir = mock.Mock()
+
+            recorder.refresh_recent_exports()
+
+        recorder.show_missing_recent_exports.assert_not_called()
+        recorder.show_recent_exports_for_output_dir.assert_called_once_with(output_dir)
 
     def test_refresh_recent_exports_shows_newest_six_audio_files(self) -> None:
         recorder = self.make_app()

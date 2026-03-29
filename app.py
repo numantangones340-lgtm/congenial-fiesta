@@ -1381,10 +1381,7 @@ class GuitarAmpRecorderApp:
         if not output_dir.exists():
             self.show_missing_recent_exports(output_dir)
             return
-        output_dir_text = self.format_display_path(output_dir)
-        self.restore_session_summary_from_output_dir(output_dir)
-        display_context = self.recent_exports_display_context(output_dir)
-        self.show_recent_exports_from_context(output_dir, output_dir_text, display_context)
+        self.show_recent_exports_for_output_dir(output_dir)
 
     def refresh_recent_exports_from_action(self) -> None:
         self.refresh_recent_exports()
@@ -1409,6 +1406,12 @@ class GuitarAmpRecorderApp:
         output_dir_text = self.format_display_path(output_dir)
         self.recent_exports_text.set(self.missing_output_dir_message(output_dir_text))
         self.refresh_recent_output_buttons()
+
+    def show_recent_exports_for_output_dir(self, output_dir: Path) -> None:
+        output_dir_text = self.format_display_path(output_dir)
+        self.restore_session_summary_from_output_dir(output_dir)
+        display_context = self.recent_exports_display_context(output_dir)
+        self.show_recent_exports_from_context(output_dir, output_dir_text, display_context)
 
     def list_recent_export_audio_files(self, output_dir: Path) -> list[Path]:
         if not output_dir.exists():
