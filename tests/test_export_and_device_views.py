@@ -1365,6 +1365,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_output_label_suffix("Ozet"), " (Ozet)")
 
+    def test_recent_output_line_content_formats_filename_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(recorder.recent_output_line_content("take_001.wav"), "- take_001.wav")
+
     def test_recent_output_line_without_label(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
