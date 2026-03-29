@@ -385,13 +385,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_open_current_output_dir_in_finder_resolves_and_delegates(self) -> None:
         recorder = self.make_app()
         output_dir = Path("/tmp/current-session-folder")
-        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+        recorder.current_recent_output_dir = mock.Mock(return_value=output_dir)
         recorder.open_resolved_output_dir_in_finder = mock.Mock()
 
         resolved_output_dir = recorder.open_current_output_dir_in_finder()
 
         self.assertEqual(resolved_output_dir, output_dir)
-        recorder.resolve_output_dir.assert_called_once_with()
+        recorder.current_recent_output_dir.assert_called_once_with()
         recorder.open_resolved_output_dir_in_finder.assert_called_once_with(output_dir)
 
     def test_output_dir_open_command_returns_open_command(self) -> None:
@@ -578,25 +578,35 @@ class ExportAndDeviceViewTests(unittest.TestCase):
     def test_refresh_recent_exports_for_current_output_dir_returns_resolved_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
-        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+        recorder.current_recent_output_dir = mock.Mock(return_value=output_dir)
         recorder.show_recent_exports_for_resolved_output_dir = mock.Mock()
 
         resolved = recorder.refresh_recent_exports_for_current_output_dir()
 
         self.assertEqual(resolved, output_dir)
-        recorder.resolve_output_dir.assert_called_once_with()
+        recorder.current_recent_output_dir.assert_called_once_with()
         recorder.show_recent_exports_for_resolved_output_dir.assert_called_once_with(output_dir)
 
     def test_set_recent_exports_refresh_status_for_current_output_dir_uses_resolved_dir(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         output_dir = Path("/tmp/demo-output")
-        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+        recorder.current_recent_output_dir = mock.Mock(return_value=output_dir)
         recorder.set_recent_exports_refresh_status = mock.Mock()
 
         recorder.set_recent_exports_refresh_status_for_current_output_dir()
 
-        recorder.resolve_output_dir.assert_called_once_with()
+        recorder.current_recent_output_dir.assert_called_once_with()
         recorder.set_recent_exports_refresh_status.assert_called_once_with(output_dir)
+
+    def test_current_recent_output_dir_uses_resolve_output_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        output_dir = Path("/tmp/current-recent-output")
+        recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+        resolved = recorder.current_recent_output_dir()
+
+        self.assertEqual(resolved, output_dir)
+        recorder.resolve_output_dir.assert_called_once_with()
 
     def test_recent_exports_count_line_matches_truncated_list_copy(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
