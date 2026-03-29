@@ -481,6 +481,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 "Durum guncel. 2 ses dosyasi. Gr tumu. Yeni. Ozet hazir. Isterseniz acabilirsiniz.",
             )
 
+    def test_recent_exports_refresh_status_message_for_missing_dir(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        missing_dir = Path("/tmp/does-not-exist-gar")
+        recorder.last_session_summary_path = None
+        recorder.format_display_path = mock.Mock(return_value="~/Missing")
+
+        self.assertEqual(
+            recorder.recent_exports_refresh_status_message(missing_dir),
+            "Durum guncel. Cikis klasoru bulunamadi: ~/Missing. 'Klasoru Ac' ile yeniden olusturabilir ve Finder'da acabilirsiniz.",
+        )
+
+    def test_recent_exports_refresh_status_message_for_audio_files(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.last_session_summary_path = None
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            (output_dir / "take.wav").write_text("audio", encoding="utf-8")
+
+            self.assertEqual(
+                recorder.recent_exports_refresh_status_message(output_dir),
+                "Durum guncel. 1 ses dosyasi. Gr 1.",
+            )
+
     def test_recent_export_line_marks_latest_export(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
