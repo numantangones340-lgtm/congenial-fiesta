@@ -722,6 +722,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "boom",
         )
 
+    def test_recent_output_open_error_status_text_formats_exception(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_error_status_text("Finder acilamadi", RuntimeError("boom")),
+            "Finder acilamadi: boom",
+        )
+
     def test_set_recent_output_open_error_status_reports_exception(self) -> None:
         recorder = self.make_app()
 
