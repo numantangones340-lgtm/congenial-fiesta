@@ -818,6 +818,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             },
         )
 
+    def test_recent_exports_display_input_counts_extracts_total_and_shown(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        export_path = Path("/tmp/demo-output/take.wav")
+        recorder.recent_exports_shown_count = mock.Mock(return_value=1)
+
+        counts = recorder.recent_exports_display_input_counts([export_path])
+
+        self.assertEqual(counts, (1, 1))
+        recorder.recent_exports_shown_count.assert_called_once_with(1)
+
     def test_recent_exports_display_context_inputs_extracts_render_values(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         export_path = Path("/tmp/demo-output/take.wav")
