@@ -743,6 +743,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             "boom",
         )
 
+    def test_recent_output_open_error_status_prefix_returns_copy(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_error_status_prefix("Finder acilamadi"),
+            "Finder acilamadi",
+        )
+
     def test_recent_output_open_error_status_text_formats_exception(self) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
