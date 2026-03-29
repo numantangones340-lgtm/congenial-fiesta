@@ -2887,8 +2887,13 @@ class GuitarAmpRecorderApp:
             success_prefix=success_prefix,
             error_prefix=error_prefix,
         )
-        message_args["missing_message"] = self.recent_output_missing_message(target_name)
+        message_args.update(self.recent_output_missing_message_args(target_name))
         return message_args
+
+    def recent_output_missing_message_args(self, target_name: str) -> dict[str, str]:
+        return {
+            "missing_message": self.recent_output_missing_message(target_name),
+        }
 
     def open_last_export_in_finder_args(self) -> dict[str, object]:
         open_args = self.recent_output_open_target_args(
