@@ -786,6 +786,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ["open", "/tmp/session_summary.json"],
         )
 
+    def test_run_recent_output_open_command_runs_open_command(self) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        path = Path("/tmp/take.wav")
+
+        with mock.patch.object(app.subprocess, "run") as run_mock:
+            recorder.run_recent_output_open_command(path, reveal_in_finder=True)
+
+        run_mock.assert_called_once_with(["open", "-R", "/tmp/take.wav"], check=False)
+
     def test_recent_output_target_path_reads_named_attribute(self) -> None:
         recorder = self.make_app()
         recorder.last_export_path = Path("/tmp/take.wav")
