@@ -39,6 +39,12 @@ class ReleasePipelineAssetTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, f"{name}: {result.stderr}")
 
+    def test_build_script_writes_spec_outside_repo_root(self) -> None:
+        content = (ROOT_DIR / "build_macos_app.sh").read_text(encoding="utf-8")
+        self.assertIn('SPEC_DIR="build/spec"', content)
+        self.assertIn('--specpath "${SPEC_DIR}"', content)
+        self.assertNotIn('rm -rf build dist "${APP_NAME}.spec"', content)
+
 
 if __name__ == "__main__":
     unittest.main()
