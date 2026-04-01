@@ -6,6 +6,7 @@ ENTRY="app.py"
 STAMP_FILE=".venv/.build-deps-stamp"
 APP_VERSION="$(tr -d '\r\n' < VERSION 2>/dev/null || printf '0.1.0-dev')"
 MIC_USAGE_TEXT="Ses kaydi almak ve mikrofon testini calistirmak icin mikrofon erisimi gerekir."
+SPEC_TEMPLATE="${APP_NAME}.spec"
 
 pick_python() {
   for candidate in /opt/homebrew/bin/python3.11 python3.11 python3; do
@@ -47,8 +48,6 @@ export APP_NAME
 export APP_VERSION
 export MIC_USAGE_TEXT
 mkdir -p "${PYINSTALLER_CONFIG_DIR}"
-SPEC_DIR="${PYINSTALLER_CONFIG_DIR}/spec"
-mkdir -p "${SPEC_DIR}"
 
 CURRENT_STAMP="$(
   python - <<'PY'
@@ -130,17 +129,21 @@ PY
 TCL_DIR="$(printf '%s\n' "${TK_OUT}" | sed -n '1p')"
 TK_DIR="$(printf '%s\n' "${TK_OUT}" | sed -n '2p')"
 
-PYI_ARGS=(--noconfirm --clean --windowed --specpath "${SPEC_DIR}" --name "${APP_NAME}")
+rm -rf build dist
+SPEC_DIR="build/spec"
+SPEC_PATH="${SPEC_DIR}/${APP_NAME}.spec"
+mkdir -p "${SPEC_DIR}"
+cp "${SPEC_TEMPLATE}" "${SPEC_PATH}"
+
+PYI_ARGS=()
 if [ -n "${TCL_DIR}" ] && [ -d "${TCL_DIR}" ]; then
   PYI_ARGS+=(--add-data "${TCL_DIR}:lib/$(basename "${TCL_DIR}")")
 fi
 if [ -n "${TK_DIR}" ] && [ -d "${TK_DIR}" ]; then
   PYI_ARGS+=(--add-data "${TK_DIR}:lib/$(basename "${TK_DIR}")")
 fi
-PYI_ARGS+=("${ENTRY}")
 
-rm -rf build dist
-.venv/bin/pyinstaller "${PYI_ARGS[@]}"
+.venv/bin/pyinstaller --noconfirm --clean "${PYI_ARGS[@]}" "${SPEC_PATH}"
 
 python - <<'PY'
 from pathlib import Path
