@@ -4698,13 +4698,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             ),
         )
 
-    def test_recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result_result_returns_message_parts(
+    def test_recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result_result_result_parts_result_result_result_result_result_returns_message_parts(
         self,
     ) -> None:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
 
         self.assertEqual(
-            recorder.recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result_result(
+            recorder.recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result_result_result_parts_result_result_result_result_result(
                 target_name="Son export dosyasi",
                 success_prefix="Son export Finder'da gosteriliyor",
                 error_prefix="Finder acilamadi",
@@ -4859,6 +4859,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(
             recorder.recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result(
+                target_name="Son export dosyasi",
+                success_prefix="Son export Finder'da gosteriliyor",
+                error_prefix="Finder acilamadi",
+            ),
+            (
+                {
+                    "success_prefix": "Son export Finder'da gosteriliyor",
+                    "error_prefix": "Finder acilamadi",
+                },
+                {
+                    "missing_message": "Son export dosyasi bulunamadi; son ciktilar yenilendi.",
+                },
+            ),
+        )
+
+    def test_recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result_result_returns_message_parts(
+        self,
+    ) -> None:
+        recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+
+        self.assertEqual(
+            recorder.recent_output_open_target_extra_args_message_parts_result_parts_result_parts_result_result_result_result_result_result_result_result_result_result(
                 target_name="Son export dosyasi",
                 success_prefix="Son export Finder'da gosteriliyor",
                 error_prefix="Finder acilamadi",
