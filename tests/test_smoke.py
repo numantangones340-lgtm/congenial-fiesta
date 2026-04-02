@@ -1,7 +1,9 @@
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 DEPENDENCY_IMPORT_ERROR = None
 try:
@@ -50,6 +52,21 @@ class ModuleSmokeTests(unittest.TestCase):
         self.assertEqual(processed.shape, voice.shape)
         self.assertTrue(np.all(processed <= 1.0))
         self.assertTrue(np.all(processed >= -1.0))
+
+    def test_resolve_ffmpeg_binary_prefers_path_lookup(self) -> None:
+        with mock.patch.object(app.shutil, "which", return_value="/tmp/ffmpeg"):
+            self.assertEqual(app.resolve_ffmpeg_binary(), "/tmp/ffmpeg")
+
+    def test_resolve_ffmpeg_binary_falls_back_to_known_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            candidate = Path(tmpdir) / "ffmpeg"
+            candidate.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+            candidate.chmod(0o755)
+            with (
+                mock.patch.object(app.shutil, "which", return_value=None),
+                mock.patch.object(app, "ffmpeg_binary_candidates", return_value=[candidate]),
+            ):
+                self.assertEqual(app.resolve_ffmpeg_binary(), str(candidate))
 
 
 @unittest.skipIf(DEPENDENCY_IMPORT_ERROR is not None, f"runtime deps missing: {DEPENDENCY_IMPORT_ERROR}")

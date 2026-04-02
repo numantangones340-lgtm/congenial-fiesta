@@ -63,6 +63,24 @@ def print_warning(message: str) -> None:
     print(f"[uyarı] {message}")
 
 
+def ffmpeg_binary_candidates() -> list[Path]:
+    return [
+        Path("/opt/homebrew/bin/ffmpeg"),
+        Path("/usr/local/bin/ffmpeg"),
+        Path("/usr/bin/ffmpeg"),
+    ]
+
+
+def resolve_ffmpeg_binary() -> Optional[str]:
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if ffmpeg_bin:
+        return ffmpeg_bin
+    for candidate in ffmpeg_binary_candidates():
+        if candidate.exists() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
+
+
 def print_run_summary(mode: str, preset_name: str, input_idx: Optional[int], output_idx: Optional[int], output_name: str) -> None:
     print_block(
         "CLI Oturum Özeti",
@@ -1024,7 +1042,7 @@ def main() -> None:
     sf.write(mix_wav_path, mix, sr)
     sf.write(vocal_wav_path, processed, sr)
 
-    ffmpeg_bin = shutil.which("ffmpeg")
+    ffmpeg_bin = resolve_ffmpeg_binary()
     if ffmpeg_bin:
         cmd = [ffmpeg_bin, "-y", "-i", str(mix_wav_path), "-codec:a", "libmp3lame", "-qscale:a", "2", str(mp3_path)]
         try:
