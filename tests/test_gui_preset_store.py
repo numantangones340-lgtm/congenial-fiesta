@@ -27,6 +27,7 @@ class FakeVar:
 class GuiPresetStoreTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
+        recorder.app_version = "0.1.0-test"
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
@@ -62,7 +63,37 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_preset_menu = mock.Mock()
         recorder.restart_input_meter = mock.Mock()
+        recorder.last_session_summary_path = None
+        recorder.input_device_options = ["Varsayılan macOS girişi", "1 - MacBook Air Mikrofonu"]
+        recorder.output_device_options = ["Varsayılan macOS çıkışı", "2 - MacBook Air Hoparlörü"]
         return recorder
+
+    def test_builtin_store_includes_macbook_quick_recording_preset(self) -> None:
+        store = app.builtin_preset_store()
+
+        self.assertIn("MacBook Mikrofon Hizli Kayit", store["presets"])
+        preset = store["presets"]["MacBook Mikrofon Hizli Kayit"]
+        self.assertEqual(preset["gain"], 8)
+        self.assertEqual(preset["vocal_level"], 100)
+        self.assertEqual(preset["noise_gate_threshold"], 0)
+        self.assertEqual(preset["output_gain"], 3)
+
+    def test_apply_clean_macbook_preset_updates_controls_for_builtin_mic(self) -> None:
+        recorder = self.make_app()
+
+        recorder.apply_clean_macbook_preset()
+
+        self.assertEqual(recorder.preset_name.get(), "MacBook Mikrofon Hizli Kayit")
+        self.assertEqual(recorder.input_device_choice.get(), "1 - MacBook Air Mikrofonu")
+        self.assertEqual(recorder.output_device_choice.get(), "2 - MacBook Air Hoparlörü")
+        self.assertEqual(recorder.gain.get(), 8)
+        self.assertEqual(recorder.noise_gate_threshold.get(), 0)
+        self.assertEqual(recorder.output_gain.get(), 3)
+        recorder.restart_input_meter.assert_called_once()
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "MacBook mikrofon hizli kayit preset uygulandi. Meter ile kontrol edip kayda gecebilirsiniz.",
+        )
 
     def test_load_preset_store_data_supports_legacy_single_preset_file(self) -> None:
         recorder = self.make_app()
@@ -93,6 +124,31 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(raw["presets"]["Aksam"]["gain"], 4)
         recorder.refresh_preset_menu.assert_called_once_with("Aksam")
         self.assertEqual(recorder.status_messages[-1], "Preset kaydedildi: Aksam")
+
+    def test_save_current_preset_creates_parent_directory(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Gece")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / "nested" / "gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.save_current_preset()
+
+            raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["selected"], "Gece")
+        self.assertIn("Gece", raw["presets"])
+
+    def test_write_last_session_state_creates_parent_directory(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            last_session_path = Path(tmpdir) / "nested" / "last_session.json"
+            with mock.patch.object(app, "LAST_SESSION_PATH", last_session_path):
+                recorder.write_last_session_state(Path("/tmp/out"))
+
+            raw = json.loads(last_session_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["output_dir"], "/tmp/out")
+        self.assertEqual(raw["preset_name"], "Temiz Gitar")
 
     def test_delete_selected_preset_falls_back_to_builtin_presets(self) -> None:
         recorder = self.make_app()

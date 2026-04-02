@@ -28,9 +28,25 @@ import numpy as np
 import sounddevice as sd
 import soundfile as sf
 
-GUI_PRESET_PATH = Path(__file__).resolve().with_name(".gui_saved_preset.json")
-LAST_SESSION_PATH = Path(__file__).resolve().with_name(".last_session.json")
 VERSION_PATH = Path(__file__).resolve().with_name("VERSION")
+
+
+def user_app_data_dir() -> Path:
+    home = Path.home()
+    if sys.platform == "darwin":
+        return home / "Library" / "Application Support" / "GuitarAmpRecorder"
+    appdata = os.environ.get("APPDATA", "").strip()
+    if appdata:
+        return Path(appdata) / "GuitarAmpRecorder"
+    return home / ".guitar_amp_recorder"
+
+
+def user_app_data_path(filename: str) -> Path:
+    return user_app_data_dir() / filename
+
+
+GUI_PRESET_PATH = user_app_data_path("gui_saved_preset.json")
+LAST_SESSION_PATH = user_app_data_path("last_session.json")
 
 
 def read_app_version() -> str:
@@ -249,6 +265,54 @@ def configure_tcl_tk_environment() -> None:
                 return
 
 
+def ffmpeg_binary_candidates() -> list[Path]:
+    candidates: list[Path] = []
+    if getattr(sys, "frozen", False):
+        executable = Path(sys.executable).resolve()
+        candidates.extend(
+            [
+                executable.parent / "ffmpeg",
+                executable.parent / "bin" / "ffmpeg",
+                executable.parent.parent / "Resources" / "ffmpeg",
+                executable.parent.parent / "Resources" / "bin" / "ffmpeg",
+            ]
+        )
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            base = Path(meipass)
+            candidates.extend(
+                [
+                    base / "ffmpeg",
+                    base / "bin" / "ffmpeg",
+                ]
+            )
+    candidates.extend(
+        [
+            Path("/opt/homebrew/bin/ffmpeg"),
+            Path("/usr/local/bin/ffmpeg"),
+            Path("/usr/bin/ffmpeg"),
+        ]
+    )
+    unique_candidates: list[Path] = []
+    seen: set[Path] = set()
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        unique_candidates.append(candidate)
+    return unique_candidates
+
+
+def resolve_ffmpeg_binary() -> Optional[str]:
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if ffmpeg_bin:
+        return ffmpeg_bin
+    for candidate in ffmpeg_binary_candidates():
+        if candidate.exists() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    return None
+
+
 def safe_query_devices() -> list:
     try:
         return list(sd.query_devices())
@@ -419,6 +483,38 @@ def builtin_preset_store() -> dict:
                 "limiter_enabled": "Acik",
                 "speed_ratio": 100,
                 "output_gain": -6,
+            },
+            "MacBook Mikrofon Hizli Kayit": {
+                "input_device_choice": "Varsayılan macOS girişi",
+                "output_device_choice": "Varsayılan macOS çıkışı",
+                "input_device_id": "",
+                "output_device_id": "",
+                "output_name": "",
+                "output_dir": str(Path.home() / "Desktop"),
+                "session_mode": "Tek Klasor",
+                "session_name": time.strftime("session_%Y%m%d"),
+                "mp3_quality": "Yuksek VBR",
+                "wav_export_mode": "Sadece Vocal WAV",
+                "record_limit_hours": "1",
+                "mic_record_seconds": "60",
+                "gain": 8,
+                "boost": 0,
+                "high_pass_hz": 70,
+                "bass": 0,
+                "presence": 1,
+                "treble": 1,
+                "distortion": 0,
+                "backing_level": 100,
+                "vocal_level": 100,
+                "noise_reduction": 0,
+                "noise_gate_threshold": 0,
+                "monitor_level": 100,
+                "compressor_amount": 0,
+                "compressor_threshold": -18,
+                "compressor_makeup": 0,
+                "limiter_enabled": "Acik",
+                "speed_ratio": 100,
+                "output_gain": 3,
             },
             "Guclu Performans": {
                 "input_device_choice": "Varsayılan macOS girişi",
@@ -912,21 +1008,27 @@ class GuitarAmpRecorderApp:
         self.input_device_choice.set(input_options[0] if input_options else "Varsayılan macOS girişi")
         self.output_device_choice.set(output_options[0] if output_options else "Varsayılan macOS çıkışı")
 
-        self.gain.set(4)
-        self.boost.set(2)
-        self.high_pass_hz.set(80)
-        self.bass.set(2)
+        self.preset_name.set("MacBook Mikrofon Hizli Kayit")
+        self.gain.set(8)
+        self.boost.set(0)
+        self.high_pass_hz.set(70)
+        self.bass.set(0)
         self.presence.set(1)
         self.treble.set(1)
         self.distortion.set(0)
         self.backing_level.set(100)
-        self.vocal_level.set(85)
-        self.noise_reduction.set(10)
+        self.vocal_level.set(100)
+        self.noise_reduction.set(0)
+        self.noise_gate_threshold.set(0)
+        self.compressor_amount.set(0)
+        self.compressor_threshold.set(-18)
+        self.compressor_makeup.set(0)
+        self.limiter_enabled.set("Acik")
         self.speed_ratio.set(100)
-        self.output_gain.set(0)
+        self.output_gain.set(3)
 
         self.restart_input_meter()
-        self.set_status("Temiz MacBook preset uygulandı. Test edip kayda geçebilirsiniz.")
+        self.set_status("MacBook mikrofon hizli kayit preset uygulandi. Meter ile kontrol edip kayda gecebilirsiniz.")
 
     def apply_external_mic_preset(self) -> None:
         input_options = [item for item in self.input_device_options if "USB PnP Sound Device" in item]
@@ -968,6 +1070,7 @@ class GuitarAmpRecorderApp:
         return self.default_preset_store()
 
     def write_preset_store_data(self, store: dict) -> None:
+        GUI_PRESET_PATH.parent.mkdir(parents=True, exist_ok=True)
         GUI_PRESET_PATH.write_text(json.dumps(store, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
@@ -1311,6 +1414,7 @@ class GuitarAmpRecorderApp:
                 "preset_name": self.preset_name.get(),
                 "summary_path": str(effective_summary_path) if effective_summary_path else "",
             }
+            LAST_SESSION_PATH.parent.mkdir(parents=True, exist_ok=True)
             LAST_SESSION_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception:
             pass
@@ -4500,7 +4604,7 @@ class GuitarAmpRecorderApp:
             vocal_wav_path = output_dir / f"{base_name}_vocal.wav"
 
             self.set_status("Dosyalar hazırlanıyor...")
-            ffmpeg_bin = shutil.which("ffmpeg")
+            ffmpeg_bin = resolve_ffmpeg_binary()
 
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_wav:
                 tmp_wav_path = Path(tmp_wav.name)
