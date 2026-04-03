@@ -71,6 +71,7 @@ Bu komut mevcut `.app` paketini zip'ler; paket yoksa once `./build_macos_app.sh`
 Detayli kontrol listesi:
 
 - `docs/MACOS_RELEASE_CHECKLIST.md`
+- `docs/WINDOWS_RELEASE_CHECKLIST.md`
 - `docs/RELEASE_PREP.md`
 - `docs/PRODUCT_ROADMAP.md`
 - `docs/FIRST_RUN_GUIDE.md`

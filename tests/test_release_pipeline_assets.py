@@ -18,6 +18,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
     def test_release_docs_exist(self) -> None:
         for name in (
             "MACOS_RELEASE_CHECKLIST.md",
+            "WINDOWS_RELEASE_CHECKLIST.md",
             "FIRST_RUN_GUIDE.md",
             "PRODUCT_ROADMAP.md",
         ):
@@ -65,6 +66,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn("Mikrofon/Ses Karti Testi (5 sn)", content)
         self.assertIn("Windows Ilk Acilis", content)
         self.assertIn("FIRST_RUN_GUIDE.md", content)
+        self.assertIn("WINDOWS_RELEASE_CHECKLIST.md", content)
 
 
 if __name__ == "__main__":
