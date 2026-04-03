@@ -55,15 +55,15 @@ class RecordingReadinessTests(unittest.TestCase):
     def test_build_recording_readiness_summary_for_mic_only_session(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             recorder = self.make_app(tmpdir)
-
-            summary = app.GuitarAmpRecorderApp.build_recording_readiness_summary(recorder)
+            with mock.patch.object(app.time, "strftime", return_value="20260403_190000"):
+                summary = app.GuitarAmpRecorderApp.build_recording_readiness_summary(recorder)
 
         self.assertIn("Hazirlik ozeti:", summary)
         self.assertIn("Preset: Temiz Gitar", summary)
         self.assertIn("Kaynak: Sadece mikrofon", summary)
         self.assertIn(f"Hedef klasor: {Path(tmpdir)}", summary)
         self.assertIn("Tam kayit adi: guitar_mix_custom", summary)
-        self.assertIn("Quick kayit adi: quick_take_001", summary)
+        self.assertIn("Quick kayit adi: quick_take_20260403_190000", summary)
         self.assertIn("Ciktilar: MP3 (Yuksek VBR) + Vocal WAV", summary)
         self.assertIn("Sure plani: 60 sn (ust sinir 1 saat)", summary)
         self.assertIn("Durum: Seviye kontrolu bekleniyor.", summary)

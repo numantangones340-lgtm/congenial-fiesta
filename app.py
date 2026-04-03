@@ -268,6 +268,17 @@ def next_take_name_for_dir(directory: Path, prefix: str = "quick_take") -> str:
     return f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
 
 
+def next_timestamped_take_name_for_dir(directory: Path, prefix: str = "quick_take") -> str:
+    base = f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
+    if not (directory / f"{base}.mp3").exists() and not (directory / f"{base}_mix.wav").exists():
+        return base
+    for suffix in range(2, 100):
+        candidate = f"{base}_{suffix:02d}"
+        if not (directory / f"{candidate}.mp3").exists() and not (directory / f"{candidate}_mix.wav").exists():
+            return candidate
+    return next_take_name_for_dir(directory, prefix)
+
+
 def format_mm_ss(seconds: float) -> str:
     total = max(0, int(seconds))
     minutes, secs = divmod(total, 60)
@@ -1387,7 +1398,7 @@ class GuitarAmpRecorderApp:
     def build_recording_readiness_summary(self) -> str:
         target_dir = self.preview_output_dir()
         manual_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
-        quick_name = next_take_name_for_dir(target_dir, "quick_take")
+        quick_name = next_timestamped_take_name_for_dir(target_dir, "quick_take")
         lines = [
             "Hazirlik ozeti:",
             f"Preset: {self.preset_name.get()}",
@@ -4537,7 +4548,7 @@ class GuitarAmpRecorderApp:
             self.set_status("Aygıt kimliği alanlarına sadece sayı girin (veya boş bırakın).")
             return
         settings = self.current_amp_settings()
-        base_name = next_take_name_for_dir(self.resolve_output_dir(), "quick_take")
+        base_name = next_timestamped_take_name_for_dir(self.resolve_output_dir(), "quick_take")
         worker = threading.Thread(
             target=self.record_and_export,
             args=(None, input_idx, output_idx, settings, base_name),
