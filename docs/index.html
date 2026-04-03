@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Guitar Amp Recorder - Güvenli İndirme</title>
+  <title>Guitar Amp Recorder - Indirme ve Kurulum</title>
   <style>
     :root {
       --bg1: #081126;
@@ -13,6 +13,7 @@
       --muted: #b0bdd3;
       --green: #2bb673;
       --blue: #2f6df6;
+      --gold: #e0a83f;
       --line: #2b3550;
     }
     * { box-sizing: border-box; }
@@ -36,7 +37,38 @@
     }
     h1 { margin: 0 0 8px; font-size: clamp(28px, 3.3vw, 42px); }
     p { margin: 8px 0; color: var(--muted); line-height: 1.5; }
-    .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: #d9e6ff;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+      margin: 22px 0 18px;
+    }
+    .platform {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .platform h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+    .platform p {
+      margin: 6px 0 14px;
+    }
+    .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 0; }
     .btn {
       text-decoration: none;
       color: #fff;
@@ -47,6 +79,30 @@
     }
     .btn-green { background: var(--green); }
     .btn-blue { background: var(--blue); }
+    .btn-gold { background: var(--gold); color: #101722; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .meta-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+    .steps {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    ol {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
     ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); }
     code {
       background: #0a1326;
@@ -59,20 +115,64 @@
 </head>
 <body>
   <main class="card">
+    <div class="eyebrow">Resmi indirme sayfasi · GitHub Releases + GitHub Pages</div>
     <h1>Gitar Amfi Kaydedici</h1>
-    <p>Bu sayfa uygulamayı güvenli şekilde indirmeniz için resmi kaynaklara yönlendirir.</p>
+    <p>Uygulamayi en hizli sekilde indirip acmaniz icin bu sayfa sizi dogru dosyaya yonlendirir. Son kullanici icin en kolay yol, isletim sisteminize uygun zip dosyasini indirip uygulamayi acmaktir.</p>
 
-    <div class="buttons">
-      <a class="btn btn-green" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest">En Güncel Sürümü İndir (GitHub Releases)</a>
-      <a class="btn btn-blue" href="https://github.com/numantangones340-lgtm/congenial-fiesta">Kaynak Kod (GitHub Repo)</a>
+    <div class="grid">
+      <section class="platform">
+        <h2>macOS</h2>
+        <p>Mac kullanicilari icin hazir zip dosyasi. Indirdikten sonra zip'i acin ve <code>GuitarAmpRecorder.app</code> uygulamasini calistirin.</p>
+        <div class="buttons">
+          <a class="btn btn-green" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest/download/GuitarAmpRecorder-macOS.zip">macOS ZIP Indir</a>
+        </div>
+      </section>
+
+      <section class="platform">
+        <h2>Windows</h2>
+        <p>Windows kullanicilari icin hazir paket. Indirdikten sonra zip'i acin ve icindeki uygulamayi calistirin.</p>
+        <div class="buttons">
+          <a class="btn btn-blue" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest/download/GuitarAmpRecorder-Windows.zip">Windows ZIP Indir</a>
+        </div>
+      </section>
     </div>
 
-    <p>macOS için <code>GuitarAmpRecorder-macOS.zip</code>, Windows için <code>GuitarAmpRecorder-Windows.zip</code> dosyasını indirebilirsiniz.</p>
+    <div class="buttons">
+      <a class="btn btn-gold" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest">Tum Surum Dosyalari</a>
+      <a class="btn btn-blue" href="https://github.com/numantangones340-lgtm/congenial-fiesta">Kaynak Kod</a>
+    </div>
+
+    <div class="meta">
+      <div class="meta-box">
+        <strong>Ne cikar?</strong>
+        <p><code>.mp3</code> ve <code>_vocal.wav</code> dosyalari Masaustu'ne yazilir.</p>
+      </div>
+      <div class="meta-box">
+        <strong>Arayuz dili</strong>
+        <p>Turkce arayuz, Turkce terminal ve Turkce hizli kurulum akisi.</p>
+      </div>
+      <div class="meta-box">
+        <strong>En kolay kontrol</strong>
+        <p>Ilk acilista once <code>Mikrofon/Ses Karti Testi (5 sn)</code> ile <code>Peak</code> degerini kontrol edin.</p>
+      </div>
+    </div>
+
+    <section class="steps">
+      <h2>macOS Ilk Acilis</h2>
+      <ol>
+        <li>Uygulamayi acin.</li>
+        <li>Mikrofon izni gelirse <code>Izin Ver</code> deyin.</li>
+        <li>Masaustu klasoru izni gelirse yine <code>Izin Ver</code> deyin.</li>
+        <li><code>Mikrofon/Ses Karti Testi (5 sn)</code> ile kisa test yapin.</li>
+        <li><code>Peak=0.000</code> degilse, <code>Quick Kayit (Preset, Sorusuz)</code> ile dogrudan kayda gecebilirsiniz.</li>
+      </ol>
+    </section>
+
     <ul>
-      <li>Yayın kanalı: GitHub Releases (imzalı sürüm yüklenebilir)</li>
-      <li>Tanıtım/yönlendirme sayfası: GitHub Pages</li>
-      <li>Kurulum notları: README içinde adım adım anlatım</li>
-      <li>Dil desteği: Türkçe arayüz ve Türkçe terminal</li>
+      <li>Yayin kanali: GitHub Releases</li>
+      <li>Tanitim/yonlendirme sayfasi: GitHub Pages</li>
+      <li>Kurulum notlari: README icinde adim adim anlatim</li>
+      <li>Hedef dosyalar: <code>quick_take_YYYYMMDD_HHMMSS.mp3</code> ve <code>quick_take_YYYYMMDD_HHMMSS_vocal.wav</code></li>
     </ul>
   </main>
 </body>
