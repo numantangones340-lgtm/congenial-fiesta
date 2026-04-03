@@ -51,6 +51,14 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
         self.assertIn("NSMicrophoneUsageDescription", content)
 
+    def test_download_page_has_direct_platform_download_links(self) -> None:
+        content = (ROOT_DIR / "docs" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("GuitarAmpRecorder-macOS.zip", content)
+        self.assertIn("GuitarAmpRecorder-Windows.zip", content)
+        self.assertIn("/releases/latest/download/GuitarAmpRecorder-macOS.zip", content)
+        self.assertIn("/releases/latest/download/GuitarAmpRecorder-Windows.zip", content)
+        self.assertIn("Mikrofon/Ses Karti Testi (5 sn)", content)
+
 
 if __name__ == "__main__":
     unittest.main()
