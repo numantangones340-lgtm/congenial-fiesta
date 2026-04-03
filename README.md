@@ -73,6 +73,7 @@ Detayli kontrol listesi:
 - `docs/MACOS_RELEASE_CHECKLIST.md`
 - `docs/RELEASE_PREP.md`
 - `docs/PRODUCT_ROADMAP.md`
+- `docs/FIRST_RUN_GUIDE.md`
 
 ## Çalıştırma
 
@@ -214,6 +215,8 @@ cd /Users/numantangones/Documents/GuitarAmpRecorder
   - https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
 - GitHub Pages (indirme yonlendirme sayfasi):
   - https://numantangones340-lgtm.github.io/congenial-fiesta/
+- Hızlı ilk açılış kılavuzu:
+  - `docs/FIRST_RUN_GUIDE.md`
 
 ## Yayinlama (Diger Kullanicilar Icin)
 
