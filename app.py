@@ -209,6 +209,53 @@ def apply_limiter(signal: np.ndarray, ceiling: float = 0.98) -> np.ndarray:
     return np.clip(signal, -ceiling, ceiling).astype(np.float32)
 
 
+def record_input_stream(
+    sample_rate: int,
+    frames: int,
+    channels: int = 1,
+    device: Optional[int] = None,
+    blocksize: int = 1024,
+) -> np.ndarray:
+    if frames <= 0:
+        return np.zeros((0, channels), dtype=np.float32)
+
+    chunks: list[np.ndarray] = []
+    captured_frames = 0
+    finished = threading.Event()
+    wait_timeout = max(1.0, frames / max(sample_rate, 1) + 1.0)
+
+    def callback(indata, _frames, _time_info, _status) -> None:
+        nonlocal captured_frames
+        if indata is None or len(indata) == 0:
+            return
+        remaining = frames - captured_frames
+        if remaining <= 0:
+            finished.set()
+            raise sd.CallbackStop()
+        chunk = np.array(indata[:remaining], dtype=np.float32, copy=True)
+        chunks.append(chunk)
+        captured_frames += len(chunk)
+        if captured_frames >= frames:
+            finished.set()
+            raise sd.CallbackStop()
+
+    with sd.InputStream(
+        samplerate=sample_rate,
+        channels=channels,
+        dtype="float32",
+        blocksize=blocksize,
+        device=device,
+        callback=callback,
+    ):
+        finished.wait(wait_timeout)
+
+    recorded = np.concatenate(chunks, axis=0) if chunks else np.zeros((0, channels), dtype=np.float32)
+    if len(recorded) < frames:
+        pad_shape = ((0, frames - len(recorded)), (0, 0))
+        recorded = np.pad(recorded, pad_shape, mode="constant")
+    return recorded[:frames].astype(np.float32)
+
+
 def next_take_name(prefix: str = "quick_take") -> str:
     return next_take_name_for_dir(Path.home() / "Desktop", prefix)
 
@@ -343,6 +390,18 @@ def list_output_devices() -> list[tuple[int, str]]:
         for idx, dev in enumerate(devices)
         if int(dev.get("max_output_channels", 0)) > 0
     ]
+
+
+def device_default_samplerate(device_idx: Optional[int], kind: str = "input") -> int:
+    try:
+        if device_idx is None:
+            info = sd.query_devices(kind=kind)
+        else:
+            info = sd.query_devices(device=device_idx, kind=kind)
+        samplerate = int(float(info.get("default_samplerate", 44100)))
+        return samplerate if samplerate > 0 else 44100
+    except Exception:
+        return 44100
 
 
 def no_device_help_text() -> str:
@@ -4057,10 +4116,11 @@ class GuitarAmpRecorderApp:
             return
         mono = indata[:, 0].copy()
         self.update_level_tracking(mono)
+        sample_rate = device_default_samplerate(self.selected_device_pair()[0], "input")
         gain_db, boost_db, high_pass_hz, bass_db, presence_db, treble_db, distortion = self.current_amp_settings()
         processed = apply_amp_chain(
             voice=mono,
-            sample_rate=44100,
+            sample_rate=sample_rate,
             gain_db=gain_db,
             boost_db=boost_db,
             high_pass_hz=high_pass_hz,
@@ -4073,7 +4133,7 @@ class GuitarAmpRecorderApp:
         gate_threshold = float(self.noise_gate_threshold.get())
         output_gain_db = float(self.output_gain.get())
         monitor_level = float(self.monitor_level.get()) / 100.0
-        processed = reduce_background_noise(processed, 44100, noise_strength, gate_threshold)
+        processed = reduce_background_noise(processed, sample_rate, noise_strength, gate_threshold)
         processed = self.apply_dynamics(processed)
         processed = apply_output_gain(processed, output_gain_db)
         processed = np.clip(processed * monitor_level, -1.0, 1.0)
@@ -4136,8 +4196,9 @@ class GuitarAmpRecorderApp:
             self.meter_text.set("Meter başlatılamadı: mikrofon girişi bulunamadı.")
             return
         try:
+            sample_rate = device_default_samplerate(input_idx, "input")
             self.meter_stream = sd.InputStream(
-                samplerate=44100,
+                samplerate=sample_rate,
                 channels=1,
                 dtype="float32",
                 blocksize=1024,
@@ -4163,8 +4224,9 @@ class GuitarAmpRecorderApp:
             self.set_status("Monitor baslatilamadi: giris veya cikis aygiti bulunamadi.")
             return
         try:
+            sample_rate = device_default_samplerate(input_idx, "input")
             self.monitor_stream = sd.Stream(
-                samplerate=44100,
+                samplerate=sample_rate,
                 blocksize=1024,
                 dtype="float32",
                 channels=(1, 2),
@@ -4312,11 +4374,18 @@ class GuitarAmpRecorderApp:
         self.set_status("Arka plan muzigi temizlendi. Sadece mikrofon kaydi hazir.")
 
     def selected_device_pair(self) -> Tuple[Optional[int], Optional[int]]:
-        input_text = self.input_device_id.get().strip()
-        output_text = self.output_device_id.get().strip()
-        input_idx = int(input_text) if input_text else None
-        output_idx = int(output_text) if output_text else None
+        input_idx = self.selected_device_index(self.input_device_choice.get(), self.input_device_id.get())
+        output_idx = self.selected_device_index(self.output_device_choice.get(), self.output_device_id.get())
         return input_idx, output_idx
+
+    def selected_device_index(self, choice_text: str, id_text: str) -> Optional[int]:
+        parsed_choice = self.parse_device_choice(choice_text)
+        if parsed_choice is not None:
+            return parsed_choice
+        if choice_text.strip().startswith("Varsayılan"):
+            return None
+        device_text = id_text.strip()
+        return int(device_text) if device_text else None
 
     def start_test_thread(self) -> None:
         try:
@@ -4385,20 +4454,13 @@ class GuitarAmpRecorderApp:
             if input_count == 0:
                 self.set_status(no_device_help_text())
                 return
-            sr = 44100
+            sr = device_default_samplerate(input_idx, "input")
             seconds = 5
             frames = sr * seconds
             gain_db, boost_db, high_pass_hz, bass_db, presence_db, treble_db, distortion = settings
 
             self.set_status("Test kaydı başlıyor (5 sn). Mikrofona konuşun/çalın...")
-            recorded = sd.rec(
-                frames=frames,
-                samplerate=sr,
-                channels=1,
-                dtype="float32",
-                device=input_idx,
-            )
-            sd.wait()
+            recorded = record_input_stream(sample_rate=sr, frames=frames, channels=1, device=input_idx)
             voice = recorded[:, 0]
 
             processed = apply_amp_chain(
@@ -4494,7 +4556,7 @@ class GuitarAmpRecorderApp:
         try:
             output_dir = self.resolve_output_dir()
             output_dir.mkdir(parents=True, exist_ok=True)
-            target_sr = 44100
+            target_sr = device_default_samplerate(input_idx, "input")
             sr = target_sr
             input_count, _ = describe_device_state()
             if input_count == 0:
@@ -4534,9 +4596,10 @@ class GuitarAmpRecorderApp:
                 backing = np.zeros((frames, 2), dtype=np.float32)
                 self.begin_recording_progress("Sadece mikrofon", capped_seconds)
                 self.set_status(f"Sadece mikrofon kaydı başlıyor ({capped_seconds:.1f} sn).")
-                recorded = sd.rec(frames=frames, samplerate=sr, channels=1, dtype="float32", device=input_idx)
+                recorded = record_input_stream(sample_rate=sr, frames=frames, channels=1, device=input_idx)
 
-            sd.wait()
+            if backing_file is not None:
+                sd.wait()
             stop_requested = self.stop_recording_requested
             if stop_requested:
                 elapsed = max(0.0, time.time() - self.recording_started_at)

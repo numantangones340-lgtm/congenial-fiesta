@@ -42,8 +42,14 @@ class ReleasePipelineAssetTests(unittest.TestCase):
     def test_build_script_writes_spec_outside_repo_root(self) -> None:
         content = (ROOT_DIR / "build_macos_app.sh").read_text(encoding="utf-8")
         self.assertIn('SPEC_DIR="build/spec"', content)
-        self.assertIn('--specpath "${SPEC_DIR}"', content)
+        self.assertIn('SPEC_PATH="${SPEC_DIR}/${APP_NAME}.spec"', content)
+        self.assertIn('cp "${SPEC_TEMPLATE}" "${SPEC_PATH}"', content)
+        self.assertIn('.venv/bin/pyinstaller --noconfirm --clean "${SPEC_PATH}"', content)
         self.assertNotIn('rm -rf build dist "${APP_NAME}.spec"', content)
+
+    def test_spec_declares_microphone_usage_description(self) -> None:
+        content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
+        self.assertIn("NSMicrophoneUsageDescription", content)
 
 
 if __name__ == "__main__":

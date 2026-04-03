@@ -4,6 +4,7 @@ set -euo pipefail
 APP_NAME="GuitarAmpRecorder"
 ENTRY="app.py"
 STAMP_FILE=".venv/.build-deps-stamp"
+SPEC_TEMPLATE="${APP_NAME}.spec"
 
 pick_python() {
   for candidate in /opt/homebrew/bin/python3.11 python3.11 python3; do
@@ -123,19 +124,12 @@ PY
 TCL_DIR="$(printf '%s\n' "${TK_OUT}" | sed -n '1p')"
 TK_DIR="$(printf '%s\n' "${TK_OUT}" | sed -n '2p')"
 
-SPEC_DIR="build/spec"
-PYI_ARGS=(--noconfirm --clean --windowed --name "${APP_NAME}" --specpath "${SPEC_DIR}")
-if [ -n "${TCL_DIR}" ] && [ -d "${TCL_DIR}" ]; then
-  PYI_ARGS+=(--add-data "${TCL_DIR}:lib/$(basename "${TCL_DIR}")")
-fi
-if [ -n "${TK_DIR}" ] && [ -d "${TK_DIR}" ]; then
-  PYI_ARGS+=(--add-data "${TK_DIR}:lib/$(basename "${TK_DIR}")")
-fi
-PYI_ARGS+=("${ENTRY}")
-
 rm -rf build dist
+SPEC_DIR="build/spec"
+SPEC_PATH="${SPEC_DIR}/${APP_NAME}.spec"
 mkdir -p "${SPEC_DIR}"
-.venv/bin/pyinstaller "${PYI_ARGS[@]}"
+cp "${SPEC_TEMPLATE}" "${SPEC_PATH}"
+.venv/bin/pyinstaller --noconfirm --clean "${SPEC_PATH}"
 
 ditto -c -k --sequesterRsrc --keepParent "dist/${APP_NAME}.app" "dist/${APP_NAME}-macOS.zip"
 
