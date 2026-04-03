@@ -80,6 +80,11 @@
     .btn-green { background: var(--green); }
     .btn-blue { background: var(--blue); }
     .btn-gold { background: var(--gold); color: #101722; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: #d9e6ff;
+    }
     .meta {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -117,6 +122,7 @@
   <main class="card">
     <div class="eyebrow">Resmi indirme sayfasi · GitHub Releases + GitHub Pages</div>
     <h1>Gitar Amfi Kaydedici</h1>
+    <p><strong>Guncel surum:</strong> <code>v1.1.10</code></p>
     <p>Uygulamayi en hizli sekilde indirip acmaniz icin bu sayfa sizi dogru dosyaya yonlendirir. Son kullanici icin en kolay yol, isletim sisteminize uygun zip dosyasini indirip uygulamayi acmaktir.</p>
 
     <div class="grid">
@@ -125,6 +131,7 @@
         <p>Mac kullanicilari icin hazir zip dosyasi. Indirdikten sonra zip'i acin ve <code>GuitarAmpRecorder.app</code> uygulamasini calistirin.</p>
         <div class="buttons">
           <a class="btn btn-green" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest/download/GuitarAmpRecorder-macOS.zip">macOS ZIP Indir</a>
+          <a class="btn btn-outline" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest/download/GuitarAmpRecorder-macOS.zip.sha256">SHA256</a>
         </div>
       </section>
 
@@ -133,6 +140,7 @@
         <p>Windows kullanicilari icin hazir paket. Indirdikten sonra zip'i acin ve icindeki uygulamayi calistirin.</p>
         <div class="buttons">
           <a class="btn btn-blue" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest/download/GuitarAmpRecorder-Windows.zip">Windows ZIP Indir</a>
+          <a class="btn btn-outline" href="https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest/download/GuitarAmpRecorder-Windows.zip.sha256">SHA256</a>
         </div>
       </section>
     </div>
@@ -165,6 +173,16 @@
         <li>Masaustu klasoru izni gelirse yine <code>Izin Ver</code> deyin.</li>
         <li><code>Mikrofon/Ses Karti Testi (5 sn)</code> ile kisa test yapin.</li>
         <li><code>Peak=0.000</code> degilse, <code>Quick Kayit (Preset, Sorusuz)</code> ile dogrudan kayda gecebilirsiniz.</li>
+      </ol>
+    </section>
+
+    <section class="steps">
+      <h2>Windows Ilk Acilis</h2>
+      <ol>
+        <li>ZIP dosyasini acin ve uygulamayi calistirin.</li>
+        <li>Windows guvenlik uyarisi gorurseniz <code>Daha fazla bilgi</code> ardindan <code>Yine de calistir</code> deyin.</li>
+        <li><code>Mikrofon/Ses Karti Testi (5 sn)</code> ile once kisa test yapin.</li>
+        <li><code>Peak=0.000</code> degilse kayda gecebilirsiniz.</li>
       </ol>
     </section>
 

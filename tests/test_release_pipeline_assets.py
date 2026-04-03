@@ -54,11 +54,15 @@ class ReleasePipelineAssetTests(unittest.TestCase):
 
     def test_download_page_has_direct_platform_download_links(self) -> None:
         content = (ROOT_DIR / "docs" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("v1.1.10", content)
         self.assertIn("GuitarAmpRecorder-macOS.zip", content)
         self.assertIn("GuitarAmpRecorder-Windows.zip", content)
+        self.assertIn("GuitarAmpRecorder-macOS.zip.sha256", content)
+        self.assertIn("GuitarAmpRecorder-Windows.zip.sha256", content)
         self.assertIn("/releases/latest/download/GuitarAmpRecorder-macOS.zip", content)
         self.assertIn("/releases/latest/download/GuitarAmpRecorder-Windows.zip", content)
         self.assertIn("Mikrofon/Ses Karti Testi (5 sn)", content)
+        self.assertIn("Windows Ilk Acilis", content)
 
 
 if __name__ == "__main__":
