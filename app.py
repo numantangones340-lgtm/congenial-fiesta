@@ -470,6 +470,17 @@ def next_take_name_for_dir(directory: Path, prefix: str = "quick_take") -> str:
     return f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
 
 
+def next_timestamped_take_name_for_dir(directory: Path, prefix: str = "quick_take") -> str:
+    base = f"{prefix}_{time.strftime('%Y%m%d_%H%M%S')}"
+    if not (directory / f"{base}.mp3").exists() and not (directory / f"{base}_mix.wav").exists():
+        return base
+    for suffix in range(2, 100):
+        candidate = f"{base}_{suffix:02d}"
+        if not (directory / f"{candidate}.mp3").exists() and not (directory / f"{candidate}_mix.wav").exists():
+            return candidate
+    return next_take_name_for_dir(directory, prefix)
+
+
 def format_mm_ss(seconds: float) -> str:
     total = max(0, int(seconds))
     minutes, secs = divmod(total, 60)
@@ -3284,6 +3295,75 @@ class GuitarAmpRecorderApp:
             return base_dir / safe_name
         return base_dir
 
+    def safe_session_name(self) -> str:
+        session_name = self.session_name.get().strip() or time.strftime("session_%Y%m%d")
+        return "".join(ch if ch.isalnum() or ch in "-_ ." else "_" for ch in session_name).strip() or "session"
+
+    def preview_output_dir(self) -> Path:
+        base_dir = Path(self.output_dir.get().strip() or str(Path.home() / "Desktop")).expanduser()
+        mode = self.session_mode.get()
+        if mode == "Tarihli Oturum":
+            return base_dir / "<tarihli-oturum>"
+        if mode == "Isimli Oturum":
+            return base_dir / self.safe_session_name()
+        return base_dir
+
+    def planned_export_summary(self) -> str:
+        targets: list[str] = []
+        if self.should_export_mp3():
+            targets.append(f"MP3 ({self.mp3_quality.get()})")
+        if self.should_export_mix_wav():
+            targets.append("Mix WAV")
+        targets.append("Vocal WAV")
+        return " + ".join(targets)
+
+    def planned_source_summary(self) -> str:
+        if self.backing_file is not None:
+            return f"{self.backing_file.name} + mikrofon"
+        return "Sadece mikrofon"
+
+    def planned_duration_summary(self) -> str:
+        if self.backing_file is not None:
+            return "Backing dosyasi boyunca (ust sinir kayit limiti)"
+        try:
+            record_seconds = float(self.mic_record_seconds.get().strip())
+        except ValueError:
+            record_seconds = 60.0
+        record_seconds = max(5.0, min(record_seconds, 7200.0))
+        limit_hours = self.record_limit_hours.get().strip() or "1"
+        return f"{record_seconds:.0f} sn (ust sinir {limit_hours} saat)"
+
+    def planned_readiness_summary(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Cikis klasoru secilmedi. Once klasoru belirleyin."
+        if self.last_input_peak >= 0.985:
+            return "Uyari: giris clipping yapiyor. Kayittan once gain dusurun."
+        if self.last_input_peak >= 0.05:
+            return "Hazir gorunuyor. Once 5 saniyelik test yapip sonra kayda gecin."
+        return "Seviye kontrolu bekleniyor. Meter veya 5 saniyelik test ile girisi dogrulayin."
+
+    def build_recording_readiness_summary(self) -> str:
+        target_dir = self.preview_output_dir()
+        manual_name = self.output_name.get().strip() or f"guitar_mix_{time.strftime('%Y%m%d_%H%M%S')}"
+        quick_name = next_timestamped_take_name_for_dir(target_dir, "quick_take")
+        lines = [
+            "Hazirlik ozeti:",
+            f"Preset: {self.preset_name.get()}",
+            f"Kaynak: {self.planned_source_summary()}",
+            f"Hedef klasor: {target_dir}",
+            f"Tam kayit adi: {manual_name}",
+            f"Quick kayit adi: {quick_name}",
+            f"Ciktilar: {self.planned_export_summary()}",
+            f"Sure plani: {self.planned_duration_summary()}",
+            f"Durum: {self.planned_readiness_summary()}",
+        ]
+        return "\n".join(lines)
+
+    def refresh_recording_readiness(self, *_args) -> None:
+        if self.recording_active:
+            return
+        self.record_progress_text.set(self.build_recording_readiness_summary())
+
     def build_session_summary(
         self,
         output_dir: Path,
@@ -4571,7 +4651,7 @@ class GuitarAmpRecorderApp:
             return
         settings = self.current_amp_settings()
         output_dir = self.resolve_output_dir()
-        base_name = reserve_take_name_for_dir(output_dir, "quick_take")
+        base_name = next_timestamped_take_name_for_dir(output_dir, "quick_take")
         worker = threading.Thread(
             target=self.record_and_export,
             args=(output_dir, None, input_idx, output_idx, settings, base_name, base_name),

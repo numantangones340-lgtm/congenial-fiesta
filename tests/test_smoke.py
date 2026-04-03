@@ -99,6 +99,14 @@ class ModuleSmokeTests(unittest.TestCase):
         with mock.patch.object(app.sd, "query_devices", return_value={"default_samplerate": 48000.0}):
             self.assertEqual(app.device_default_samplerate(1, "input"), 48000)
 
+    def test_next_timestamped_take_name_for_dir_uses_clock_stamp(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            with mock.patch.object(app.time, "strftime", return_value="20260403_190000"):
+                name = app.next_timestamped_take_name_for_dir(directory, "quick_take")
+
+        self.assertEqual(name, "quick_take_20260403_190000")
+
 
 @unittest.skipIf(DEPENDENCY_IMPORT_ERROR is not None, f"runtime deps missing: {DEPENDENCY_IMPORT_ERROR}")
 class CliSmokeTests(unittest.TestCase):
