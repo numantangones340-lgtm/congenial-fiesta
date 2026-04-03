@@ -75,6 +75,7 @@ Detayli kontrol listesi:
 - `docs/RELEASE_PREP.md`
 - `docs/PRODUCT_ROADMAP.md`
 - `docs/FIRST_RUN_GUIDE.md`
+- `docs/SUPPORT_FAQ.md`
 
 ## Çalıştırma
 
@@ -218,6 +219,8 @@ cd /Users/numantangones/Documents/GuitarAmpRecorder
   - https://numantangones340-lgtm.github.io/congenial-fiesta/
 - Hızlı ilk açılış kılavuzu:
   - `docs/FIRST_RUN_GUIDE.md`
+- Destek / SSS:
+  - `docs/SUPPORT_FAQ.md`
 
 ## Yayinlama (Diger Kullanicilar Icin)
 

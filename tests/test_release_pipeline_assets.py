@@ -20,6 +20,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
             "MACOS_RELEASE_CHECKLIST.md",
             "WINDOWS_RELEASE_CHECKLIST.md",
             "FIRST_RUN_GUIDE.md",
+            "SUPPORT_FAQ.md",
             "PRODUCT_ROADMAP.md",
         ):
             self.assertTrue((ROOT_DIR / "docs" / name).exists(), name)
@@ -67,6 +68,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn("Windows Ilk Acilis", content)
         self.assertIn("FIRST_RUN_GUIDE.md", content)
         self.assertIn("WINDOWS_RELEASE_CHECKLIST.md", content)
+        self.assertIn("SUPPORT_FAQ.md", content)
 
 
 if __name__ == "__main__":
