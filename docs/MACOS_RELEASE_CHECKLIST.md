@@ -41,3 +41,8 @@ Bu kontrol listesi, uygulamayi baska kullanicilara dagitmadan once macOS yayin a
 2. GitHub Pages indirme sayfasi dogru linke yonleniyor mu?
 3. Temiz bir macOS kullanici hesabinda zip acilip `.app` sorunsuz aciliyor mu?
 4. Ilk acilista mikrofon izni, cikis secimi ve masaustu export akisi dogru mu?
+5. `Mikrofon/Ses Karti Testi (5 sn)` sonrasi `Peak=0.000` degil mi?
+6. `Quick Kayit (Preset, Sorusuz)` sonrasi masaustunde zaman damgali yeni dosyalar olusuyor mu?
+7. Su iki dosya birlikte uretiliyor mu?
+   - `quick_take_YYYYMMDD_HHMMSS.mp3`
+   - `quick_take_YYYYMMDD_HHMMSS_vocal.wav`
