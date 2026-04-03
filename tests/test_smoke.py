@@ -68,6 +68,37 @@ class ModuleSmokeTests(unittest.TestCase):
             ):
                 self.assertEqual(app.resolve_ffmpeg_binary(), str(candidate))
 
+    def test_record_input_stream_collects_frames_from_callback(self) -> None:
+        callback_stop = app.sd.CallbackStop
+
+        class FakeInputStream:
+            def __init__(self, **kwargs):
+                self.callback = kwargs["callback"]
+
+            def __enter__(self):
+                for chunk in (
+                    np.array([[0.1], [0.2]], dtype=np.float32),
+                    np.array([[0.3], [0.4]], dtype=np.float32),
+                ):
+                    try:
+                        self.callback(chunk, len(chunk), None, None)
+                    except callback_stop:
+                        break
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        with mock.patch.object(app.sd, "InputStream", FakeInputStream):
+            recorded = app.record_input_stream(sample_rate=44100, frames=3, channels=1, device=1, blocksize=2)
+
+        self.assertEqual(recorded.shape, (3, 1))
+        np.testing.assert_allclose(recorded[:, 0], np.array([0.1, 0.2, 0.3], dtype=np.float32))
+
+    def test_device_default_samplerate_uses_query_result(self) -> None:
+        with mock.patch.object(app.sd, "query_devices", return_value={"default_samplerate": 48000.0}):
+            self.assertEqual(app.device_default_samplerate(1, "input"), 48000)
+
 
 @unittest.skipIf(DEPENDENCY_IMPORT_ERROR is not None, f"runtime deps missing: {DEPENDENCY_IMPORT_ERROR}")
 class CliSmokeTests(unittest.TestCase):

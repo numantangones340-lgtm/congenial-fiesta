@@ -224,6 +224,27 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(raw["output_dir"], "/tmp/out")
         self.assertEqual(raw["preset_name"], "Temiz Gitar")
 
+    def test_selected_device_pair_ignores_stale_id_when_default_choice_selected(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("Varsayılan macOS girişi")
+        recorder.input_device_id.set("2")
+        recorder.output_device_choice.set("2 - MacBook Air Hoparlörü")
+        recorder.output_device_id.set("2")
+
+        input_idx, output_idx = recorder.selected_device_pair()
+
+        self.assertIsNone(input_idx)
+        self.assertEqual(output_idx, 2)
+
+    def test_selected_device_pair_uses_explicit_choice_index(self) -> None:
+        recorder = self.make_app()
+        recorder.input_device_choice.set("1 - MacBook Air Mikrofonu")
+        recorder.input_device_id.set("")
+
+        input_idx, _ = recorder.selected_device_pair()
+
+        self.assertEqual(input_idx, 1)
+
     def test_delete_selected_preset_falls_back_to_builtin_presets(self) -> None:
         recorder = self.make_app()
         recorder.preset_name.set("TekPreset")

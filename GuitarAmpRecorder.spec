@@ -38,8 +38,8 @@ datas = [
 ]
 
 a = Analysis(
-    ["app.py"],
-    pathex=[],
+    [str(root_dir / "app.py")],
+    pathex=[str(root_dir)],
     binaries=[],
     datas=datas,
     hiddenimports=[],
