@@ -43,6 +43,10 @@ Bu kontrol listesi, uygulamayi baska kullanicilara dagitmadan once macOS yayin a
 4. Ilk acilista mikrofon izni, cikis secimi ve masaustu export akisi dogru mu?
 5. `Mikrofon/Ses Karti Testi (5 sn)` sonrasi `Peak=0.000` degil mi?
 6. `Quick Kayit (Preset, Sorusuz)` sonrasi masaustunde zaman damgali yeni dosyalar olusuyor mu?
-7. Su iki dosya birlikte uretiliyor mu?
+7. Quick kayitta su iki dosya birlikte uretiliyor mu?
    - `quick_take_YYYYMMDD_HHMMSS.mp3`
    - `quick_take_YYYYMMDD_HHMMSS_vocal.wav`
+8. Tam kayitta su iki dosya birlikte uretiliyor mu?
+   - `guitar_mix_YYYYMMDD_HHMMSS.mp3`
+   - `guitar_mix_YYYYMMDD_HHMMSS_vocal.wav`
+9. Dosyalarin dogrudan Masaustu'ne yazilmasi ve yeni klasor olusmamasi kullanici icin beklenen davranis mi?

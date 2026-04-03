@@ -4,7 +4,7 @@ Bu not, Git tarafini temiz tutup yeni surumu yayinlamadan once hangi adimlarin t
 
 ## Hedef Surum
 
-- `VERSION`: `1.1.9`
+- `VERSION`: `1.1.10`
 - Changelog: `CHANGELOG.md`
 - Release notes kaynagi: `CHANGELOG.md`
 - Release notes uretimi: `python scripts/generate_release_notes.py --output dist/release-notes.md`
@@ -32,7 +32,7 @@ Not:
 - `CHANGELOG.md`
 - `scripts/generate_release_notes.py`
 - `docs/RELEASE_PREP.md`
-- `docs/ROADMAP_1.1.3.md`
+- `docs/PRODUCT_ROADMAP.md`
 - `.github/workflows/release.yml`
 - `build_macos_app.sh`
 - `sign_macos_app.sh`
@@ -49,9 +49,9 @@ Not:
    `git add VERSION CHANGELOG.md README.md app.py cli_app.py sign_macos_app.sh notarize_macos_app.sh scripts/ tests/ .github/workflows/release.yml .github/workflows/static.yml docs/RELEASE_PREP.md`
 4. `git status --short` ile `.venv/` degisikliklerinin stage disinda kaldigini dogrula.
 5. Release commit'ini olustur.
-6. `git tag v1.1.9`
+6. `git tag v1.1.10`
 7. `git push origin <branch>`
-8. `git push origin v1.1.9`
+8. `git push origin v1.1.10`
 
 ## Tek Akis Kurali
 

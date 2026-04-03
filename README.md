@@ -70,8 +70,9 @@ Bu komut mevcut `.app` paketini zip'ler; paket yoksa once `./build_macos_app.sh`
 
 Detayli kontrol listesi:
 
+- `docs/MACOS_RELEASE_CHECKLIST.md`
 - `docs/RELEASE_PREP.md`
-- `docs/ROADMAP_1.1.3.md`
+- `docs/PRODUCT_ROADMAP.md`
 
 ## Çalıştırma
 
@@ -133,6 +134,15 @@ Başarılı ilk kayıt sonrası Masaüstü'nde genelde şu dosyalar oluşur:
 
 - `quick_take_YYYYMMDD_HHMMSS.mp3`
 - `quick_take_YYYYMMDD_HHMMSS_vocal.wav`
+
+Tam kayıt akışında ise dosya adı genelde `guitar_mix_YYYYMMDD_HHMMSS` ile başlar:
+
+- `guitar_mix_YYYYMMDD_HHMMSS.mp3`
+- `guitar_mix_YYYYMMDD_HHMMSS_vocal.wav`
+
+Not:
+
+- Yeni klasör oluşmayabilir; varsayılan akış çoğu zaman dosyaları doğrudan Masaüstü'ne yazar.
 
 Eğer masaüstünde eski sessiz denemeler varsa, en yeni çalışan dosyalar genelde en son zaman damgasını taşıyanlar olacaktır.
 
@@ -228,8 +238,8 @@ macOS workflow icin onerilen GitHub secrets:
 Ornek release:
 
 ```bash
-git tag v1.1.9
-git push origin v1.1.9
+git tag v1.1.10
+git push origin v1.1.10
 ```
 
 Not:
