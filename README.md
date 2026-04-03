@@ -128,7 +128,34 @@ Bir sonraki açılışta `Kayıtlı ayarlar yüklensin mi? [E/h]:` sorusuna `E` 
 `./CALISTIR.command quick` komutu ise kayıtlı ayarlar ile soru sormadan doğrudan kayıt alır.
 Bu kayda mikrofon/çıkış aygıt kimlikleri de dahildir.
 `CALISTIR.command`, `requirements.txt` ve Python sürümü değişmediyse `pip install` adımını otomatik atlar (daha hızlı açılış).
-Quick kayıt dosya adı otomatik artar: `quick_take_001`, `quick_take_002`, ...
+Quick kayıt dosya adı zaman damgalı ve nettir: `quick_take_20260403_191431`, `quick_take_20260403_191623` ...
+
+## macOS İlk Açılış (En Kolay Yol)
+
+İndirilen `.app` ilk kez açıldığında macOS bazı izinler isteyebilir. En kısa doğru akış:
+
+1. Uygulamayı açın.
+2. Mikrofon izni penceresi gelirse `İzin Ver` deyin.
+3. Masaüstü klasörü izni istenirse yine `İzin Ver` deyin.
+4. `Mikrofon/Ses Kartı Testi (5 sn)` ile kısa test yapın.
+5. Test sonunda alttaki `Peak=...` değeri `0.000` değilse mikrofon doğru çalışıyor demektir.
+6. Sonra `Quick Kayıt (Preset, Sorusuz)` ile 5-10 saniyelik gerçek kayıt alın.
+
+Başarılı ilk kayıt sonrası Masaüstü'nde genelde şu dosyalar oluşur:
+
+- `quick_take_YYYYMMDD_HHMMSS.mp3`
+- `quick_take_YYYYMMDD_HHMMSS_vocal.wav`
+
+Eğer masaüstünde eski sessiz denemeler varsa, en yeni çalışan dosyalar genelde en son zaman damgasını taşıyanlar olacaktır.
+
+## macOS Hızlı Sorun Giderme
+
+- `Peak=0.000` görünüyorsa:
+  - `Sistem Ayarları > Gizlilik ve Güvenlik > Mikrofon` içinde `GuitarAmpRecorder` için izin açık olmalı.
+- Kayıt dosyası oluşuyor ama Finder'da sessiz çalıyorsa:
+  - eski başarısız denemeleri değil, en yeni zaman damgalı `quick_take_...` veya `guitar_mix_...` dosyasını açın.
+- Masaüstüne yazamıyorsa:
+  - `Sistem Ayarları > Gizlilik ve Güvenlik > Dosyalar ve Klasörler` içinde `GuitarAmpRecorder > Masaüstü Klasörü` açık olmalı.
 
 CLI için isimli preset deposu da desteklenir:
 
