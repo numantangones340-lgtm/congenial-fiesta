@@ -2,6 +2,27 @@
 
 Bu dosya surum bazli degisiklikleri tutar.
 
+## [1.1.10] - 2026-04-03
+
+### Eklendi
+
+- macOS `.app` icin ilk acilis mikrofon akisini dogrulayan release kontrolleri
+- GitHub Pages indirme sayfasinda dogrudan `macOS` ve `Windows` zip baglantilari
+- ilk acilis izni, `Peak` kontrolu ve quick kayit akislarini anlatan son kullanici kurulum notlari
+
+### Degisti
+
+- paketlenmis macOS uygulamasinda mikrofon izin bildirimi ve kayit akisi duzeltildi
+- packaged app icin preset/oturum dosyalari kullanici veri klasorune daha guvenli sekilde yazilir hale getirildi
+- `Quick Kayit` dosya adlari eski artan numara yerine zaman damgali ve daha anlasilir formatta uretilir hale geldi
+- release ve dagitim dokumani son kullanicinin `indir, izin ver, test et, kaydet` akisina gore sadeleştirildi
+
+### Guvenlik ve Kararlilik
+
+- varsayilan giris seciliyken eski aygit kimliginin kayit tarafinda kullanilmasi engellendi
+- giris sample rate secili mikrofonun gercek varsayilan degerine gore ayarlandi
+- paketleme akisinda repo kokunde kirli spec dosyasi birakilmamasi saglandi
+
 ## [1.1.9] - 2026-03-26
 
 ### Degisti
