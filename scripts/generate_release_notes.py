@@ -33,7 +33,7 @@ def build_release_notes(version: str, body: str) -> str:
     lines = [
         f"# Release Notes {version}",
         "",
-        "Bu surumun detaylari `CHANGELOG.md` kaynagindan otomatik uretildi.",
+        "Bu surumun detaylari `CHANGELOG.md` kaynagindan otomatik GitHub Release notes uretimi ile uretildi.",
         "",
         body,
     ]
