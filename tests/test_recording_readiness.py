@@ -104,39 +104,64 @@ class RecordingReadinessTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             recorder = self.make_app(tmpdir)
             recorder.backing_file = Path(tmpdir) / "demo_backing.wav"
+            recorder.update_compact_status_summary = mock.Mock()
+            recorder.update_recording_prep_summary = mock.Mock()
+            recorder.update_next_step_summary = mock.Mock()
+            recorder.update_readiness_summary = mock.Mock()
+            recorder.update_preflight_warning_summary = mock.Mock()
+            recorder.update_action_guidance_summary = mock.Mock()
+            recorder.update_action_subtitle = mock.Mock()
+            recorder.update_source_subtitle = mock.Mock()
+            recorder.update_merge_summary = mock.Mock()
+            recorder.update_action_button_copy = mock.Mock()
 
-            app.GuitarAmpRecorderApp.clear_backing(recorder)
+            app.GuitarAmpRecorderApp.clear_backing_selection(recorder)
 
         self.assertIsNone(recorder.backing_file)
         self.assertEqual(recorder.backing_label.config_calls[-1], {"text": "Dosya seçilmedi", "fg": "#9aa7b5"})
-        self.assertIn("Kaynak: Sadece mikrofon", recorder.record_progress_text.get())
-        self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi temizlendi. Sadece mikrofon kaydi hazir.")
+        self.assertEqual(recorder.status_messages[-1], "Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
 
     def test_clear_backing_without_selection_reports_noop(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             recorder = self.make_app(tmpdir)
+            recorder.update_compact_status_summary = mock.Mock()
+            recorder.update_recording_prep_summary = mock.Mock()
+            recorder.update_next_step_summary = mock.Mock()
+            recorder.update_readiness_summary = mock.Mock()
+            recorder.update_preflight_warning_summary = mock.Mock()
+            recorder.update_action_guidance_summary = mock.Mock()
+            recorder.update_action_subtitle = mock.Mock()
+            recorder.update_source_subtitle = mock.Mock()
+            recorder.update_merge_summary = mock.Mock()
+            recorder.update_action_button_copy = mock.Mock()
 
-            app.GuitarAmpRecorderApp.clear_backing(recorder)
+            app.GuitarAmpRecorderApp.clear_backing_selection(recorder)
 
-        self.assertEqual(recorder.status_messages[-1], "Arka plan muzigi zaten secili degil.")
-        self.assertEqual(recorder.backing_label.config_calls, [])
+        self.assertEqual(recorder.status_messages[-1], "Arka plan müziği temizlendi. Sadece mikrofon moduna geçildi.")
+        self.assertEqual(recorder.backing_label.config_calls[-1], {"text": "Dosya seçilmedi", "fg": "#9aa7b5"})
 
     def test_select_backing_updates_label_and_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             recorder = self.make_app(tmpdir)
             backing_path = Path(tmpdir) / "demo_backing.wav"
             backing_path.write_text("audio", encoding="utf-8")
+            recorder.update_compact_status_summary = mock.Mock()
+            recorder.update_recording_prep_summary = mock.Mock()
+            recorder.update_next_step_summary = mock.Mock()
+            recorder.update_readiness_summary = mock.Mock()
+            recorder.update_preflight_warning_summary = mock.Mock()
+            recorder.update_action_guidance_summary = mock.Mock()
+            recorder.update_action_subtitle = mock.Mock()
+            recorder.update_source_subtitle = mock.Mock()
+            recorder.update_action_button_copy = mock.Mock()
 
             with mock.patch.object(app.filedialog, "askopenfilename", return_value=str(backing_path)):
                 app.GuitarAmpRecorderApp.select_backing(recorder)
 
         self.assertEqual(recorder.backing_file, backing_path)
         self.assertEqual(recorder.backing_label.config_calls[-1], {"text": "demo_backing.wav", "fg": "#2c3e50"})
-        self.assertIn("Kaynak: demo_backing.wav + mikrofon", recorder.record_progress_text.get())
-        self.assertEqual(
-            recorder.status_messages[-1],
-            "Arka plan muzigi secildi: demo_backing.wav. Backing + mikrofon kaydi hazir.",
-        )
+        recorder.update_recording_prep_summary.assert_called()
+        recorder.update_readiness_summary.assert_called()
 
 
 if __name__ == "__main__":

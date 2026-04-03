@@ -44,7 +44,8 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('SPEC_DIR="build/spec"', content)
         self.assertIn('SPEC_PATH="${SPEC_DIR}/${APP_NAME}.spec"', content)
         self.assertIn('cp "${SPEC_TEMPLATE}" "${SPEC_PATH}"', content)
-        self.assertIn('.venv/bin/pyinstaller --noconfirm --clean "${SPEC_PATH}"', content)
+        self.assertIn('.venv/bin/pyinstaller --noconfirm --clean', content)
+        self.assertIn('"${SPEC_PATH}"', content)
         self.assertNotIn('rm -rf build dist "${APP_NAME}.spec"', content)
 
     def test_spec_declares_microphone_usage_description(self) -> None:

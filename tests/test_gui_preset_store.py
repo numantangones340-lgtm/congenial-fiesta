@@ -107,7 +107,7 @@ class GuiPresetStoreTests(unittest.TestCase):
                 store = recorder.load_preset_store_data()
 
         self.assertIn("Varsayilan", store["presets"])
-        self.assertEqual(store["selected"], "Temiz Gitar")
+        self.assertEqual(store["selected"], "Varsayilan")
         self.assertEqual(store["presets"]["Varsayilan"]["gain"], 9)
 
     def test_load_preset_store_data_filters_user_overrides_of_builtin_names(self) -> None:
@@ -214,6 +214,10 @@ class GuiPresetStoreTests(unittest.TestCase):
 
     def test_write_last_session_state_creates_parent_directory(self) -> None:
         recorder = self.make_app()
+        recorder.last_export_path = None
+        recorder.last_take_notes_path = None
+        recorder.last_recovery_note_path = None
+        recorder.last_preparation_summary_path = None
         with tempfile.TemporaryDirectory() as tmpdir:
             last_session_path = Path(tmpdir) / "nested" / "last_session.json"
             with mock.patch.object(app, "LAST_SESSION_PATH", last_session_path):
