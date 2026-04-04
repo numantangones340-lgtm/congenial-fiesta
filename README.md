@@ -12,6 +12,8 @@ Hizli indirme:
   `docs/SUPPORT_FAQ.md`
 - Katki rehberi:
   `CONTRIBUTING.md`
+- Teslim ozeti:
+  `docs/DELIVERY_SUMMARY.md`
 
 Bu uygulama şunları yapar:
 - 1. kanal: Hazır müzik (arka plan)

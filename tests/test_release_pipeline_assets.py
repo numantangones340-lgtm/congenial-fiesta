@@ -18,6 +18,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
     def test_release_docs_exist(self) -> None:
         self.assertTrue((ROOT_DIR / "CONTRIBUTING.md").exists(), "CONTRIBUTING.md")
         for name in (
+            "DELIVERY_SUMMARY.md",
             "MACOS_RELEASE_CHECKLIST.md",
             "WINDOWS_RELEASE_CHECKLIST.md",
             "FIRST_RUN_GUIDE.md",
