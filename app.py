@@ -1749,6 +1749,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_recent_outputs_button = Button(
+            recent_copy_buttons,
+            text="Listeyi Kopyala",
+            command=self.copy_recent_outputs_to_clipboard,
+            bg="#34495e",
+            fg="white",
+            state="normal",
+        )
         self.layout_button_flow(
             recent_copy_buttons,
             [
@@ -1758,6 +1766,7 @@ class GuitarAmpRecorderApp:
                 self.copy_last_brief_button,
                 self.export_last_brief_button,
                 self.copy_last_recovery_note_button,
+                self.copy_recent_outputs_button,
             ],
             columns=3,
         )
@@ -1768,6 +1777,7 @@ class GuitarAmpRecorderApp:
             (self.copy_last_brief_button, "success"),
             (self.export_last_brief_button, "success"),
             (self.copy_last_recovery_note_button, "danger"),
+            (self.copy_recent_outputs_button, "secondary"),
         ):
             self.apply_button_style(button, role=role)
         self.recent_exports_label = Label(
@@ -3882,6 +3892,17 @@ class GuitarAmpRecorderApp:
             self.set_status(success_message)
         except Exception as exc:
             self.set_status(f"{failure_prefix}: {exc}")
+
+    def copy_recent_outputs_to_clipboard(self) -> None:
+        content = str(self.recent_exports_text.get()).strip()
+        if not content:
+            self.set_status("Kopyalanacak çıktı listesi yok.")
+            return
+        self.copy_text_to_clipboard(
+            content,
+            "Son çıktı listesi panoya alındı",
+            "Son çıktı listesi kopyalanamadı",
+        )
 
     def open_output_dir_in_finder(self) -> None:
         output_dir = self.current_recent_exports_dir()

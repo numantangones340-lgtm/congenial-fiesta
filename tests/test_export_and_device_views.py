@@ -567,6 +567,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Özet panoya alındı: session_summary.json")
 
+    def test_copy_recent_outputs_to_clipboard_copies_visible_list(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_exports_text.set("Son kayıt\n- take.mp3")
+
+        recorder.copy_recent_outputs_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("Son kayıt\n- take.mp3")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Son çıktı listesi panoya alındı")
+
+    def test_copy_recent_outputs_to_clipboard_reports_empty_content(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_exports_text.set("   ")
+
+        recorder.copy_recent_outputs_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Kopyalanacak çıktı listesi yok.")
+
     def test_copy_last_export_path_to_clipboard_copies_file_path(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
