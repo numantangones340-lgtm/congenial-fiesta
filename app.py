@@ -1027,6 +1027,7 @@ class GuitarAmpRecorderApp:
         self.preflight_subtitle_text = StringVar(value="Ön kontrol özeti hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
         self.prep_subtitle_text = StringVar(value="Kayıt planı özeti hazırlanıyor...")
+        self.prep_status_text = StringVar(value="Hazırlık durumu hazırlanıyor...")
         self.prep_meta_text = StringVar(value="Hazırlık dosyası bilgisi hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
@@ -1475,6 +1476,16 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#11202d", "#d7eefb"),
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
+        self.prep_status_label = Label(
+            prep_box,
+            textvariable=self.prep_status_text,
+            bg="#1b2430",
+            fg="#d7eefb",
+            anchor="w",
+            padx=10,
+            pady=6,
+        )
+        self.prep_status_label.pack(fill="x", padx=14, pady=(0, 10))
         self.prep_meta_label = Label(
             prep_box,
             textvariable=self.prep_meta_text,
@@ -2362,7 +2373,11 @@ class GuitarAmpRecorderApp:
         try:
             self.update_recording_prep_subtitle()
             self.prep_summary_text.set(self.build_recording_prep_text())
+            self.prep_status_text.set(self.build_recording_prep_status_text())
             self.prep_meta_text.set(self.build_recording_prep_meta_text())
+            label = getattr(self, "prep_status_label", None)
+            if label is not None:
+                label.configure(**self.build_recording_prep_status_palette())
         except Exception:
             pass
 
@@ -2383,6 +2398,22 @@ class GuitarAmpRecorderApp:
             self.prep_subtitle_text.set(self.build_recording_prep_subtitle_text())
         except Exception:
             pass
+
+    def build_recording_prep_status_text(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Hazırlık durumu: kayıt klasörü bekleniyor"
+        prep_path = self.current_preparation_summary_path()
+        if prep_path.exists():
+            return "Hazırlık durumu: dosya hazır"
+        return "Hazırlık durumu: dosya henüz yazılmadı"
+
+    def build_recording_prep_status_palette(self) -> dict[str, str]:
+        if not self.output_dir.get().strip():
+            return {"bg": "#3a2316", "fg": "#ffd7a8"}
+        prep_path = self.current_preparation_summary_path()
+        if prep_path.exists():
+            return {"bg": "#1f3527", "fg": "#d8f3dc"}
+        return {"bg": "#10283a", "fg": "#d7eefb"}
 
     def build_recording_prep_meta_text(self) -> str:
         if not self.output_dir.get().strip():

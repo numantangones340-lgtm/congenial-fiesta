@@ -58,6 +58,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_output_meta_text = FakeVar("")
         recorder.prep_summary_text = FakeVar("")
         recorder.prep_subtitle_text = FakeVar("")
+        recorder.prep_status_text = FakeVar("")
         recorder.prep_meta_text = FakeVar("")
         recorder.next_step_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
@@ -86,6 +87,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.restart_input_meter = mock.Mock()
         recorder.backing_label = mock.Mock()
         recorder.recent_output_summary_label = mock.Mock()
+        recorder.prep_status_label = mock.Mock()
         recorder.setup_status_label = mock.Mock()
         recorder.setup_next_label = mock.Mock()
         recorder.mp3_quality_menu = mock.Mock()
@@ -856,8 +858,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.update_recording_prep_summary()
 
         self.assertEqual(recorder.prep_summary_text.get(), "Hazırlık Planı")
+        self.assertEqual(recorder.prep_status_text.get(), "Hazırlık durumu: dosya hazır")
         self.assertIn("Hazırlık dosyası: preparation_summary.txt", recorder.prep_meta_text.get())
         self.assertIn("Son güncelleme:", recorder.prep_meta_text.get())
+        recorder.prep_status_label.configure.assert_called_once_with(bg="#1f3527", fg="#d8f3dc")
 
     def test_copy_preparation_summary_path_to_clipboard_copies_existing_path(self) -> None:
         recorder = self.make_app()
