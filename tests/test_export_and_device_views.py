@@ -55,6 +55,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_exports_text = FakeVar("")
         recorder.recent_output_summary_text = FakeVar("")
         recorder.recent_output_filter = FakeVar("Tümü")
+        recorder.recent_output_meta_text = FakeVar("")
         recorder.prep_summary_text = FakeVar("")
         recorder.next_step_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
@@ -361,6 +362,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIn("Görünüm: Sadece Ses | 1 öğe.", summary_text)
         self.assertIn("Gösterim: Sadece Ses | 1 öğe.", subtitle_text)
+
+    def test_build_recent_output_meta_text_reports_counts_and_last_update(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_filter.set("Sadece Ses")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            audio_path = output_dir / "take.mp3"
+            summary_path = output_dir / "session_summary.json"
+            audio_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            now = time.time()
+            os.utime(audio_path, (now, now))
+            os.utime(summary_path, (now + 5, now + 5))
+            recorder.last_output_dir = output_dir
+
+            meta_text = recorder.build_recent_output_meta_text()
+
+        self.assertIn(f"Klasör: {output_dir.name}", meta_text)
+        self.assertIn("Görünen: 1 / Toplam: 2", meta_text)
+        self.assertIn("Son güncelleme:", meta_text)
 
     def test_session_state_available_detects_cached_state(self) -> None:
         recorder = self.make_app()

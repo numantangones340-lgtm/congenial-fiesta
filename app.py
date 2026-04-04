@@ -154,6 +154,16 @@ def filtered_recent_output_files(output_dir: Path, filter_value: str) -> list[Pa
     )
 
 
+def all_recent_output_files(output_dir: Path) -> list[Path]:
+    if not output_dir.exists():
+        return []
+    return sorted(
+        [path for path in output_dir.iterdir() if visible_recent_output_file(path)],
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+
+
 def recent_output_file_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
     return f"- {recent_output_file_label(path)} [{timestamp}]: {path.name}"
@@ -978,6 +988,7 @@ class GuitarAmpRecorderApp:
         self.hero_output_card_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
         self.recent_output_subtitle_text = StringVar(value="Son çıktı bölümü hazırlanıyor...")
         self.recent_output_filter = StringVar(value="Tümü")
+        self.recent_output_meta_text = StringVar(value="Çıktı ayrıntısı hazırlanıyor...")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.setup_status_text = StringVar(value="Kurulum özeti hazırlanıyor...")
@@ -1613,6 +1624,18 @@ class GuitarAmpRecorderApp:
             anchor="w",
         )
         self.recent_output_summary_label.pack(fill="x", padx=14, pady=(10, 8))
+        self.recent_output_meta_label = Label(
+            recent_box,
+            textvariable=self.recent_output_meta_text,
+            bg="#151b22",
+            fg="#9fb0c2",
+            anchor="w",
+            justify="left",
+            wraplength=self.section_wraplength,
+            padx=2,
+            pady=0,
+        )
+        self.recent_output_meta_label.pack(fill="x", padx=14, pady=(0, 8))
         recent_filter_row = Frame(recent_box, bg="#151b22")
         recent_filter_row.pack(fill="x", padx=14, pady=(0, 8))
         Label(recent_filter_row, text="Çıktı Filtresi", bg="#151b22", fg="#dce6ef").grid(row=0, column=0, sticky="w")
@@ -3020,6 +3043,21 @@ class GuitarAmpRecorderApp:
         text = "İlk test veya kayıttan sonra son dosyalar burada görünür."
         return f"{text} Gösterim: {filter_detail}." if filter_detail else text
 
+    def build_recent_output_meta_text(self) -> str:
+        output_dir = self.current_recent_exports_dir()
+        if not output_dir.exists():
+            return f"Klasör: {output_dir} | durum: bulunamadı"
+        all_files = all_recent_output_files(output_dir)
+        filtered_files = filtered_recent_output_files(output_dir, self.recent_output_filter.get())
+        if not all_files:
+            return f"Klasör: {output_dir.name} | çıktı yok"
+        latest_timestamp = time.strftime("%d.%m %H:%M", time.localtime(all_files[0].stat().st_mtime))
+        return (
+            f"Klasör: {output_dir.name} | "
+            f"Görünen: {len(filtered_files)} / Toplam: {len(all_files)} | "
+            f"Son güncelleme: {latest_timestamp}"
+        )
+
     def current_recent_output_filter_detail(self) -> str:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
@@ -3040,6 +3078,7 @@ class GuitarAmpRecorderApp:
         try:
             self.update_recent_output_subtitle()
             self.recent_output_summary_text.set(self.build_recent_output_summary_text())
+            self.recent_output_meta_text.set(self.build_recent_output_meta_text())
             self.update_hero_overview_cards()
             label = getattr(self, "recent_output_summary_label", None)
             if label is not None:
