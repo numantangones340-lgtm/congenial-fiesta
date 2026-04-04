@@ -64,11 +64,27 @@ Not:
 - Dosyalar cogu zaman dogrudan Masaustu'ne yazilir
 - Yeni klasor olusmamasi normaldir
 
+## Son Eklenen Bakim ve Konfor Araçlari
+
+Uygulama icinde sonradan eklenen kullanisli kisa yollar:
+
+- `Eski Denemeleri Temizle`
+- `Son Oturumu Arşivle`
+- `Çıktı Filtresi`
+- `Listeyi Kopyala`
+- `Temiz Başlangıç`
+- `Görünen Sesi Oynat`
+- `Görünen Dosyayı Göster`
+- `Görünen Yolu Kopyala`
+- `Hazırlık Yolunu Kopyala`
+- `Hazırlık durumu` rozeti
+- `Hazırlık` ve `Son Çıktılar` kartlarinda mini bilgi satirlari
+
 ## Sonraki Mantikli Adimlar
 
 Istenirse bundan sonra su alanlara gecilebilir:
 
 1. Gercek kullanicilarla kisa kabul testi
 2. Windows tarafinda manuel son kullanici dogrulamasi
-3. README ve GitHub repo aciklama metninin daha pazarlama odakli hale getirilmesi
+3. Yeni ozellikler: toplu disa aktarim, preset yonetimi, daha guclu arsivleme
 4. Release sonrasi issue ve geri bildirim takibi

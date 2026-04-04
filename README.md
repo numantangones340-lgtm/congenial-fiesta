@@ -25,6 +25,21 @@ Bu uygulama şunları yapar:
 - Tek tık 5 sn cihaz/kayıt testi
 - Sonucu otomatik MP3 olarak Masaüstüne çıkarır
 
+## Son Eklenen Konfor Araçları
+
+Bakim turlarinda eklenen kucuk ama faydali kolayliklar:
+
+- `Son Çıktılar` içinde `Çıktı Filtresi`
+- `Görünen Sesi Oynat`
+- `Görünen Dosyayı Göster`
+- `Görünen Yolu Kopyala`
+- `Listeyi Kopyala`
+- `Eski Denemeleri Temizle`
+- `Son Oturumu Arşivle`
+- `Temiz Başlangıç`
+- `Kayıt Planı` alaninda `Hazırlık Yolunu Kopyala`
+- `Hazırlık durumu` rozeti ve mini bilgi satiri
+
 ## Dil Desteği
 
 - Arayüz dili: Türkçe
