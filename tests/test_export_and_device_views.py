@@ -999,6 +999,43 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(args, (audio_path, "Görünen ses"))
         self.assertTrue(daemon)
 
+    def test_current_filtered_recent_output_file_returns_first_visible_file(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_filter = FakeVar("Tümü")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newest = output_dir / "take_new.mp3"
+            newest.write_text("audio", encoding="utf-8")
+            older = output_dir / "session_summary.json"
+            older.write_text("{}", encoding="utf-8")
+            os.utime(older, (time.time() - 10, time.time() - 10))
+            recorder.last_output_dir = output_dir
+
+            result = recorder.current_filtered_recent_output_file()
+
+        self.assertEqual(result, newest)
+
+    def test_open_visible_recent_output_in_finder_reports_missing_output(self) -> None:
+        recorder = self.make_app()
+        recorder.current_filtered_recent_output_file = mock.Mock(return_value=None)
+
+        recorder.open_visible_recent_output_in_finder()
+
+        self.assertEqual(recorder.status_messages[-1], "Görünen filtrede gösterilecek çıktı yok.")
+
+    def test_open_visible_recent_output_in_finder_selects_filtered_output(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "take_new.mp3"
+            output_path.write_text("audio", encoding="utf-8")
+            recorder.current_filtered_recent_output_file = mock.Mock(return_value=output_path)
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_visible_recent_output_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(output_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Görünen çıktı Finder'da seçildi: take_new.mp3")
+
     def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

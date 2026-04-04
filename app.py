@@ -1708,6 +1708,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.open_visible_recent_output_button = Button(
+            recent_buttons,
+            text="Görünen Dosyayı Göster",
+            command=self.open_visible_recent_output_in_finder,
+            bg="#2f81f7",
+            fg="white",
+            state="disabled",
+        )
         self.open_last_summary_button = Button(
             recent_buttons,
             text="Oturum Özetini Aç",
@@ -1771,6 +1779,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_export_button,
                 self.play_last_export_button,
                 self.play_visible_recent_audio_button,
+                self.open_visible_recent_output_button,
                 self.open_last_summary_button,
                 self.open_last_take_notes_button,
                 self.open_last_output_dir_button,
@@ -1786,6 +1795,7 @@ class GuitarAmpRecorderApp:
             (self.open_last_export_button, "primary"),
             (self.play_last_export_button, "success"),
             (self.play_visible_recent_audio_button, "success"),
+            (self.open_visible_recent_output_button, "primary"),
             (self.open_last_summary_button, "accent"),
             (self.open_last_take_notes_button, "accent"),
             (self.open_last_output_dir_button, "secondary"),
@@ -4015,6 +4025,11 @@ class GuitarAmpRecorderApp:
                 return path
         return None
 
+    def current_filtered_recent_output_file(self) -> Optional[Path]:
+        output_dir = self.current_recent_exports_dir()
+        recent_files = filtered_recent_output_files(output_dir, self.recent_output_filter.get())
+        return recent_files[0] if recent_files else None
+
     def refresh_recent_exports(self) -> None:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
@@ -4184,6 +4199,17 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Son kayıt Finder'da seçildi: {recent_audio_status_text(self.last_export_path)}")
         except Exception as exc:
             self.set_status(f"Finder açılamadı: {exc}")
+
+    def open_visible_recent_output_in_finder(self) -> None:
+        output_path = self.current_filtered_recent_output_file()
+        if output_path is None or not output_path.exists():
+            self.set_status("Görünen filtrede gösterilecek çıktı yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(output_path)], check=False)
+            self.set_status(self.finder_selected_status("Görünen çıktı", output_path.name))
+        except Exception as exc:
+            self.set_status(f"Görünen çıktı açılamadı: {exc}")
 
     def start_last_export_playback_thread(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
@@ -4787,6 +4813,7 @@ class GuitarAmpRecorderApp:
         state = "normal" if enabled else "disabled"
         self.open_last_export_button.configure(state=state)
         self.play_last_export_button.configure(state=state)
+        self.open_visible_recent_output_button.configure(state=state)
         self.copy_last_export_path_button.configure(state=state)
         self.open_last_summary_button.configure(state=state)
         self.copy_last_summary_button.configure(state=state)
