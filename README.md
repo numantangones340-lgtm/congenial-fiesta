@@ -10,6 +10,8 @@ Hizli indirme:
   `docs/FIRST_RUN_GUIDE.md`
 - Destek / SSS:
   `docs/SUPPORT_FAQ.md`
+- Katki rehberi:
+  `CONTRIBUTING.md`
 
 Bu uygulama şunları yapar:
 - 1. kanal: Hazır müzik (arka plan)
