@@ -1677,6 +1677,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.reset_session_state_button = Button(
+            recent_buttons,
+            text="Temiz Başlangıç",
+            command=self.reset_session_state,
+            bg="#5d6d7e",
+            fg="white",
+            state="disabled",
+        )
         self.cleanup_old_trials_button = Button(
             recent_buttons,
             text="Eski Denemeleri Temizle",
@@ -1696,6 +1704,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_output_dir_button,
                 self.open_last_preparation_button,
                 self.archive_last_session_button,
+                self.reset_session_state_button,
                 self.cleanup_old_trials_button,
                 self.refresh_recent_button,
             ],
@@ -1709,6 +1718,7 @@ class GuitarAmpRecorderApp:
             (self.open_last_output_dir_button, "secondary"),
             (self.open_last_preparation_button, "primary"),
             (self.archive_last_session_button, "secondary"),
+            (self.reset_session_state_button, "secondary"),
             (self.cleanup_old_trials_button, "warning"),
             (self.refresh_recent_button, "success"),
         ):
@@ -3786,6 +3796,53 @@ class GuitarAmpRecorderApp:
         self.update_recent_output_summary()
         self.set_status(f"Son oturum yuklendi: {output_dir or 'bilinmiyor'}")
 
+    def session_state_available(self) -> bool:
+        return any(
+            path is not None
+            for path in (
+                self.last_output_dir,
+                self.last_export_path,
+                self.last_summary_path,
+                self.last_take_notes_path,
+                self.last_recovery_note_path,
+                self.last_preparation_summary_path,
+            )
+        ) or LAST_SESSION_PATH.exists()
+
+    def update_reset_session_state_button_state(self) -> None:
+        button = getattr(self, "reset_session_state_button", None)
+        if button is None:
+            return
+        state = "normal" if self.session_state_available() else "disabled"
+        button.configure(state=state)
+
+    def clear_last_session_state_file(self) -> None:
+        try:
+            if LAST_SESSION_PATH.exists():
+                LAST_SESSION_PATH.unlink()
+        except Exception:
+            pass
+
+    def reset_session_state(self) -> None:
+        if self.block_changes_during_recording("oturum durumu"):
+            return
+        self.last_output_dir = None
+        self.last_export_path = None
+        self.last_summary_path = None
+        self.last_take_notes_path = None
+        self.last_recovery_note_path = None
+        self.last_preparation_summary_path = None
+        self.clear_last_session_state_file()
+        self.refresh_recent_exports()
+        self.update_compact_status_summary()
+        self.update_recording_prep_summary()
+        self.update_next_step_summary()
+        self.update_readiness_summary()
+        self.update_preflight_warning_summary()
+        self.update_action_guidance_summary()
+        self.update_recent_output_summary()
+        self.set_status("Oturum durumu sıfırlandı. Yeni kayıt için temiz başlangıç hazır.")
+
     def current_recent_exports_dir(self) -> Path:
         if self.last_output_dir is not None and self.last_output_dir.exists():
             return self.last_output_dir
@@ -3795,6 +3852,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
             self.recent_exports_text.set(f"Klasör bulunamadı: {output_dir}")
+            self.update_reset_session_state_button_state()
             self.update_archive_last_session_button_state(output_dir)
             self.update_cleanup_old_trials_button_state(output_dir)
             self.update_recent_output_summary()
@@ -3802,6 +3860,7 @@ class GuitarAmpRecorderApp:
         recent_files = filtered_recent_output_files(output_dir, self.recent_output_filter.get())[:8]
         if not recent_files:
             self.recent_exports_text.set(f"{self.recent_output_filter.get()} filtresine uygun çıktı yok.")
+            self.update_reset_session_state_button_state()
             self.update_archive_last_session_button_state(output_dir)
             self.update_cleanup_old_trials_button_state(output_dir)
             self.update_recent_output_summary()
@@ -3812,6 +3871,7 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set(f"{recent_audio_highlight_line(latest_audio)}\n\n" + "\n".join(lines))
         else:
             self.recent_exports_text.set("\n".join(lines))
+        self.update_reset_session_state_button_state()
         self.update_archive_last_session_button_state(output_dir)
         self.update_cleanup_old_trials_button_state(output_dir)
         self.update_recent_output_summary()
@@ -4557,6 +4617,7 @@ class GuitarAmpRecorderApp:
         self.open_last_output_dir_button.configure(state=state)
         self.open_last_preparation_button.configure(state=state)
         self.archive_last_session_button.configure(state=state)
+        self.reset_session_state_button.configure(state=state)
         self.cleanup_old_trials_button.configure(state=state)
 
     def begin_recording_progress(self, mode: str, total_seconds: float) -> None:
@@ -4627,6 +4688,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_preparation_button.configure(state="normal")
             else:
                 self.open_last_preparation_button.configure(state="disabled")
+            self.update_reset_session_state_button_state()
             self.update_archive_last_session_button_state()
             self.update_cleanup_old_trials_button_state()
             self.update_recent_output_summary()

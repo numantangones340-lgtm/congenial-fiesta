@@ -93,9 +93,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_preparation_button = mock.Mock()
         recorder.open_last_output_dir_button = mock.Mock()
         recorder.archive_last_session_button = mock.Mock()
+        recorder.reset_session_state_button = mock.Mock()
         recorder.cleanup_old_trials_button = mock.Mock()
+        recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/gar-default-out"))
         recorder.write_last_session_state = mock.Mock()
         recorder.update_recent_output_summary = mock.Mock()
+        recorder.update_compact_status_summary = mock.Mock()
+        recorder.update_recording_prep_summary = mock.Mock()
+        recorder.update_next_step_summary = mock.Mock()
+        recorder.update_readiness_summary = mock.Mock()
+        recorder.update_preflight_warning_summary = mock.Mock()
+        recorder.update_action_guidance_summary = mock.Mock()
         return recorder
 
     def test_refresh_recent_exports_shows_newest_audio_and_artifact_files(self) -> None:
@@ -353,6 +361,41 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIn("Görünüm: Sadece Ses | 1 öğe.", summary_text)
         self.assertIn("Gösterim: Sadece Ses | 1 öğe.", subtitle_text)
+
+    def test_session_state_available_detects_cached_state(self) -> None:
+        recorder = self.make_app()
+        recorder.last_export_path = Path("/tmp/take.mp3")
+
+        self.assertTrue(recorder.session_state_available())
+
+    def test_reset_session_state_clears_cached_paths_and_last_session_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.mp3"
+            summary_path = output_dir / "session_summary.json"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_output_dir = output_dir
+            recorder.last_export_path = export_path
+            recorder.last_summary_path = summary_path
+
+            with mock.patch.object(app, "LAST_SESSION_PATH", output_dir / "last_session.json"):
+                app.LAST_SESSION_PATH.write_text("{}", encoding="utf-8")
+                recorder.reset_session_state()
+
+                self.assertFalse(app.LAST_SESSION_PATH.exists())
+
+        self.assertIsNone(recorder.last_output_dir)
+        self.assertIsNone(recorder.last_export_path)
+        self.assertIsNone(recorder.last_summary_path)
+        recorder.update_compact_status_summary.assert_called_once_with()
+        recorder.update_recording_prep_summary.assert_called_once_with()
+        recorder.update_next_step_summary.assert_called_once_with()
+        recorder.update_readiness_summary.assert_called_once_with()
+        recorder.update_preflight_warning_summary.assert_called_once_with()
+        recorder.update_action_guidance_summary.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Oturum durumu sıfırlandı. Yeni kayıt için temiz başlangıç hazır.")
 
     def test_recent_audio_highlight_line_includes_duration_when_available(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
