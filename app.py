@@ -2271,11 +2271,20 @@ class GuitarAmpRecorderApp:
             return "Oturum özeti hazır\nKlasörü açabilir veya listeyi yenileyebilirsiniz."
         return "Henüz çıktı yok\nİlk testten sonra burada görünecek."
 
+    def build_hero_preparation_card_text(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Plan bekliyor\nÖnce kayıt klasörünü seçin."
+        prep_path = self.current_preparation_summary_path()
+        if prep_path.exists():
+            return f"Hazırlık dosyası hazır\n{prep_path.name}"
+        return f"Kayıt planı hazır\n{len(self.planned_output_labels())} çıktı planlandı."
+
     def build_hero_summary_text(self) -> str:
         status = self.build_hero_status_card_text().replace("\n", " | ")
         setup = self.build_hero_setup_card_text().replace("\n", " | ")
+        preparation = self.build_hero_preparation_card_text().replace("\n", " | ")
         output = self.build_hero_output_card_text().replace("\n", " | ")
-        return f"Canlı Durum: {status}    •    Kurulum: {setup}    •    Son Çıktı: {output}"
+        return f"Canlı Durum: {status}    •    Kurulum: {setup}    •    Hazırlık: {preparation}    •    Son Çıktı: {output}"
 
     def build_workspace_hint_text(self, name: str) -> str:
         hints = {

@@ -863,6 +863,32 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Son güncelleme:", recorder.prep_meta_text.get())
         recorder.prep_status_label.configure.assert_called_once_with(bg="#1f3527", fg="#d8f3dc")
 
+    def test_build_hero_preparation_card_text_reports_ready_file(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prep_path = Path(tmpdir) / "preparation_summary.txt"
+            prep_path.write_text("Hazırlık Özeti", encoding="utf-8")
+            recorder.last_preparation_summary_path = prep_path
+
+            text = recorder.build_hero_preparation_card_text()
+
+        self.assertEqual(text, "Hazırlık dosyası hazır\npreparation_summary.txt")
+
+    def test_build_hero_summary_text_includes_preparation_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.build_hero_status_card_text = mock.Mock(return_value="Canlı\nDurum")
+        recorder.build_hero_setup_card_text = mock.Mock(return_value="Kurulum\nHazır")
+        recorder.build_hero_preparation_card_text = mock.Mock(return_value="Hazırlık\nHazır")
+        recorder.build_hero_output_card_text = mock.Mock(return_value="Çıktı\nHazır")
+
+        text = recorder.build_hero_summary_text()
+
+        self.assertEqual(
+            text,
+            "Canlı Durum: Canlı | Durum    •    Kurulum: Kurulum | Hazır    •    Hazırlık: Hazırlık | Hazır    •    Son Çıktı: Çıktı | Hazır",
+        )
+
     def test_copy_preparation_summary_path_to_clipboard_copies_existing_path(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
