@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import tempfile
@@ -90,6 +91,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_preparation_summary_path = None
         recorder.open_last_preparation_button = mock.Mock()
         recorder.open_last_output_dir_button = mock.Mock()
+        recorder.archive_last_session_button = mock.Mock()
         recorder.cleanup_old_trials_button = mock.Mock()
         recorder.write_last_session_state = mock.Mock()
         recorder.update_recent_output_summary = mock.Mock()
@@ -201,6 +203,75 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.clean_old_trial_outputs()
 
         self.assertEqual(recorder.status_messages[-1], "Temizlenecek eski deneme yok.")
+
+    def test_current_session_archive_candidates_collects_generated_and_support_files(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "quick_take_20260403_191431.mp3"
+            vocal_path = output_dir / "quick_take_20260403_191431_vocal.wav"
+            summary_path = output_dir / "session_summary.json"
+            take_notes_path = output_dir / "take_notes.txt"
+            for path in (export_path, vocal_path, take_notes_path):
+                path.write_text(path.name, encoding="utf-8")
+            summary_path.write_text(
+                json.dumps(
+                    {
+                        "generated_files": [str(export_path), str(vocal_path)],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            recorder.last_output_dir = output_dir
+            recorder.last_export_path = export_path
+            recorder.last_summary_path = summary_path
+            recorder.last_take_notes_path = take_notes_path
+
+            candidates = recorder.current_session_archive_candidates(output_dir)
+
+        self.assertEqual(candidates, [export_path, vocal_path, summary_path, take_notes_path])
+
+    def test_archive_last_session_outputs_moves_current_session_bundle(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "quick_take_20260403_191431.mp3"
+            vocal_path = output_dir / "quick_take_20260403_191431_vocal.wav"
+            summary_path = output_dir / "session_summary.json"
+            take_notes_path = output_dir / "take_notes.txt"
+            older_keep = output_dir / "guitar_mix_20260403_184247.mp3"
+            for path in (export_path, vocal_path, take_notes_path, older_keep):
+                path.write_text(path.name, encoding="utf-8")
+            summary_path.write_text(
+                json.dumps(
+                    {
+                        "generated_files": [str(export_path), str(vocal_path)],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            recorder.last_output_dir = output_dir
+            recorder.last_export_path = export_path
+            recorder.last_summary_path = summary_path
+            recorder.last_take_notes_path = take_notes_path
+
+            recorder.archive_last_session_outputs()
+
+            archive_dir = output_dir / "_arsiv" / "quick_take_20260403_191431"
+            self.assertTrue((archive_dir / export_path.name).exists())
+            self.assertTrue((archive_dir / vocal_path.name).exists())
+            self.assertTrue((archive_dir / summary_path.name).exists())
+            self.assertTrue((archive_dir / take_notes_path.name).exists())
+            self.assertTrue(older_keep.exists())
+            self.assertEqual(recorder.last_export_path, older_keep)
+            self.assertIsNone(recorder.last_summary_path)
+            self.assertIsNone(recorder.last_take_notes_path)
+            recorder.write_last_session_state.assert_called_once_with(output_dir, None)
+
+        self.assertEqual(
+            recorder.status_messages[-1],
+            "Son oturum arşivlendi: quick_take_20260403_191431 (4 dosya)",
+        )
 
     def test_refresh_recent_exports_without_audio_skips_highlight_line(self) -> None:
         recorder = self.make_app()
