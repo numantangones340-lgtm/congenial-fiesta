@@ -1482,12 +1482,21 @@ class GuitarAmpRecorderApp:
         self.apply_button_style(self.export_preparation_button, role="success")
         self.open_preparation_button = Button(prep_buttons, text="Hazırlık Dosyasını Aç", command=self.open_preparation_summary_in_finder, bg="#1f6feb", fg="white")
         self.apply_button_style(self.open_preparation_button, role="primary")
+        self.reset_preparation_button = Button(
+            prep_buttons,
+            text="Hazırlığı Sıfırla",
+            command=self.reset_preparation_state,
+            bg="#5d6d7e",
+            fg="white",
+        )
+        self.apply_button_style(self.reset_preparation_button, role="secondary")
         self.layout_button_flow(
             prep_buttons,
             [
                 self.copy_preparation_button,
                 self.export_preparation_button,
                 self.open_preparation_button,
+                self.reset_preparation_button,
             ],
             columns=2,
         )
@@ -2402,6 +2411,22 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Hazırlık özeti yazıldı: {prep_path}")
         except Exception as exc:
             self.set_status(f"Hazırlık özeti yazılamadı: {exc}")
+
+    def reset_preparation_state(self) -> None:
+        if self.block_changes_during_recording("hazırlık durumu"):
+            return
+        self.last_preparation_summary_path = None
+        if self.current_recent_exports_dir().exists():
+            self.write_last_session_state(self.current_recent_exports_dir(), self.last_summary_path)
+        self.update_recording_prep_summary()
+        self.update_recording_prep_subtitle()
+        self.update_recent_output_summary()
+        try:
+            self.open_preparation_button.configure(state="disabled")
+            self.open_last_preparation_button.configure(state="disabled")
+        except Exception:
+            pass
+        self.set_status("Hazırlık durumu sıfırlandı. Yeni plan için özet temizlendi.")
 
     def current_preparation_summary_path(self) -> Path:
         if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():

@@ -91,6 +91,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_take_notes_path = None
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
+        recorder.open_preparation_button = mock.Mock()
         recorder.open_last_preparation_button = mock.Mock()
         recorder.open_last_output_dir_button = mock.Mock()
         recorder.archive_last_session_button = mock.Mock()
@@ -101,6 +102,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.update_recent_output_summary = mock.Mock()
         recorder.update_compact_status_summary = mock.Mock()
         recorder.update_recording_prep_summary = mock.Mock()
+        recorder.update_recording_prep_subtitle = mock.Mock()
         recorder.update_next_step_summary = mock.Mock()
         recorder.update_readiness_summary = mock.Mock()
         recorder.update_preflight_warning_summary = mock.Mock()
@@ -797,6 +799,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.export_current_preparation_file()
 
         self.assertEqual(recorder.status_messages[-1], "Hazırlık özeti için önce kayıt klasörünü seçin.")
+
+    def test_reset_preparation_state_clears_last_preparation_reference(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            prep_path = output_dir / "preparation_summary.txt"
+            prep_path.write_text("Hazırlık Özeti", encoding="utf-8")
+            recorder.last_output_dir = output_dir
+            recorder.last_preparation_summary_path = prep_path
+            summary_path = output_dir / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.reset_preparation_state()
+
+        self.assertIsNone(recorder.last_preparation_summary_path)
+        recorder.write_last_session_state.assert_called_once_with(output_dir, summary_path)
+        recorder.update_recording_prep_summary.assert_called_once_with()
+        recorder.update_recording_prep_subtitle.assert_called_once_with()
+        recorder.update_recent_output_summary.assert_called_once_with()
+        recorder.open_preparation_button.configure.assert_called_once_with(state="disabled")
+        recorder.open_last_preparation_button.configure.assert_called_once_with(state="disabled")
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık durumu sıfırlandı. Yeni plan için özet temizlendi.")
 
     def test_open_preparation_summary_in_finder_handles_missing_file(self) -> None:
         recorder = self.make_app()
