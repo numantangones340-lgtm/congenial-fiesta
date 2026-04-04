@@ -1700,6 +1700,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.play_visible_recent_audio_button = Button(
+            recent_buttons,
+            text="Görünen Sesi Oynat",
+            command=self.start_visible_recent_audio_playback_thread,
+            bg="#1abc9c",
+            fg="white",
+            state="disabled",
+        )
         self.open_last_summary_button = Button(
             recent_buttons,
             text="Oturum Özetini Aç",
@@ -1762,6 +1770,7 @@ class GuitarAmpRecorderApp:
             [
                 self.open_last_export_button,
                 self.play_last_export_button,
+                self.play_visible_recent_audio_button,
                 self.open_last_summary_button,
                 self.open_last_take_notes_button,
                 self.open_last_output_dir_button,
@@ -1776,6 +1785,7 @@ class GuitarAmpRecorderApp:
         for button, role in (
             (self.open_last_export_button, "primary"),
             (self.play_last_export_button, "success"),
+            (self.play_visible_recent_audio_button, "success"),
             (self.open_last_summary_button, "accent"),
             (self.open_last_take_notes_button, "accent"),
             (self.open_last_output_dir_button, "secondary"),
@@ -3997,6 +4007,14 @@ class GuitarAmpRecorderApp:
             return self.last_output_dir
         return self.resolve_output_dir()
 
+    def current_filtered_recent_audio_file(self) -> Optional[Path]:
+        output_dir = self.current_recent_exports_dir()
+        recent_files = filtered_recent_output_files(output_dir, self.recent_output_filter.get())
+        for path in recent_files:
+            if path.suffix.lower() in {".mp3", ".wav"}:
+                return path
+        return None
+
     def refresh_recent_exports(self) -> None:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
@@ -4174,22 +4192,36 @@ class GuitarAmpRecorderApp:
         worker = threading.Thread(target=self.play_last_export_audio, daemon=True)
         worker.start()
 
+    def start_visible_recent_audio_playback_thread(self) -> None:
+        audio_path = self.current_filtered_recent_audio_file()
+        if audio_path is None or not audio_path.exists():
+            self.set_status("Görünen filtrede oynatılacak ses yok.")
+            return
+        worker = threading.Thread(target=self.play_audio_file, args=(audio_path, "Görünen ses"), daemon=True)
+        worker.start()
+
     def play_last_export_audio(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
             self.set_status(self.missing_item_status("Son kayıt"))
             return
+        self.play_audio_file(self.last_export_path, "Son kayıt")
+
+    def play_audio_file(self, path: Path, label: str) -> None:
+        if not path.exists():
+            self.set_status(self.missing_item_status(label))
+            return
         try:
-            audio, sample_rate = sf.read(self.last_export_path, dtype="float32")
+            audio, sample_rate = sf.read(path, dtype="float32")
             try:
                 _, output_idx = self.selected_device_pair()
             except ValueError:
                 output_idx = None
-            self.set_status(f"Son kayıt çalınıyor: {self.last_export_path.name}")
+            self.set_status(f"{label} çalınıyor: {path.name}")
             sd.play(audio, samplerate=sample_rate, device=output_idx)
             sd.wait()
-            self.set_status(f"Son kayıt oynatıldı: {recent_audio_status_text(self.last_export_path)}")
+            self.set_status(f"{label} oynatıldı: {recent_audio_status_text(path)}")
         except Exception as exc:
-            self.set_status(f"Son kayıt oynatılamadı: {exc}")
+            self.set_status(f"{label} oynatılamadı: {exc}")
 
     def open_last_session_summary_in_finder(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():

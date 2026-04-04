@@ -950,6 +950,55 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         wait_mock.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], f"Son kayıt oynatıldı: {app.recent_audio_status_text(export_path)}")
 
+    def test_current_filtered_recent_audio_file_returns_first_visible_audio(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_filter = FakeVar("Sadece Ses")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            newer_audio = output_dir / "take_new.mp3"
+            newer_audio.write_text("audio", encoding="utf-8")
+            older_doc = output_dir / "session_summary.json"
+            older_doc.write_text("{}", encoding="utf-8")
+            os.utime(older_doc, (time.time() - 10, time.time() - 10))
+            recorder.last_output_dir = output_dir
+
+            result = recorder.current_filtered_recent_audio_file()
+
+        self.assertEqual(result, newer_audio)
+
+    def test_start_visible_recent_audio_playback_thread_reports_missing_audio(self) -> None:
+        recorder = self.make_app()
+        recorder.current_filtered_recent_audio_file = mock.Mock(return_value=None)
+
+        recorder.start_visible_recent_audio_playback_thread()
+
+        self.assertEqual(recorder.status_messages[-1], "Görünen filtrede oynatılacak ses yok.")
+
+    def test_start_visible_recent_audio_playback_thread_starts_worker_for_filtered_audio(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "take.wav"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.current_filtered_recent_audio_file = mock.Mock(return_value=audio_path)
+
+            started_targets: list[tuple] = []
+
+            class FakeThread:
+                def __init__(self, target=None, args=(), daemon=None):
+                    started_targets.append((target, args, daemon))
+
+                def start(self):
+                    return None
+
+            with mock.patch.object(app.threading, "Thread", FakeThread):
+                recorder.start_visible_recent_audio_playback_thread()
+
+        self.assertEqual(len(started_targets), 1)
+        target, args, daemon = started_targets[0]
+        self.assertEqual(target, recorder.play_audio_file)
+        self.assertEqual(args, (audio_path, "Görünen ses"))
+        self.assertTrue(daemon)
+
     def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
