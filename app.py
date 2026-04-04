@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -60,6 +61,9 @@ LIMITER_ALIASES = {
     "Kapali": "Kapalı",
     "Kapalı": "Kapalı",
 }
+
+LEGACY_QUICK_TAKE_PATTERN = re.compile(r"^quick_take_\d{3}(?:_(?:mix|vocal))?\.(?:mp3|wav)$", re.IGNORECASE)
+TIMESTAMPED_QUICK_TAKE_PATTERN = re.compile(r"^quick_take_\d{8}_\d{6}(?:_(?:mix|vocal))?\.(?:mp3|wav)$", re.IGNORECASE)
 
 
 def normalize_choice(value: str, aliases: dict[str, str], default: str) -> str:
@@ -162,6 +166,33 @@ def recent_audio_status_text(path: Path) -> str:
 def recent_audio_highlight_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
     return f"Son kayıt [{timestamp} | {recent_audio_hint_text(path)}]: {path.name}"
+
+
+def legacy_quick_take_file(path: Path) -> bool:
+    return path.is_file() and LEGACY_QUICK_TAKE_PATTERN.match(path.name) is not None
+
+
+def timestamped_quick_take_file(path: Path) -> bool:
+    return path.is_file() and TIMESTAMPED_QUICK_TAKE_PATTERN.match(path.name) is not None
+
+
+def device_test_output_file(path: Path) -> bool:
+    return path.is_file() and path.suffix.lower() == ".wav" and path.name.endswith("_device_test.wav")
+
+
+def cleanup_candidate_output_files(output_dir: Path) -> list[Path]:
+    if not output_dir.exists():
+        return []
+    files = [path for path in output_dir.iterdir() if path.is_file()]
+    has_timestamped_quick_take = any(timestamped_quick_take_file(path) for path in files)
+    legacy_quick_takes = [path for path in files if has_timestamped_quick_take and legacy_quick_take_file(path)]
+    device_tests = sorted(
+        [path for path in files if device_test_output_file(path)],
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    stale_device_tests = device_tests[1:]
+    return sorted(legacy_quick_takes + stale_device_tests, key=lambda path: path.stat().st_mtime, reverse=True)
 
 
 def format_seconds_short(seconds: float) -> str:
@@ -1566,6 +1597,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.cleanup_old_trials_button = Button(
+            recent_buttons,
+            text="Eski Denemeleri Temizle",
+            command=self.clean_old_trial_outputs,
+            bg="#8e5a2b",
+            fg="white",
+            state="disabled",
+        )
         self.refresh_recent_button = Button(recent_buttons, text="Listeyi Yenile", command=self.refresh_recent_exports, bg="#2d7d46", fg="white")
         self.layout_button_flow(
             recent_buttons,
@@ -1576,6 +1615,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_take_notes_button,
                 self.open_last_output_dir_button,
                 self.open_last_preparation_button,
+                self.cleanup_old_trials_button,
                 self.refresh_recent_button,
             ],
             columns=3,
@@ -1587,6 +1627,7 @@ class GuitarAmpRecorderApp:
             (self.open_last_take_notes_button, "accent"),
             (self.open_last_output_dir_button, "secondary"),
             (self.open_last_preparation_button, "primary"),
+            (self.cleanup_old_trials_button, "warning"),
             (self.refresh_recent_button, "success"),
         ):
             self.apply_button_style(button, role=role)
@@ -1899,6 +1940,7 @@ class GuitarAmpRecorderApp:
             "success": {"bg": "#238636", "activebackground": "#2ea043"},
             "secondary": {"bg": "#34495e", "activebackground": "#415a72"},
             "accent": {"bg": "#8e44ad", "activebackground": "#9b59b6"},
+            "warning": {"bg": "#8e5a2b", "activebackground": "#a86b34"},
             "danger": {"bg": "#c0392b", "activebackground": "#d84a3b"},
         }
         return palettes.get(role, palettes["secondary"])
@@ -3633,6 +3675,7 @@ class GuitarAmpRecorderApp:
         output_dir = self.current_recent_exports_dir()
         if not output_dir.exists():
             self.recent_exports_text.set(f"Klasör bulunamadı: {output_dir}")
+            self.update_cleanup_old_trials_button_state(output_dir)
             self.update_recent_output_summary()
             return
         recent_files = sorted(
@@ -3642,6 +3685,7 @@ class GuitarAmpRecorderApp:
         )[:8]
         if not recent_files:
             self.recent_exports_text.set("Henüz çıktı yok.")
+            self.update_cleanup_old_trials_button_state(output_dir)
             self.update_recent_output_summary()
             return
         lines = [recent_output_file_line(path) for path in recent_files]
@@ -3650,7 +3694,37 @@ class GuitarAmpRecorderApp:
             self.recent_exports_text.set(f"{recent_audio_highlight_line(latest_audio)}\n\n" + "\n".join(lines))
         else:
             self.recent_exports_text.set("\n".join(lines))
+        self.update_cleanup_old_trials_button_state(output_dir)
         self.update_recent_output_summary()
+
+    def update_cleanup_old_trials_button_state(self, output_dir: Optional[Path] = None) -> None:
+        button = getattr(self, "cleanup_old_trials_button", None)
+        if button is None:
+            return
+        target_dir = output_dir or self.current_recent_exports_dir()
+        state = "normal" if cleanup_candidate_output_files(target_dir) else "disabled"
+        button.configure(state=state)
+
+    def clean_old_trial_outputs(self) -> None:
+        output_dir = self.current_recent_exports_dir()
+        if not output_dir.exists():
+            self.set_status(f"Klasör bulunamadı: {output_dir}")
+            self.update_cleanup_old_trials_button_state(output_dir)
+            return
+        candidates = cleanup_candidate_output_files(output_dir)
+        if not candidates:
+            self.set_status("Temizlenecek eski deneme yok.")
+            self.update_cleanup_old_trials_button_state(output_dir)
+            return
+        removed_count = 0
+        for path in candidates:
+            try:
+                path.unlink()
+                removed_count += 1
+            except Exception:
+                continue
+        self.refresh_recent_exports()
+        self.set_status(f"Eski denemeler temizlendi: {removed_count} dosya")
 
     def copy_text_to_clipboard(self, content: str, success_message: str, failure_prefix: str) -> None:
         try:
@@ -4280,6 +4354,7 @@ class GuitarAmpRecorderApp:
         self.copy_last_recovery_note_button.configure(state=state)
         self.open_last_output_dir_button.configure(state=state)
         self.open_last_preparation_button.configure(state=state)
+        self.cleanup_old_trials_button.configure(state=state)
 
     def begin_recording_progress(self, mode: str, total_seconds: float) -> None:
         self.recording_active = True
@@ -4349,6 +4424,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_preparation_button.configure(state="normal")
             else:
                 self.open_last_preparation_button.configure(state="disabled")
+            self.update_cleanup_old_trials_button_state()
             self.update_recent_output_summary()
         except TclError:
             pass

@@ -90,6 +90,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_preparation_summary_path = None
         recorder.open_last_preparation_button = mock.Mock()
         recorder.open_last_output_dir_button = mock.Mock()
+        recorder.cleanup_old_trials_button = mock.Mock()
         recorder.write_last_session_state = mock.Mock()
         recorder.update_recent_output_summary = mock.Mock()
         return recorder
@@ -145,6 +146,61 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_text.get(), expected)
         recorder.resolve_output_dir.assert_not_called()
+
+    def test_cleanup_candidate_output_files_targets_legacy_quick_takes_and_old_device_tests(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            old_mp3 = output_dir / "quick_take_001.mp3"
+            old_vocal = output_dir / "quick_take_001_vocal.wav"
+            new_mp3 = output_dir / "quick_take_20260403_191431.mp3"
+            newest_test = output_dir / "guitar_mix_device_test.wav"
+            older_test = output_dir / "quick_take_device_test.wav"
+            keep_mix = output_dir / "guitar_mix_20260403_184247.mp3"
+            for index, path in enumerate([old_mp3, old_vocal, new_mp3, older_test, newest_test, keep_mix]):
+                path.write_text(path.name, encoding="utf-8")
+                timestamp = time.time() + index
+                os.utime(path, (timestamp, timestamp))
+
+            candidates = app.cleanup_candidate_output_files(output_dir)
+
+        self.assertEqual(candidates, [older_test, old_vocal, old_mp3])
+
+    def test_clean_old_trial_outputs_removes_only_safe_candidates(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            old_mp3 = output_dir / "quick_take_001.mp3"
+            old_vocal = output_dir / "quick_take_001_vocal.wav"
+            new_mp3 = output_dir / "quick_take_20260403_191431.mp3"
+            latest_test = output_dir / "guitar_mix_device_test.wav"
+            old_test = output_dir / "legacy_device_test.wav"
+            for index, path in enumerate([old_mp3, old_vocal, new_mp3, old_test, latest_test]):
+                path.write_text(path.name, encoding="utf-8")
+                timestamp = time.time() + index
+                os.utime(path, (timestamp, timestamp))
+            recorder.last_output_dir = output_dir
+
+            recorder.clean_old_trial_outputs()
+
+            self.assertFalse(old_mp3.exists())
+            self.assertFalse(old_vocal.exists())
+            self.assertFalse(old_test.exists())
+            self.assertTrue(new_mp3.exists())
+            self.assertTrue(latest_test.exists())
+
+        self.assertEqual(recorder.status_messages[-1], "Eski denemeler temizlendi: 3 dosya")
+
+    def test_clean_old_trial_outputs_reports_when_nothing_to_clean(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            clean_file = output_dir / "quick_take_20260403_191431.mp3"
+            clean_file.write_text("fresh", encoding="utf-8")
+            recorder.last_output_dir = output_dir
+
+            recorder.clean_old_trial_outputs()
+
+        self.assertEqual(recorder.status_messages[-1], "Temizlenecek eski deneme yok.")
 
     def test_refresh_recent_exports_without_audio_skips_highlight_line(self) -> None:
         recorder = self.make_app()
@@ -548,7 +604,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
     def test_play_last_export_audio_reads_file_and_plays_it(self) -> None:
         recorder = self.make_app()
-        recorder.output_device_id.set("7")
+        recorder.output_device_choice.set("7 - USB Output")
         with tempfile.TemporaryDirectory() as tmpdir:
             export_path = Path(tmpdir) / "take.wav"
             export_path.write_text("audio", encoding="utf-8")
