@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ilk kullanim kilavuzu
+    url: https://github.com/numantangones340-lgtm/congenial-fiesta/blob/main/docs/FIRST_RUN_GUIDE.md
+    about: Ilk acilis, izinler ve hizli kayit akisi icin bu kilavuza bakin.
+  - name: Destek / SSS
+    url: https://github.com/numantangones340-lgtm/congenial-fiesta/blob/main/docs/SUPPORT_FAQ.md
+    about: Sik gorulen sorunlar ve hizli cozumler icin bu sayfayi kullanin.

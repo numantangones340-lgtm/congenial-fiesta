@@ -1,0 +1,80 @@
+name: Hata bildirimi
+description: Uygulamada karsilastiginiz hatayi bildirin
+title: "[Hata]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hata raporu icin tesekkurler. Mumkunse en yeni zaman damgali kayit dosyasini, ekrandaki `Peak` degerini ve kullandiginiz isletim sistemini belirtin.
+  - type: input
+    id: version
+    attributes:
+      label: Surum
+      description: Ornek: v1.1.10
+      placeholder: v1.1.10
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Isletim sistemi
+      options:
+        - macOS
+        - Windows
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Hata ozeti
+      description: Ne oldu?
+      placeholder: Quick Kayit sonrasi dosya olustu ama ses gelmedi.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Tekrarlama adimlari
+      description: Hatayi nasil tekrar olusturabiliriz?
+      placeholder: |
+        1. Uygulamayi actim
+        2. Mikrofon/Ses Karti Testi yaptim
+        3. Quick Kayit bastim
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen sonuc
+      placeholder: MP3 ve vocal WAV dosyasinda ses duymayi bekliyordum.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Gerceklesen sonuc
+      placeholder: Dosya olustu ama sessiz caldi.
+    validations:
+      required: true
+  - type: input
+    id: peak
+    attributes:
+      label: Peak degeri
+      description: Ornek: Peak=0.300
+      placeholder: Peak=0.300
+  - type: textarea
+    id: files
+    attributes:
+      label: Ilgili dosya adlari
+      description: Mumkunse olusan dosya adlarini yazin
+      placeholder: |
+        quick_take_20260403_191431.mp3
+        quick_take_20260403_191431_vocal.wav
+  - type: textarea
+    id: extra
+    attributes:
+      label: Ek notlar
+      description: Ekran goruntusu, izin durumu veya baska ayrintilar

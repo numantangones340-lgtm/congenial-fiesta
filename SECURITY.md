@@ -2,20 +2,42 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Su an aktif olarak desteklenen genel surum hatti:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 1.1.x   | yes       |
+| < 1.1   | no        |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Guvenlik acigi oldugunu dusunuyorsaniz, lutfen bunu public issue olarak paylasmayin.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Bunun yerine:
+
+1. Sorunu kisa ve net sekilde yazin.
+2. Etkilenen surumu belirtin.
+3. Mumkunse tekrar uretim adimlarini ekleyin.
+4. Etkisini aciklayin:
+   - veri kaybi
+   - yetkisiz erisim
+   - dosya sistemi erisimi
+   - komut calistirma
+   - paket / release butunlugu
+
+Guvenlik raporlarinda ozellikle su alanlar onemlidir:
+
+- paketlenmis uygulama izinleri
+- release dosyalari ve checksum butunlugu
+- gizli anahtarlar / tokenlar
+- dosya sistemi erisim izinleri
+
+Rapor incelendikten sonra:
+
+- sorun dogrulanirsa duzeltme planlanir
+- etkilenen surum hatti belirlenir
+- gerekirse yeni release cikarilir
+
+Not:
+
+- GitHub token, parola veya gizli bilgi iceren ekran goruntulerini public issue icine eklemeyin.

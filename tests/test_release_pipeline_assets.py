@@ -43,6 +43,20 @@ class ReleasePipelineAssetTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, f"{name}: {result.stderr}")
 
+    def test_issue_templates_exist(self) -> None:
+        for name in (
+            "bug_report.yml",
+            "feature_request.yml",
+            "config.yml",
+        ):
+            self.assertTrue((ROOT_DIR / ".github" / "ISSUE_TEMPLATE" / name).exists(), name)
+
+    def test_security_policy_is_project_specific(self) -> None:
+        content = (ROOT_DIR / "SECURITY.md").read_text(encoding="utf-8")
+        self.assertIn("1.1.x", content)
+        self.assertIn("public issue olarak paylasmayin", content)
+        self.assertNotIn("5.1.x", content)
+
     def test_build_script_writes_spec_outside_repo_root(self) -> None:
         content = (ROOT_DIR / "build_macos_app.sh").read_text(encoding="utf-8")
         self.assertIn('SPEC_DIR="build/spec"', content)

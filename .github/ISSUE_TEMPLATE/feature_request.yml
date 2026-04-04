@@ -1,0 +1,40 @@
+name: Ozellik istegi
+description: Uygulama icin yeni bir fikir veya iyilestirme onerisi paylasin
+title: "[Oneri]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Hangi ihtiyaci cozuyor?
+      placeholder: Kullanicilar ilk acilista daha az ayarla hizli kayda gecmek istiyor.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Onerdiginiz cozum
+      placeholder: Ilk acilista tek tikla ornek ayar yukleyen bir buton olabilir.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Dusundugunuz alternatifler
+      placeholder: Farkli bir cozum varsa buraya yazin.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Daha cok hangi platform icin gerekli?
+      options:
+        - Genel
+        - macOS
+        - Windows
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Ek baglam
+      placeholder: Ornek kullanim senaryosu, ekran goruntusu veya baglam ekleyin.
