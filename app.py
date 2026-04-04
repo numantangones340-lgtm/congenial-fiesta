@@ -131,6 +131,15 @@ def recent_output_file_label(path: Path) -> str:
     }.get(path.name, "Çıktı")
 
 
+def recent_output_matches_filter(path: Path, filter_value: str) -> bool:
+    normalized = str(filter_value or "Tümü").strip() or "Tümü"
+    if normalized == "Sadece Ses":
+        return path.suffix.lower() in {".mp3", ".wav"}
+    if normalized == "Sadece Belgeler":
+        return path.suffix.lower() not in {".mp3", ".wav"}
+    return True
+
+
 def recent_output_file_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
     return f"- {recent_output_file_label(path)} [{timestamp}]: {path.name}"
@@ -954,6 +963,7 @@ class GuitarAmpRecorderApp:
         self.recent_output_summary_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
         self.hero_output_card_text = StringVar(value="Son çıktı özeti hazırlanıyor...")
         self.recent_output_subtitle_text = StringVar(value="Son çıktı bölümü hazırlanıyor...")
+        self.recent_output_filter = StringVar(value="Tümü")
         self.device_summary_text = StringVar(value="Aygıt taraması bekleniyor...")
         self.setup_hint_text = StringVar(value="Mikrofon kurulumu burada gösterilecek.")
         self.setup_status_text = StringVar(value="Kurulum özeti hazırlanıyor...")
@@ -1589,6 +1599,12 @@ class GuitarAmpRecorderApp:
             anchor="w",
         )
         self.recent_output_summary_label.pack(fill="x", padx=14, pady=(10, 8))
+        recent_filter_row = Frame(recent_box, bg="#151b22")
+        recent_filter_row.pack(fill="x", padx=14, pady=(0, 8))
+        Label(recent_filter_row, text="Çıktı Filtresi", bg="#151b22", fg="#dce6ef").grid(row=0, column=0, sticky="w")
+        self.recent_output_filter_menu = OptionMenu(recent_filter_row, self.recent_output_filter, "Tümü", "Sadece Ses", "Sadece Belgeler")
+        self.recent_output_filter_menu.configure(width=18, bg="#24303c", fg="white", highlightthickness=0)
+        self.recent_output_filter_menu.grid(row=1, column=0, sticky="w", pady=(2, 0))
         recent_buttons = Frame(recent_box, bg="#151b22")
         recent_buttons.pack(fill="x", padx=14, pady=(0, 8))
         self.open_last_export_button = Button(
@@ -1767,6 +1783,7 @@ class GuitarAmpRecorderApp:
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         self.input_device_choice.trace_add("write", self.on_input_choice_changed)
         self.output_device_choice.trace_add("write", self.on_output_choice_changed)
+        self.recent_output_filter.trace_add("write", lambda *_args: self.refresh_recent_exports())
         for var in (
             self.output_name,
             self.output_dir,
@@ -3732,12 +3749,16 @@ class GuitarAmpRecorderApp:
             self.update_recent_output_summary()
             return
         recent_files = sorted(
-            [path for path in output_dir.iterdir() if visible_recent_output_file(path)],
+            [
+                path
+                for path in output_dir.iterdir()
+                if visible_recent_output_file(path) and recent_output_matches_filter(path, self.recent_output_filter.get())
+            ],
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )[:8]
         if not recent_files:
-            self.recent_exports_text.set("Henüz çıktı yok.")
+            self.recent_exports_text.set(f"{self.recent_output_filter.get()} filtresine uygun çıktı yok.")
             self.update_archive_last_session_button_state(output_dir)
             self.update_cleanup_old_trials_button_state(output_dir)
             self.update_recent_output_summary()

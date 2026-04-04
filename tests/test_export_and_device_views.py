@@ -54,6 +54,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root = mock.Mock()
         recorder.recent_exports_text = FakeVar("")
         recorder.recent_output_summary_text = FakeVar("")
+        recorder.recent_output_filter = FakeVar("Tümü")
         recorder.prep_summary_text = FakeVar("")
         recorder.next_step_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
@@ -291,6 +292,48 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             )
 
         self.assertEqual(recorder.recent_exports_text.get(), expected)
+
+    def test_recent_output_matches_filter_separates_audio_and_documents(self) -> None:
+        audio_path = Path("/tmp/take.mp3")
+        summary_path = Path("/tmp/session_summary.json")
+
+        self.assertTrue(app.recent_output_matches_filter(audio_path, "Tümü"))
+        self.assertTrue(app.recent_output_matches_filter(audio_path, "Sadece Ses"))
+        self.assertFalse(app.recent_output_matches_filter(audio_path, "Sadece Belgeler"))
+        self.assertTrue(app.recent_output_matches_filter(summary_path, "Sadece Belgeler"))
+        self.assertFalse(app.recent_output_matches_filter(summary_path, "Sadece Ses"))
+
+    def test_refresh_recent_exports_filters_to_audio_only(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_filter.set("Sadece Ses")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            audio_path = output_dir / "take.mp3"
+            summary_path = output_dir / "session_summary.json"
+            audio_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            now = time.time()
+            os.utime(audio_path, (now, now))
+            os.utime(summary_path, (now + 1, now + 1))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.refresh_recent_exports()
+            expected = f"{app.recent_audio_highlight_line(audio_path)}\n\n{app.recent_output_file_line(audio_path)}"
+
+        self.assertEqual(recorder.recent_exports_text.get(), expected)
+
+    def test_refresh_recent_exports_reports_empty_result_for_document_filter(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_filter.set("Sadece Belgeler")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            audio_path = output_dir / "take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.refresh_recent_exports()
+
+        self.assertEqual(recorder.recent_exports_text.get(), "Sadece Belgeler filtresine uygun çıktı yok.")
 
     def test_recent_audio_highlight_line_includes_duration_when_available(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
