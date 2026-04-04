@@ -140,6 +140,20 @@ def recent_output_matches_filter(path: Path, filter_value: str) -> bool:
     return True
 
 
+def filtered_recent_output_files(output_dir: Path, filter_value: str) -> list[Path]:
+    if not output_dir.exists():
+        return []
+    return sorted(
+        [
+            path
+            for path in output_dir.iterdir()
+            if visible_recent_output_file(path) and recent_output_matches_filter(path, filter_value)
+        ],
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+
+
 def recent_output_file_line(path: Path) -> str:
     timestamp = time.strftime("%d.%m %H:%M", time.localtime(path.stat().st_mtime))
     return f"- {recent_output_file_label(path)} [{timestamp}]: {path.name}"
@@ -2921,12 +2935,15 @@ class GuitarAmpRecorderApp:
         self.update_option_explanation_summary()
 
     def build_recent_output_summary_text(self) -> str:
+        filter_detail = self.current_recent_output_filter_detail()
         if self.recording_active:
             return "Canlı kayıt sürüyor. Son çıktı işlemleri kayıt bitince yeniden açılacak."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             if self.last_export_path is not None and self.last_export_path.exists():
-                return f"Kurtarma notu hazır. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
-            return "Kurtarma notu hazır. Önce notu kopyalayın, sonra klasörü açın."
+                text = f"Kurtarma notu hazır. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}. Önce notu kopyalayın, sonra son kaydı veya klasörü açın."
+                return f"{text} Görünüm: {filter_detail}." if filter_detail else text
+            text = "Kurtarma notu hazır. Önce notu kopyalayın, sonra klasörü açın."
+            return f"{text} Görünüm: {filter_detail}." if filter_detail else text
         if self.last_export_path is not None and self.last_export_path.exists():
             ready_items = [f"son kayıt {recent_audio_status_text(self.last_export_path)}"]
             if self.last_summary_path is not None and self.last_summary_path.exists():
@@ -2935,17 +2952,23 @@ class GuitarAmpRecorderApp:
                 ready_items.append("take notu")
             if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
                 ready_items.append("hazırlık dosyası")
-            return f"Hazır: {', '.join(ready_items)}. Önce son kaydı açın veya oynatın."
+            text = f"Hazır: {', '.join(ready_items)}. Önce son kaydı açın veya oynatın."
+            return f"{text} Görünüm: {filter_detail}." if filter_detail else text
         if self.last_summary_path is not None and self.last_summary_path.exists():
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
-                return "Hazır: özet ve take notu. Önce özeti açın, sonra kısa raporu kopyalayın."
-            return "Hazır: oturum özeti. Önce özeti açın veya kısa raporu kopyalayın."
+                text = "Hazır: özet ve take notu. Önce özeti açın, sonra kısa raporu kopyalayın."
+                return f"{text} Görünüm: {filter_detail}." if filter_detail else text
+            text = "Hazır: oturum özeti. Önce özeti açın veya kısa raporu kopyalayın."
+            return f"{text} Görünüm: {filter_detail}." if filter_detail else text
         if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
-            return "Hazır: hazırlık dosyası. Önce dosyayı açın veya klasörü açın."
+            text = "Hazır: hazırlık dosyası. Önce dosyayı açın veya klasörü açın."
+            return f"{text} Görünüm: {filter_detail}." if filter_detail else text
         if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
-            return "Hazır: take notu. Önce take notunu açın veya klasörü açın."
+            text = "Hazır: take notu. Önce take notunu açın veya klasörü açın."
+            return f"{text} Görünüm: {filter_detail}." if filter_detail else text
         if self.current_recent_exports_dir().exists():
-            return "Son oturum klasörü hazır. Önce klasörü açın veya listeyi yenileyin."
+            text = "Son oturum klasörü hazır. Önce klasörü açın veya listeyi yenileyin."
+            return f"{text} Görünüm: {filter_detail}." if filter_detail else text
         return "Henüz son çıktı yok. İlk test veya kayıttan sonra bu bölüm dolacak."
 
     def build_recent_output_summary_palette(self) -> dict[str, str]:
@@ -2963,21 +2986,39 @@ class GuitarAmpRecorderApp:
         return {"bg": "#1b2029", "fg": "#dce6ef"}
 
     def build_recent_output_subtitle_text(self) -> str:
+        filter_detail = self.current_recent_output_filter_detail()
         if self.recording_active:
             return "Kayıt sürerken eski çıktı işlemleri geçici olarak kapalıdır."
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             if self.last_export_path is not None and self.last_export_path.exists():
-                return f"Sorun yaşandıysa önce kurtarma notunu inceleyin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
-            return "Sorun yaşandıysa önce kurtarma notunu inceleyin."
+                text = f"Sorun yaşandıysa önce kurtarma notunu inceleyin. Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}."
+                return f"{text} Gösterim: {filter_detail}." if filter_detail else text
+            text = "Sorun yaşandıysa önce kurtarma notunu inceleyin."
+            return f"{text} Gösterim: {filter_detail}." if filter_detail else text
         if self.last_export_path is not None and self.last_export_path.exists():
-            return f"Son kayıt hazır: {recent_audio_status_text(self.last_export_path)}. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."
+            text = f"Son kayıt hazır: {recent_audio_status_text(self.last_export_path)}. Dosyayı açabilir, oynatabilir veya yolları kopyalayabilirsiniz."
+            return f"{text} Gösterim: {filter_detail}." if filter_detail else text
         if self.last_summary_path is not None and self.last_summary_path.exists():
-            return "Özet hazır. Oturum bilgisini açabilir veya kopyalayabilirsiniz."
+            text = "Özet hazır. Oturum bilgisini açabilir veya kopyalayabilirsiniz."
+            return f"{text} Gösterim: {filter_detail}." if filter_detail else text
         if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
-            return "Hazırlık dosyası hazır. Dosyayı açabilir veya oturum klasörüne geçebilirsiniz."
+            text = "Hazırlık dosyası hazır. Dosyayı açabilir veya oturum klasörüne geçebilirsiniz."
+            return f"{text} Gösterim: {filter_detail}." if filter_detail else text
         if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
-            return "Take notu hazır. Notu açabilir veya oturum klasörüne geçebilirsiniz."
-        return "İlk test veya kayıttan sonra son dosyalar burada görünür."
+            text = "Take notu hazır. Notu açabilir veya oturum klasörüne geçebilirsiniz."
+            return f"{text} Gösterim: {filter_detail}." if filter_detail else text
+        text = "İlk test veya kayıttan sonra son dosyalar burada görünür."
+        return f"{text} Gösterim: {filter_detail}." if filter_detail else text
+
+    def current_recent_output_filter_detail(self) -> str:
+        output_dir = self.current_recent_exports_dir()
+        if not output_dir.exists():
+            return ""
+        filter_value = self.recent_output_filter.get()
+        count = len(filtered_recent_output_files(output_dir, filter_value))
+        if filter_value == "Tümü":
+            return f"{count} öğe"
+        return f"{filter_value} | {count} öğe"
 
     def update_recent_output_subtitle(self) -> None:
         try:
@@ -3758,15 +3799,7 @@ class GuitarAmpRecorderApp:
             self.update_cleanup_old_trials_button_state(output_dir)
             self.update_recent_output_summary()
             return
-        recent_files = sorted(
-            [
-                path
-                for path in output_dir.iterdir()
-                if visible_recent_output_file(path) and recent_output_matches_filter(path, self.recent_output_filter.get())
-            ],
-            key=lambda path: path.stat().st_mtime,
-            reverse=True,
-        )[:8]
+        recent_files = filtered_recent_output_files(output_dir, self.recent_output_filter.get())[:8]
         if not recent_files:
             self.recent_exports_text.set(f"{self.recent_output_filter.get()} filtresine uygun çıktı yok.")
             self.update_archive_last_session_button_state(output_dir)

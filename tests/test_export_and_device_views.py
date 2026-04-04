@@ -335,6 +335,25 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.recent_exports_text.get(), "Sadece Belgeler filtresine uygun çıktı yok.")
 
+    def test_build_recent_output_texts_include_filter_detail(self) -> None:
+        recorder = self.make_app()
+        recorder.recent_output_filter.set("Sadece Ses")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            export_path = output_dir / "take.mp3"
+            summary_path = output_dir / "session_summary.json"
+            export_path.write_text("audio", encoding="utf-8")
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_output_dir = output_dir
+            recorder.last_export_path = export_path
+            recorder.last_summary_path = summary_path
+
+            summary_text = recorder.build_recent_output_summary_text()
+            subtitle_text = recorder.build_recent_output_subtitle_text()
+
+        self.assertIn("Görünüm: Sadece Ses | 1 öğe.", summary_text)
+        self.assertIn("Gösterim: Sadece Ses | 1 öğe.", subtitle_text)
+
     def test_recent_audio_highlight_line_includes_duration_when_available(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             audio_path = Path(tmpdir) / "take.wav"
