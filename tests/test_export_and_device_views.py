@@ -57,12 +57,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.recent_output_filter = FakeVar("Tümü")
         recorder.recent_output_meta_text = FakeVar("")
         recorder.prep_summary_text = FakeVar("")
+        recorder.prep_subtitle_text = FakeVar("")
+        recorder.prep_meta_text = FakeVar("")
         recorder.next_step_text = FakeVar("")
         recorder.selected_route_text = FakeVar("")
+        recorder.output_dir = FakeVar("/tmp/gar-default-out")
+        recorder.preset_name = FakeVar("Temiz Gitar")
+        recorder.session_mode = FakeVar("Tek Klasör")
+        recorder.session_name = FakeVar("session_20260404")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
         recorder.output_device_choice = FakeVar("Varsayılan macOS çıkışı")
         recorder.mp3_quality = FakeVar("Yüksek VBR")
         recorder.wav_export_mode = FakeVar("Sadece Vokal WAV")
+        recorder.mic_record_seconds = FakeVar("60")
         recorder.input_device_id = FakeVar("")
         recorder.output_device_id = FakeVar("")
         recorder.device_summary_text = FakeVar("")
@@ -107,6 +114,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.update_readiness_summary = mock.Mock()
         recorder.update_preflight_warning_summary = mock.Mock()
         recorder.update_action_guidance_summary = mock.Mock()
+        recorder.plan_session_hint = mock.Mock(return_value="Tek Klasör")
+        recorder.plan_take_name_hint = mock.Mock(return_value="take_001")
+        recorder.planned_output_labels = mock.Mock(return_value=["MP3", "Vokal WAV"])
         return recorder
 
     def test_refresh_recent_exports_shows_newest_audio_and_artifact_files(self) -> None:
@@ -822,6 +832,32 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_preparation_button.configure.assert_called_once_with(state="disabled")
         recorder.open_last_preparation_button.configure.assert_called_once_with(state="disabled")
         self.assertEqual(recorder.status_messages[-1], "Hazırlık durumu sıfırlandı. Yeni plan için özet temizlendi.")
+
+    def test_build_recording_prep_meta_text_reports_pending_target_before_file_exists(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir = FakeVar("/tmp/out")
+        recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/out/Session"))
+
+        text = recorder.build_recording_prep_meta_text()
+
+        self.assertEqual(text, "Hazırlık dosyası: henüz yazılmadı | Hedef: preparation_summary.txt")
+
+    def test_update_recording_prep_summary_sets_meta_text_for_existing_preparation_file(self) -> None:
+        recorder = self.make_app()
+        recorder.update_recording_prep_summary = app.GuitarAmpRecorderApp.update_recording_prep_summary.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.update_recording_prep_subtitle = app.GuitarAmpRecorderApp.update_recording_prep_subtitle.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.build_recording_prep_text = mock.Mock(return_value="Hazırlık Planı")
+        recorder.output_dir = FakeVar("/tmp/out")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prep_path = Path(tmpdir) / "preparation_summary.txt"
+            prep_path.write_text("Hazırlık Özeti", encoding="utf-8")
+            recorder.last_preparation_summary_path = prep_path
+
+            recorder.update_recording_prep_summary()
+
+        self.assertEqual(recorder.prep_summary_text.get(), "Hazırlık Planı")
+        self.assertIn("Hazırlık dosyası: preparation_summary.txt", recorder.prep_meta_text.get())
+        self.assertIn("Son güncelleme:", recorder.prep_meta_text.get())
 
     def test_copy_preparation_summary_path_to_clipboard_copies_existing_path(self) -> None:
         recorder = self.make_app()

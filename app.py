@@ -1027,6 +1027,7 @@ class GuitarAmpRecorderApp:
         self.preflight_subtitle_text = StringVar(value="Ön kontrol özeti hazırlanıyor...")
         self.prep_summary_text = StringVar(value="Kayıt planı hazırlanıyor...")
         self.prep_subtitle_text = StringVar(value="Kayıt planı özeti hazırlanıyor...")
+        self.prep_meta_text = StringVar(value="Hazırlık dosyası bilgisi hazırlanıyor...")
         self.next_step_text = StringVar(value="Hazırlık kontrol ediliyor...")
         self.option_summary_text = StringVar(value="Seçenek açıklamaları hazırlanıyor...")
         self.option_subtitle_text = StringVar(value="Seçenek özeti hazırlanıyor...")
@@ -1474,6 +1475,16 @@ class GuitarAmpRecorderApp:
             **self.summary_card_style("#11202d", "#d7eefb"),
         )
         self.prep_summary_label.pack(fill="x", padx=14, pady=(10, 10))
+        self.prep_meta_label = Label(
+            prep_box,
+            textvariable=self.prep_meta_text,
+            bg="#151b22",
+            fg="#9fb0c2",
+            justify="left",
+            anchor="w",
+            wraplength=460,
+        )
+        self.prep_meta_label.pack(fill="x", padx=14, pady=(0, 10))
         prep_buttons = Frame(prep_box, bg="#151b22")
         prep_buttons.pack(fill="x", padx=14, pady=(0, 12))
         self.copy_preparation_button = Button(prep_buttons, text="Hazırlığı Kopyala", command=self.copy_current_preparation_to_clipboard, bg="#34495e", fg="white")
@@ -2351,6 +2362,7 @@ class GuitarAmpRecorderApp:
         try:
             self.update_recording_prep_subtitle()
             self.prep_summary_text.set(self.build_recording_prep_text())
+            self.prep_meta_text.set(self.build_recording_prep_meta_text())
         except Exception:
             pass
 
@@ -2371,6 +2383,19 @@ class GuitarAmpRecorderApp:
             self.prep_subtitle_text.set(self.build_recording_prep_subtitle_text())
         except Exception:
             pass
+
+    def build_recording_prep_meta_text(self) -> str:
+        if not self.output_dir.get().strip():
+            return "Hazırlık dosyası: kayıt klasörü seçilmedi"
+        prep_path = self.current_preparation_summary_path()
+        if not prep_path.exists():
+            return f"Hazırlık dosyası: henüz yazılmadı | Hedef: {prep_path.name}"
+        updated = time.strftime("%d.%m %H:%M", time.localtime(prep_path.stat().st_mtime))
+        return (
+            f"Hazırlık dosyası: {prep_path.name} | "
+            f"Klasör: {prep_path.parent.name} | "
+            f"Son güncelleme: {updated}"
+        )
 
     def build_current_preparation_brief_text(self) -> str:
         sections = [
