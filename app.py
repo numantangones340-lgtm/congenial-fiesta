@@ -1482,6 +1482,14 @@ class GuitarAmpRecorderApp:
         self.apply_button_style(self.export_preparation_button, role="success")
         self.open_preparation_button = Button(prep_buttons, text="Hazırlık Dosyasını Aç", command=self.open_preparation_summary_in_finder, bg="#1f6feb", fg="white")
         self.apply_button_style(self.open_preparation_button, role="primary")
+        self.copy_preparation_path_button = Button(
+            prep_buttons,
+            text="Hazırlık Yolunu Kopyala",
+            command=self.copy_preparation_summary_path_to_clipboard,
+            bg="#6c5ce7",
+            fg="white",
+        )
+        self.apply_button_style(self.copy_preparation_path_button, role="accent")
         self.reset_preparation_button = Button(
             prep_buttons,
             text="Hazırlığı Sıfırla",
@@ -1496,6 +1504,7 @@ class GuitarAmpRecorderApp:
                 self.copy_preparation_button,
                 self.export_preparation_button,
                 self.open_preparation_button,
+                self.copy_preparation_path_button,
                 self.reset_preparation_button,
             ],
             columns=2,
@@ -2432,6 +2441,17 @@ class GuitarAmpRecorderApp:
         if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
             return self.last_preparation_summary_path
         return self.resolve_output_dir() / "preparation_summary.txt"
+
+    def copy_preparation_summary_path_to_clipboard(self) -> None:
+        prep_path = self.current_preparation_summary_path()
+        if not prep_path.exists():
+            self.set_status(self.missing_item_status("Hazırlık dosyası"))
+            return
+        self.copy_text_to_clipboard(
+            str(prep_path),
+            self.copied_item_status("Hazırlık yolu", prep_path.name),
+            "Hazırlık yolu kopyalanamadı",
+        )
 
     def open_preparation_summary_in_finder(self) -> None:
         prep_path = self.current_preparation_summary_path()

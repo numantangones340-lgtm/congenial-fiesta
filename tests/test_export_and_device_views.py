@@ -823,6 +823,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.open_last_preparation_button.configure.assert_called_once_with(state="disabled")
         self.assertEqual(recorder.status_messages[-1], "Hazırlık durumu sıfırlandı. Yeni plan için özet temizlendi.")
 
+    def test_copy_preparation_summary_path_to_clipboard_copies_existing_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prep_path = Path(tmpdir) / "preparation_summary.txt"
+            prep_path.write_text("Hazırlık Özeti", encoding="utf-8")
+            recorder.last_preparation_summary_path = prep_path
+
+            recorder.copy_preparation_summary_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(prep_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık yolu panoya alındı: preparation_summary.txt")
+
+    def test_copy_preparation_summary_path_to_clipboard_reports_missing_file(self) -> None:
+        recorder = self.make_app()
+        recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/out/Session"))
+
+        recorder.copy_preparation_summary_path_to_clipboard()
+
+        self.assertEqual(recorder.status_messages[-1], "Hazırlık dosyası yok.")
+
     def test_open_preparation_summary_in_finder_handles_missing_file(self) -> None:
         recorder = self.make_app()
         recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/out/Session"))
