@@ -20,6 +20,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
             "MACOS_RELEASE_CHECKLIST.md",
             "WINDOWS_RELEASE_CHECKLIST.md",
             "FIRST_RUN_GUIDE.md",
+            "LAUNCH_COPY.md",
             "SUPPORT_FAQ.md",
             "PRODUCT_ROADMAP.md",
         ):

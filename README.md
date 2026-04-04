@@ -1,5 +1,16 @@
 # Guitar Amp Recorder (macOS / Windows)
 
+Hizli indirme:
+
+- GitHub Releases:
+  https://github.com/numantangones340-lgtm/congenial-fiesta/releases/latest
+- GitHub Pages:
+  https://numantangones340-lgtm.github.io/congenial-fiesta/
+- Ilk kullanim kilavuzu:
+  `docs/FIRST_RUN_GUIDE.md`
+- Destek / SSS:
+  `docs/SUPPORT_FAQ.md`
+
 Bu uygulama şunları yapar:
 - 1. kanal: Hazır müzik (arka plan)
 - 2. kanal: Mikrofon kaydı
