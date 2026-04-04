@@ -69,6 +69,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn("FIRST_RUN_GUIDE.md", content)
         self.assertIn("WINDOWS_RELEASE_CHECKLIST.md", content)
         self.assertIn("SUPPORT_FAQ.md", content)
+        self.assertIn("SHA256", content)
 
 
 if __name__ == "__main__":

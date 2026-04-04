@@ -77,6 +77,23 @@ Ilk dogrulama icin en iyi dosya:
 
 Bu dosyada ses varsa kayit tarafi duzgun calisiyor demektir.
 
+## 8. SHA256 dosyasi ne ise yarar?
+
+Indirdiginiz zip dosyasinin eksiksiz ve degismemis geldigini kontrol etmek icin kullanilir.
+
+Her surumde su dosyalarin yaninda `sha256` dosyasi da bulunur:
+
+- `GuitarAmpRecorder-macOS.zip.sha256`
+- `GuitarAmpRecorder-Windows.zip.sha256`
+
+Kisa mantik:
+
+1. ZIP dosyasini indirin.
+2. Yanindaki `.sha256` dosyasini da indirin.
+3. Hesaplanan checksum ile dosyadaki checksum ayniysa indirme saglamdir.
+
+Bu adim zorunlu degildir, ama dagitim guvenini artirir.
+
 ## Resmi Sayfalar
 
 - GitHub Releases:
