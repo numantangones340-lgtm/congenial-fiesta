@@ -1716,6 +1716,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_visible_recent_output_path_button = Button(
+            recent_buttons,
+            text="Görünen Yolu Kopyala",
+            command=self.copy_visible_recent_output_path_to_clipboard,
+            bg="#5b6ee1",
+            fg="white",
+            state="disabled",
+        )
         self.open_last_summary_button = Button(
             recent_buttons,
             text="Oturum Özetini Aç",
@@ -1780,6 +1788,7 @@ class GuitarAmpRecorderApp:
                 self.play_last_export_button,
                 self.play_visible_recent_audio_button,
                 self.open_visible_recent_output_button,
+                self.copy_visible_recent_output_path_button,
                 self.open_last_summary_button,
                 self.open_last_take_notes_button,
                 self.open_last_output_dir_button,
@@ -1796,6 +1805,7 @@ class GuitarAmpRecorderApp:
             (self.play_last_export_button, "success"),
             (self.play_visible_recent_audio_button, "success"),
             (self.open_visible_recent_output_button, "primary"),
+            (self.copy_visible_recent_output_path_button, "accent"),
             (self.open_last_summary_button, "accent"),
             (self.open_last_take_notes_button, "accent"),
             (self.open_last_output_dir_button, "secondary"),
@@ -4211,6 +4221,17 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Görünen çıktı açılamadı: {exc}")
 
+    def copy_visible_recent_output_path_to_clipboard(self) -> None:
+        output_path = self.current_filtered_recent_output_file()
+        if output_path is None or not output_path.exists():
+            self.set_status("Görünen filtrede kopyalanacak çıktı yok.")
+            return
+        self.copy_text_to_clipboard(
+            str(output_path),
+            self.copied_item_status("Görünen çıktı yolu", output_path.name),
+            "Görünen çıktı yolu kopyalanamadı",
+        )
+
     def start_last_export_playback_thread(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():
             self.set_status(self.missing_item_status("Son kayıt"))
@@ -4814,6 +4835,7 @@ class GuitarAmpRecorderApp:
         self.open_last_export_button.configure(state=state)
         self.play_last_export_button.configure(state=state)
         self.open_visible_recent_output_button.configure(state=state)
+        self.copy_visible_recent_output_path_button.configure(state=state)
         self.copy_last_export_path_button.configure(state=state)
         self.open_last_summary_button.configure(state=state)
         self.copy_last_summary_button.configure(state=state)

@@ -1036,6 +1036,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", "-R", str(output_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], "Görünen çıktı Finder'da seçildi: take_new.mp3")
 
+    def test_copy_visible_recent_output_path_to_clipboard_reports_missing_output(self) -> None:
+        recorder = self.make_app()
+        recorder.current_filtered_recent_output_file = mock.Mock(return_value=None)
+
+        recorder.copy_visible_recent_output_path_to_clipboard()
+
+        self.assertEqual(recorder.status_messages[-1], "Görünen filtrede kopyalanacak çıktı yok.")
+
+    def test_copy_visible_recent_output_path_to_clipboard_copies_filtered_output_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "take_new.mp3"
+            output_path.write_text("audio", encoding="utf-8")
+            recorder.current_filtered_recent_output_file = mock.Mock(return_value=output_path)
+
+            recorder.copy_visible_recent_output_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(output_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Görünen çıktı yolu panoya alındı: take_new.mp3")
+
     def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
