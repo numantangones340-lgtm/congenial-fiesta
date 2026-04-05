@@ -1434,6 +1434,15 @@ class GuitarAmpRecorderApp:
         )
         self.export_favorites_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
         self.apply_button_style(self.export_favorites_button, role="accent")
+        self.copy_favorites_button = Button(
+            preset_row,
+            text="Favorileri Kopyala",
+            command=self.copy_favorite_presets_to_clipboard,
+            bg="#5d6d7e",
+            fg="white",
+        )
+        self.copy_favorites_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.copy_favorites_button, role="secondary")
         self.import_favorites_button = Button(
             preset_row,
             text="Favori JSON Aç",
@@ -1441,7 +1450,7 @@ class GuitarAmpRecorderApp:
             bg="#6c63ff",
             fg="white",
         )
-        self.import_favorites_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
+        self.import_favorites_button.grid(row=1, column=9, sticky="w", padx=(8, 0))
         self.apply_button_style(self.import_favorites_button, role="primary")
         self.import_preset_button = Button(
             preset_row,
@@ -1450,13 +1459,13 @@ class GuitarAmpRecorderApp:
             bg="#4b7bec",
             fg="white",
         )
-        self.import_preset_button.grid(row=1, column=9, sticky="w", padx=(8, 0))
+        self.import_preset_button.grid(row=1, column=10, sticky="w", padx=(8, 0))
         self.apply_button_style(self.import_preset_button, role="primary")
         self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
-        self.delete_preset_button.grid(row=1, column=10, sticky="w", padx=(8, 0))
+        self.delete_preset_button.grid(row=1, column=11, sticky="w", padx=(8, 0))
         self.apply_button_style(self.delete_preset_button, role="danger")
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
-        self.reload_session_button.grid(row=1, column=11, sticky="w", padx=(8, 0))
+        self.reload_session_button.grid(row=1, column=12, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
         Label(preset_row, text="Preset Filtresi", bg="#151b22", fg="#dce6ef").grid(row=2, column=0, sticky="w", pady=(0, 0))
         Entry(preset_row, textvariable=self.preset_filter, width=18).grid(row=3, column=0, sticky="ew", pady=(2, 0))
@@ -4063,6 +4072,22 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Favori preset JSON yazıldı: {export_path}")
         except Exception as exc:
             self.set_status(f"Favori preset JSON yazılamadı: {exc}")
+
+    def copy_favorite_presets_to_clipboard(self) -> None:
+        try:
+            store = self.load_preset_store_data()
+            favorites = sorted(self.preset_favorites(store))
+            if not favorites:
+                self.set_status("Kopyalanacak favori preset yok.")
+                return
+            content = "Favori Presetler\n" + "\n".join(f"- {name}" for name in favorites)
+            self.copy_text_to_clipboard(
+                content,
+                "Favori preset listesi panoya alındı",
+                "Favori preset listesi kopyalanamadı",
+            )
+        except Exception as exc:
+            self.set_status(f"Favori preset listesi kopyalanamadı: {exc}")
 
     def import_favorite_presets_json(self) -> None:
         if self.block_changes_during_recording("preset"):

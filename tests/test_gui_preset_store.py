@@ -94,6 +94,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.set_status = recorder.status_messages.append
         recorder.refresh_preset_menu = mock.Mock()
         recorder.restart_input_meter = mock.Mock()
+        recorder.copy_text_to_clipboard = mock.Mock()
         recorder.last_session_summary_path = None
         recorder.input_device_options = ["Varsayılan macOS girişi", "1 - MacBook Air Mikrofonu"]
         recorder.output_device_options = ["Varsayılan macOS çıkışı", "2 - MacBook Air Hoparlörü"]
@@ -766,6 +767,42 @@ class GuiPresetStoreTests(unittest.TestCase):
             recorder.export_favorite_presets_json()
 
         self.assertEqual(recorder.status_messages[-1], "Yazdırılacak favori preset yok.")
+
+    def test_copy_favorite_presets_to_clipboard_copies_sorted_names(self) -> None:
+        recorder = self.make_app()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "favorites": ["Temiz Gitar", "Aksam"],
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "Aksam": {"gain": 7},
+                },
+            }
+        )
+
+        recorder.copy_favorite_presets_to_clipboard()
+
+        recorder.copy_text_to_clipboard.assert_called_once_with(
+            "Favori Presetler\n- Aksam\n- Temiz Gitar",
+            "Favori preset listesi panoya alındı",
+            "Favori preset listesi kopyalanamadı",
+        )
+
+    def test_copy_favorite_presets_to_clipboard_reports_empty_state(self) -> None:
+        recorder = self.make_app()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Temiz Gitar",
+                "favorites": [],
+                "presets": {"Temiz Gitar": {"gain": 4}},
+            }
+        )
+
+        recorder.copy_favorite_presets_to_clipboard()
+
+        recorder.copy_text_to_clipboard.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Kopyalanacak favori preset yok.")
 
     def test_import_favorite_presets_json_imports_all_and_marks_favorites(self) -> None:
         recorder = self.make_app()
