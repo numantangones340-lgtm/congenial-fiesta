@@ -1434,6 +1434,15 @@ class GuitarAmpRecorderApp:
         )
         self.export_favorites_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
         self.apply_button_style(self.export_favorites_button, role="accent")
+        self.import_favorites_button = Button(
+            preset_row,
+            text="Favori JSON Aç",
+            command=self.import_favorite_presets_json,
+            bg="#6c63ff",
+            fg="white",
+        )
+        self.import_favorites_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.import_favorites_button, role="primary")
         self.import_preset_button = Button(
             preset_row,
             text="Preset JSON Aç",
@@ -1441,13 +1450,13 @@ class GuitarAmpRecorderApp:
             bg="#4b7bec",
             fg="white",
         )
-        self.import_preset_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
+        self.import_preset_button.grid(row=1, column=9, sticky="w", padx=(8, 0))
         self.apply_button_style(self.import_preset_button, role="primary")
         self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
-        self.delete_preset_button.grid(row=1, column=9, sticky="w", padx=(8, 0))
+        self.delete_preset_button.grid(row=1, column=10, sticky="w", padx=(8, 0))
         self.apply_button_style(self.delete_preset_button, role="danger")
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
-        self.reload_session_button.grid(row=1, column=10, sticky="w", padx=(8, 0))
+        self.reload_session_button.grid(row=1, column=11, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
         Label(preset_row, text="Preset Filtresi", bg="#151b22", fg="#dce6ef").grid(row=2, column=0, sticky="w", pady=(0, 0))
         Entry(preset_row, textvariable=self.preset_filter, width=18).grid(row=3, column=0, sticky="ew", pady=(2, 0))
@@ -4054,6 +4063,46 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Favori preset JSON yazıldı: {export_path}")
         except Exception as exc:
             self.set_status(f"Favori preset JSON yazılamadı: {exc}")
+
+    def import_favorite_presets_json(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Favori Preset JSON Aç",
+                filetypes=[("JSON", "*.json"), ("Tüm Dosyalar", "*.*")],
+            )
+            if not file_path:
+                self.set_status("Favori preset JSON seçilmedi.")
+                return
+            source_path = Path(file_path)
+            raw = json.loads(source_path.read_text(encoding="utf-8"))
+            favorites_payload = raw.get("favorites") if isinstance(raw, dict) else None
+            if not isinstance(favorites_payload, list):
+                self.set_status(f"Favori preset JSON geçersiz: {source_path.name}")
+                return
+            store = self.load_preset_store_data()
+            presets = store.setdefault("presets", {})
+            favorite_names = self.preset_favorites(store)
+            imported_names: list[str] = []
+            for item in favorites_payload:
+                if not isinstance(item, dict) or not isinstance(item.get("preset"), dict):
+                    continue
+                source_name = str(item.get("name", "")).strip() or "İçe Aktarılan Favori"
+                target_name = self.import_selected_preset_name(source_name, set(presets.keys()))
+                presets[target_name] = dict(item["preset"])
+                favorite_names.add(target_name)
+                imported_names.append(target_name)
+            if not imported_names:
+                self.set_status(f"Favori preset JSON geçersiz: {source_path.name}")
+                return
+            store["favorites"] = sorted(favorite_names)
+            store["selected"] = imported_names[-1]
+            self.write_preset_store_data(store)
+            self.refresh_preset_menu(imported_names[-1])
+            self.set_status(f"{len(imported_names)} favori preset içe aktarıldı.")
+        except Exception as exc:
+            self.set_status(f"Favori preset JSON okunamadı: {exc}")
 
     def import_selected_preset_name(self, source_name: str, existing_names: set[str]) -> str:
         if source_name not in existing_names and source_name not in set(builtin_preset_store().get("presets", {}).keys()):

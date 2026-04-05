@@ -767,6 +767,50 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Yazdırılacak favori preset yok.")
 
+    def test_import_favorite_presets_json_imports_all_and_marks_favorites(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            favorites_json = Path(tmpdir) / "favori_presetler.json"
+            favorites_json.write_text(
+                json.dumps(
+                    {
+                        "count": 2,
+                        "favorites": [
+                            {"name": "Aksam", "preset": {"gain": 9, "preset_note": "Akşam favori"}},
+                            {"name": "Temiz Gitar", "preset": {"gain": 4}},
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path), mock.patch.object(
+                app, "filedialog", mock.Mock(askopenfilename=mock.Mock(return_value=str(favorites_json)))
+            ):
+                recorder.import_favorite_presets_json()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Aksam", raw["presets"])
+        self.assertIn("Temiz Gitar Kopya", raw["presets"])
+        self.assertIn("Aksam", raw["favorites"])
+        self.assertIn("Temiz Gitar Kopya", raw["favorites"])
+        self.assertEqual(raw["selected"], "Temiz Gitar Kopya")
+        recorder.refresh_preset_menu.assert_called_once_with("Temiz Gitar Kopya")
+        self.assertEqual(recorder.status_messages[-1], "2 favori preset içe aktarıldı.")
+
+    def test_import_favorite_presets_json_reports_invalid_payload(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            favorites_json = Path(tmpdir) / "broken_favorites.json"
+            favorites_json.write_text(json.dumps({"favorites": "invalid"}, ensure_ascii=False), encoding="utf-8")
+            with mock.patch.object(
+                app, "filedialog", mock.Mock(askopenfilename=mock.Mock(return_value=str(favorites_json)))
+            ):
+                recorder.import_favorite_presets_json()
+
+        self.assertEqual(recorder.status_messages[-1], "Favori preset JSON geçersiz: broken_favorites.json")
+
     def test_import_preset_json_imports_export_format_and_selects_name(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
