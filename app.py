@@ -3628,7 +3628,7 @@ class GuitarAmpRecorderApp:
         self.set_status("Preset notu temizlendi.")
 
     def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
-        names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        names = self.ordered_preset_names(store)
         if self.preset_favorites_only_enabled():
             favorite_names = self.preset_favorites(store)
             names = [name for name in names if name in favorite_names]
@@ -3636,6 +3636,15 @@ class GuitarAmpRecorderApp:
         if not term:
             return names
         return [name for name in names if term in name.casefold()]
+
+    def ordered_preset_names(self, store: dict) -> list[str]:
+        names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        favorite_names = self.preset_favorites(store)
+        if not favorite_names:
+            return names
+        favorites = [name for name in names if name in favorite_names]
+        others = [name for name in names if name not in favorite_names]
+        return favorites + others
 
     def update_preset_filter_meta(self, total_count: int, matched_count: int, filter_text: str) -> None:
         favorites_prefix = "Favoriler açık. " if self.preset_favorites_only_enabled() else ""
@@ -3690,7 +3699,7 @@ class GuitarAmpRecorderApp:
 
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
         store = self.load_preset_store_data()
-        all_names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        all_names = self.ordered_preset_names(store)
         filtered_names = self.filtered_preset_names(store)
         names = filtered_names or all_names
         self.preset_names = names

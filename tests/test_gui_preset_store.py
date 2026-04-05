@@ -401,6 +401,22 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(names, ["MacBook Mikrofon Hizli Kayit"])
 
+    def test_ordered_preset_names_places_favorites_first(self) -> None:
+        recorder = self.make_app()
+        store = {
+            "selected": "Temiz Gitar",
+            "favorites": ["MacBook Mikrofon Hizli Kayit", "Aksam"],
+            "presets": {
+                "Temiz Gitar": {"gain": 4},
+                "MacBook Mikrofon Hizli Kayit": {"gain": 8},
+                "Aksam": {"gain": 5},
+            },
+        }
+
+        names = recorder.ordered_preset_names(store)
+
+        self.assertEqual(names, ["Aksam", "MacBook Mikrofon Hizli Kayit", "Temiz Gitar"])
+
     def test_refresh_preset_menu_uses_filter_and_updates_meta(self) -> None:
         recorder = self.make_app()
         recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
@@ -424,6 +440,27 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_name.get(), "MacBook Mikrofon Hizli Kayit")
         self.assertEqual(recorder.preset_menu.menu.labels, ["MacBook Mikrofon Hizli Kayit"])
         self.assertEqual(recorder.preset_filter_meta_text.get(), 'Filtre "macbook" için eşleşme: 1/3')
+
+    def test_refresh_preset_menu_lists_favorites_before_other_presets(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.preset_menu = FakeOptionMenu()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Temiz Gitar",
+                "favorites": ["MacBook Mikrofon Hizli Kayit"],
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "MacBook Mikrofon Hizli Kayit": {"gain": 8},
+                    "Aksam": {"gain": 5},
+                },
+            }
+        )
+
+        recorder.refresh_preset_menu()
+
+        self.assertEqual(recorder.preset_names, ["MacBook Mikrofon Hizli Kayit", "Aksam", "Temiz Gitar"])
+        self.assertEqual(recorder.preset_menu.menu.labels, ["MacBook Mikrofon Hizli Kayit", "Aksam", "Temiz Gitar"])
 
     def test_toggle_preset_favorites_filter_refreshes_menu_and_status(self) -> None:
         recorder = self.make_app()
