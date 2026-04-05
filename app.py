@@ -1473,6 +1473,15 @@ class GuitarAmpRecorderApp:
         )
         self.preset_note_clean_button.grid(row=6, column=5, sticky="w", padx=(8, 0))
         self.apply_button_style(self.preset_note_clean_button, role="success")
+        self.clear_preset_note_button = Button(
+            preset_row,
+            text="Notu Temizle",
+            command=self.clear_preset_note,
+            bg="#7f8c8d",
+            fg="white",
+        )
+        self.clear_preset_note_button.grid(row=6, column=6, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.clear_preset_note_button, role="secondary")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=7, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
@@ -3544,6 +3553,10 @@ class GuitarAmpRecorderApp:
     def apply_preset_note_template(self, note: str) -> None:
         self.preset_note.set(note)
         self.set_status(f"Preset notu şablonu uygulandı: {note}")
+
+    def clear_preset_note(self) -> None:
+        self.preset_note.set("")
+        self.set_status("Preset notu temizlendi.")
 
     def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
         names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
