@@ -1167,6 +1167,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Paylaşım için kapak görseli seçin.")
 
+    def test_open_youtube_upload_page_opens_browser_and_updates_status(self) -> None:
+        recorder = self.make_app()
+
+        with mock.patch.object(app.webbrowser, "open") as open_mock:
+            recorder.open_youtube_upload_page()
+
+        open_mock.assert_called_once_with("https://www.youtube.com/upload")
+        self.assertEqual(recorder.status_messages[-1], "YouTube yükleme sayfası açıldı.")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

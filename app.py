@@ -7,6 +7,7 @@ import sys
 import tempfile
 import threading
 import time
+import webbrowser
 from pathlib import Path
 from tkinter import (
     Tk,
@@ -5098,6 +5099,13 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Paylaşım paketi açılamadı: {exc}")
 
+    def open_youtube_upload_page(self) -> None:
+        try:
+            webbrowser.open("https://www.youtube.com/upload")
+            self.set_status("YouTube yükleme sayfası açıldı.")
+        except Exception as exc:
+            self.set_status(f"YouTube yükleme sayfası açılamadı: {exc}")
+
     def use_last_audio_for_share(self) -> None:
         audio_path = self.current_share_audio_path()
         if audio_path is None or not audio_path.exists():
@@ -5155,17 +5163,20 @@ class GuitarAmpRecorderApp:
             use_audio_button = Button(button_row, text="Son Kaydı Kullan", command=self.use_last_audio_for_share, bg="#16a085", fg="white")
             export_button = Button(button_row, text="YouTube Paketi Yaz", command=self.export_share_package, bg="#2d7d46", fg="white")
             open_button = Button(button_row, text="Paketi Aç", command=self.open_last_share_package_in_finder, bg="#1f6feb", fg="white")
+            upload_button = Button(button_row, text="YouTube Yükle", command=self.open_youtube_upload_page, bg="#c0392b", fg="white")
             for button, role in (
                 (select_button, "secondary"),
                 (use_audio_button, "success"),
                 (export_button, "success"),
                 (open_button, "primary"),
+                (upload_button, "danger"),
             ):
                 self.apply_button_style(button, role=role)
             select_button.pack(side="left")
             use_audio_button.pack(side="left", padx=(8, 0))
             export_button.pack(side="left", padx=(8, 0))
             open_button.pack(side="left", padx=(8, 0))
+            upload_button.pack(side="left", padx=(8, 0))
             self.set_status("Paylaşım penceresi açıldı. Kapak görseli seçip YouTube paketini hazırlayabilirsiniz.")
         except Exception as exc:
             self.share_window = None
