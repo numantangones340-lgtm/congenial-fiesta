@@ -54,6 +54,8 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_filter = FakeVar("")
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
+        recorder.preset_favorite_text = FakeVar("Favori: hayır")
+        recorder.preset_favorite_button_text = FakeVar("Favoriye Ekle")
         recorder.preset_summary_text = FakeVar("Preset özeti hazırlanıyor...")
         recorder.preset_note_meta_text = FakeVar("0 karakter")
         recorder.input_device_choice = FakeVar("Built-in Mic")
@@ -161,6 +163,26 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(store["selected"], "Temiz Gitar")
         self.assertEqual(store["presets"]["Temiz Gitar"]["gain"], builtin_gain)
         self.assertEqual(store["presets"]["Kullanici"]["gain"], 7)
+
+    def test_load_preset_store_data_preserves_only_existing_favorites(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            preset_path.write_text(
+                json.dumps(
+                    {
+                        "selected": "Temiz Gitar",
+                        "favorites": ["Temiz Gitar", "Kullanici", "Eksik"],
+                        "presets": {"Kullanici": {"gain": 7}},
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                store = recorder.load_preset_store_data()
+
+        self.assertEqual(store["favorites"], ["Kullanici", "Temiz Gitar"])
 
     def test_save_current_preset_persists_selected_name(self) -> None:
         recorder = self.make_app()
@@ -399,6 +421,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.load_preset_store_data = mock.Mock(
             return_value={
                 "selected": "Temiz Gitar",
+                "favorites": [],
                 "presets": {
                     "Temiz Gitar": {"gain": 4},
                     "Aksam": {"gain": 5},
@@ -409,6 +432,8 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu("Temiz Gitar")
 
         self.assertEqual(recorder.preset_scope_text.get(), "Yerleşik preset seçili: Temiz Gitar")
+        self.assertEqual(recorder.preset_favorite_text.get(), "Favori: hayır")
+        self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriye Ekle")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 4 | Vokal: -% | Çıkış Kazancı: - dB")
 
     def test_refresh_preset_menu_marks_user_selected_preset_scope(self) -> None:
@@ -418,6 +443,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.load_preset_store_data = mock.Mock(
             return_value={
                 "selected": "Aksam",
+                "favorites": ["Aksam"],
                 "presets": {
                     "Temiz Gitar": {"gain": 4},
                     "Aksam": {"gain": 5},
@@ -428,6 +454,8 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu("Aksam")
 
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
+        self.assertEqual(recorder.preset_favorite_text.get(), "Favori: evet")
+        self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriden Çıkar")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 5 | Vokal: -% | Çıkış Kazancı: - dB")
 
     def test_on_preset_selected_updates_scope_and_summary(self) -> None:
@@ -447,6 +475,43 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_name.get(), "Aksam")
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 6 | Vokal: 92% | Çıkış Kazancı: 3 dB")
+
+    def test_toggle_selected_preset_favorite_adds_and_removes_builtin_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.toggle_selected_preset_favorite = app.GuitarAmpRecorderApp.toggle_selected_preset_favorite.__get__(
+                    recorder, app.GuitarAmpRecorderApp
+                )
+                recorder.toggle_selected_preset_favorite()
+                raw_after_add = json.loads(preset_path.read_text(encoding="utf-8"))
+                recorder.toggle_selected_preset_favorite()
+                raw_after_remove = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Temiz Gitar", raw_after_add["favorites"])
+        self.assertNotIn("Temiz Gitar", raw_after_remove["favorites"])
+        self.assertEqual(recorder.refresh_preset_menu.call_args_list[0], mock.call("Temiz Gitar"))
+        self.assertEqual(recorder.refresh_preset_menu.call_args_list[1], mock.call("Temiz Gitar"))
+        self.assertEqual(recorder.status_messages[-1], "Favoriden çıkarıldı: Temiz Gitar")
+
+    def test_delete_selected_preset_removes_name_from_favorites(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Aksam")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            preset_path.write_text(
+                json.dumps(
+                    {"selected": "Aksam", "favorites": ["Aksam"], "presets": {"Aksam": {"gain": 4}}},
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.delete_selected_preset()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertNotIn("Aksam", raw.get("favorites", []))
 
     def test_on_preset_selected_restores_note_and_summary(self) -> None:
         recorder = self.make_app()

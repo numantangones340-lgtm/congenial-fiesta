@@ -733,6 +733,7 @@ def no_device_help_text() -> str:
 def builtin_preset_store() -> dict:
     return {
         "selected": "Temiz Gitar",
+        "favorites": [],
         "presets": {
             "Temiz Konusma": {
                 "input_device_choice": "Varsayılan macOS girişi",
@@ -931,7 +932,11 @@ def builtin_preset_store() -> dict:
 
 
 def merge_builtin_presets(store: dict) -> dict:
-    merged = {"selected": str(store.get("selected", "Temiz Gitar") or "Temiz Gitar"), "presets": {}}
+    merged = {
+        "selected": str(store.get("selected", "Temiz Gitar") or "Temiz Gitar"),
+        "favorites": [],
+        "presets": {},
+    }
     builtin = builtin_preset_store()
     builtin_names = set(builtin["presets"].keys())
     user_presets = {
@@ -941,6 +946,15 @@ def merge_builtin_presets(store: dict) -> dict:
     }
     merged["presets"].update(builtin["presets"])
     merged["presets"].update(user_presets)
+    raw_favorites = store.get("favorites", [])
+    if isinstance(raw_favorites, list):
+        merged["favorites"] = sorted(
+            {
+                str(name)
+                for name in raw_favorites
+                if isinstance(name, str) and str(name) in merged["presets"]
+            }
+        )
     if merged["selected"] not in merged["presets"]:
         merged["selected"] = builtin["selected"]
     return merged
@@ -1011,6 +1025,8 @@ class GuitarAmpRecorderApp:
         self.preset_filter = StringVar(value="")
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
+        self.preset_favorite_text = StringVar(value="Favori: hayır")
+        self.preset_favorite_button_text = StringVar(value="Favoriye Ekle")
         self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
         self.preset_note_meta_text = StringVar(value="0 karakter")
         self.limiter_enabled = StringVar(value="Açık")
@@ -1389,6 +1405,15 @@ class GuitarAmpRecorderApp:
         )
         self.duplicate_preset_button.grid(row=1, column=4, sticky="w", padx=(8, 0))
         self.apply_button_style(self.duplicate_preset_button, role="accent")
+        self.favorite_preset_button = Button(
+            preset_row,
+            textvariable=self.preset_favorite_button_text,
+            command=self.toggle_selected_preset_favorite,
+            bg="#d4a017",
+            fg="white",
+        )
+        self.favorite_preset_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.favorite_preset_button, role="warning")
         self.export_preset_button = Button(
             preset_row,
             text="Preset JSON Yaz",
@@ -1396,7 +1421,7 @@ class GuitarAmpRecorderApp:
             bg="#5b6ee1",
             fg="white",
         )
-        self.export_preset_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.export_preset_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
         self.apply_button_style(self.export_preset_button, role="accent")
         self.import_preset_button = Button(
             preset_row,
@@ -1405,13 +1430,13 @@ class GuitarAmpRecorderApp:
             bg="#4b7bec",
             fg="white",
         )
-        self.import_preset_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
+        self.import_preset_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
         self.apply_button_style(self.import_preset_button, role="primary")
         self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
-        self.delete_preset_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
+        self.delete_preset_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
         self.apply_button_style(self.delete_preset_button, role="danger")
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
-        self.reload_session_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
+        self.reload_session_button.grid(row=1, column=9, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
         Label(preset_row, text="Preset Filtresi", bg="#151b22", fg="#dce6ef").grid(row=2, column=0, sticky="w", pady=(0, 0))
         Entry(preset_row, textvariable=self.preset_filter, width=18).grid(row=3, column=0, sticky="ew", pady=(2, 0))
@@ -1487,10 +1512,13 @@ class GuitarAmpRecorderApp:
         self.clear_preset_note_button.grid(row=6, column=6, sticky="w", padx=(8, 0))
         self.apply_button_style(self.clear_preset_note_button, role="secondary")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=8, column=0, columnspan=9, sticky="w", pady=(4, 0)
+            row=8, column=0, columnspan=10, sticky="w", pady=(4, 0)
+        )
+        Label(preset_row, textvariable=self.preset_favorite_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=9, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=9, column=0, columnspan=9, sticky="w", pady=(4, 0)
+            row=10, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3534,14 +3562,26 @@ class GuitarAmpRecorderApp:
             return self.default_preset_store()
         if isinstance(raw, dict) and "presets" in raw and isinstance(raw.get("presets"), dict):
             selected = str(raw.get("selected", "Temiz Gitar") or "Temiz Gitar")
-            return merge_builtin_presets({"selected": selected, "presets": raw["presets"]})
+            favorites = raw.get("favorites", [])
+            return merge_builtin_presets({"selected": selected, "favorites": favorites, "presets": raw["presets"]})
         if isinstance(raw, dict):
             return merge_builtin_presets({"selected": "Varsayilan", "presets": {"Varsayilan": raw}})
         return self.default_preset_store()
 
     def write_preset_store_data(self, store: dict) -> None:
         GUI_PRESET_PATH.parent.mkdir(parents=True, exist_ok=True)
-        GUI_PRESET_PATH.write_text(json.dumps(store, ensure_ascii=False, indent=2), encoding="utf-8")
+        normalized = merge_builtin_presets(store)
+        GUI_PRESET_PATH.write_text(json.dumps(normalized, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def preset_favorites(self, store: dict) -> set[str]:
+        favorites = store.get("favorites", [])
+        if not isinstance(favorites, list):
+            return set()
+        return {
+            str(name)
+            for name in favorites
+            if isinstance(name, str) and str(name) in store.get("presets", {})
+        }
 
     def preset_filter_term(self) -> str:
         return str(self.preset_filter.get() if hasattr(self, "preset_filter") else "").strip().casefold()
@@ -3591,6 +3631,11 @@ class GuitarAmpRecorderApp:
             return
         self.preset_scope_text.set(f"Kullanıcı preset seçili: {selected_name}")
 
+    def update_preset_favorite_text(self, selected_name: str, store: dict) -> None:
+        is_favorite = selected_name in self.preset_favorites(store)
+        self.preset_favorite_text.set(f"Favori: {'evet' if is_favorite else 'hayır'}")
+        self.preset_favorite_button_text.set("Favoriden Çıkar" if is_favorite else "Favoriye Ekle")
+
     def update_preset_summary_text(self, selected_name: str, store: dict) -> None:
         preset = store.get("presets", {}).get(selected_name, {})
         if not isinstance(preset, dict):
@@ -3612,6 +3657,7 @@ class GuitarAmpRecorderApp:
         self.preset_note.set(str(preset.get("preset_note", "")).strip() if isinstance(preset, dict) else "")
         self.update_preset_note_meta_text()
         self.update_preset_scope_text(selected_name)
+        self.update_preset_favorite_text(selected_name, store)
         self.update_preset_summary_text(selected_name, store)
 
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
@@ -3631,6 +3677,7 @@ class GuitarAmpRecorderApp:
         self.update_preset_filter_meta(len(all_names), len(filtered_names), str(self.preset_filter.get()).strip())
         self.update_preset_note_meta_text()
         self.update_preset_scope_text(target)
+        self.update_preset_favorite_text(target, store)
         self.update_preset_summary_text(target, store)
 
     def apply_preset_filter(self) -> None:
@@ -3812,6 +3859,7 @@ class GuitarAmpRecorderApp:
                 return
             previous_selected = str(store.get("selected", "") or "")
             del presets[name]
+            store["favorites"] = sorted(fav for fav in self.preset_favorites(store) if fav != name)
             if not presets:
                 store = self.default_preset_store()
                 self.write_preset_store_data(store)
@@ -3860,6 +3908,30 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset çoğaltıldı: {source_name} -> {duplicate_name}")
         except Exception as exc:
             self.set_status(f"Preset çoğaltma hatası: {exc}")
+
+    def toggle_selected_preset_favorite(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
+        try:
+            store = self.load_preset_store_data()
+            name = self.preset_name.get().strip() or str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            if name not in store.get("presets", {}):
+                self.set_status(f"Preset bulunamadı: {name}")
+                return
+            favorites = self.preset_favorites(store)
+            if name in favorites:
+                favorites.remove(name)
+                action_text = "Favoriden çıkarıldı"
+            else:
+                favorites.add(name)
+                action_text = "Favoriye eklendi"
+            store["favorites"] = sorted(favorites)
+            store["selected"] = name
+            self.write_preset_store_data(store)
+            self.refresh_preset_menu(name)
+            self.set_status(f"{action_text}: {name}")
+        except Exception as exc:
+            self.set_status(f"Preset favori güncelleme hatası: {exc}")
 
     def export_selected_preset_json(self) -> None:
         if self.block_changes_during_recording("preset"):
