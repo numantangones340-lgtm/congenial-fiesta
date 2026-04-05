@@ -1010,6 +1010,7 @@ class GuitarAmpRecorderApp:
         self.preset_filter = StringVar(value="")
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
+        self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -1435,6 +1436,9 @@ class GuitarAmpRecorderApp:
         )
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=5, column=0, columnspan=9, sticky="w", pady=(4, 0)
+        )
+        Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=6, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3498,6 +3502,22 @@ class GuitarAmpRecorderApp:
             return
         self.preset_scope_text.set(f"Kullanıcı preset seçili: {selected_name}")
 
+    def update_preset_summary_text(self, selected_name: str, store: dict) -> None:
+        preset = store.get("presets", {}).get(selected_name, {})
+        if not isinstance(preset, dict):
+            self.preset_summary_text.set(f"Preset özeti hazırlanamadı: {selected_name}")
+            return
+        gain = preset.get("gain", "-")
+        vocal = preset.get("vocal_level", "-")
+        output_gain = preset.get("output_gain", "-")
+        self.preset_summary_text.set(f"Gain: {gain} | Vokal: {vocal}% | Çıkış Kazancı: {output_gain} dB")
+
+    def on_preset_selected(self, selected_name: str) -> None:
+        self.preset_name.set(selected_name)
+        store = self.load_preset_store_data()
+        self.update_preset_scope_text(selected_name)
+        self.update_preset_summary_text(selected_name, store)
+
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
         store = self.load_preset_store_data()
         all_names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
@@ -3507,13 +3527,14 @@ class GuitarAmpRecorderApp:
         menu = self.preset_menu["menu"]
         menu.delete(0, "end")
         for name in self.preset_names:
-            menu.add_command(label=name, command=lambda value=name: self.preset_name.set(value))
+            menu.add_command(label=name, command=lambda value=name: self.on_preset_selected(value))
         target = selected_name or self.preset_name.get() or store.get("selected", "Temiz Gitar")
         if target not in self.preset_names:
             target = self.preset_names[0]
         self.preset_name.set(target)
         self.update_preset_filter_meta(len(all_names), len(filtered_names), str(self.preset_filter.get()).strip())
         self.update_preset_scope_text(target)
+        self.update_preset_summary_text(target, store)
 
     def apply_preset_filter(self) -> None:
         self.refresh_preset_menu()

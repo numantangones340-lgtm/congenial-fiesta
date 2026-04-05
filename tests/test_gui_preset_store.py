@@ -53,6 +53,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_filter = FakeVar("")
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
+        recorder.preset_summary_text = FakeVar("Preset özeti hazırlanıyor...")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.input_device_id = FakeVar("1")
@@ -374,6 +375,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu("Temiz Gitar")
 
         self.assertEqual(recorder.preset_scope_text.get(), "Yerleşik preset seçili: Temiz Gitar")
+        self.assertEqual(recorder.preset_summary_text.get(), "Gain: 4 | Vokal: -% | Çıkış Kazancı: - dB")
 
     def test_refresh_preset_menu_marks_user_selected_preset_scope(self) -> None:
         recorder = self.make_app()
@@ -392,6 +394,25 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu("Aksam")
 
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
+        self.assertEqual(recorder.preset_summary_text.get(), "Gain: 5 | Vokal: -% | Çıkış Kazancı: - dB")
+
+    def test_on_preset_selected_updates_scope_and_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "presets": {
+                    "Temiz Gitar": {"gain": 4, "vocal_level": 85, "output_gain": 0},
+                    "Aksam": {"gain": 6, "vocal_level": 92, "output_gain": 3},
+                },
+            }
+        )
+
+        recorder.on_preset_selected("Aksam")
+
+        self.assertEqual(recorder.preset_name.get(), "Aksam")
+        self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
+        self.assertEqual(recorder.preset_summary_text.get(), "Gain: 6 | Vokal: 92% | Çıkış Kazancı: 3 dB")
 
     def test_duplicate_selected_preset_creates_copy_of_builtin_preset(self) -> None:
         recorder = self.make_app()
