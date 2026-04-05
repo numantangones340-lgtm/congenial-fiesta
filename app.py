@@ -1392,11 +1392,20 @@ class GuitarAmpRecorderApp:
         )
         self.export_preset_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
         self.apply_button_style(self.export_preset_button, role="accent")
+        self.import_preset_button = Button(
+            preset_row,
+            text="Preset JSON Aç",
+            command=self.import_preset_json,
+            bg="#4b7bec",
+            fg="white",
+        )
+        self.import_preset_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.import_preset_button, role="primary")
         self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
-        self.delete_preset_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
+        self.delete_preset_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
         self.apply_button_style(self.delete_preset_button, role="danger")
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
-        self.reload_session_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
+        self.reload_session_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3683,6 +3692,43 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset JSON yazıldı: {export_path}")
         except Exception as exc:
             self.set_status(f"Preset JSON yazılamadı: {exc}")
+
+    def import_selected_preset_name(self, source_name: str, existing_names: set[str]) -> str:
+        if source_name not in existing_names and source_name not in set(builtin_preset_store().get("presets", {}).keys()):
+            return source_name
+        return self.next_duplicate_preset_name(source_name, existing_names)
+
+    def import_preset_json(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Preset JSON Aç",
+                filetypes=[("Preset JSON", "*.preset.json"), ("JSON", "*.json"), ("Tüm Dosyalar", "*.*")],
+            )
+            if not file_path:
+                self.set_status("Preset JSON seçilmedi.")
+                return
+            source_path = Path(file_path)
+            raw = json.loads(source_path.read_text(encoding="utf-8"))
+            if isinstance(raw, dict) and isinstance(raw.get("preset"), dict):
+                source_name = str(raw.get("name", "")).strip() or source_path.stem.replace(".preset", "")
+                preset_data = raw["preset"]
+            elif isinstance(raw, dict):
+                source_name = source_path.stem.replace(".preset", "")
+                preset_data = raw
+            else:
+                self.set_status(f"Preset JSON geçersiz: {source_path.name}")
+                return
+            store = self.load_preset_store_data()
+            target_name = self.import_selected_preset_name(source_name or "İçe Aktarılan Preset", set(store.get("presets", {}).keys()))
+            store.setdefault("presets", {})[target_name] = dict(preset_data)
+            store["selected"] = target_name
+            self.write_preset_store_data(store)
+            self.refresh_preset_menu(target_name)
+            self.set_status(f"Preset içe aktarıldı: {target_name}")
+        except Exception as exc:
+            self.set_status(f"Preset JSON okunamadı: {exc}")
 
     def fill_recommended_devices(self) -> None:
         if self.block_changes_during_recording("cihaz ayarları"):

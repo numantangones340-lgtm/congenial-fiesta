@@ -368,6 +368,67 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Preset bulunamadı: Bulunamayan")
 
+    def test_import_preset_json_imports_export_format_and_selects_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_json = Path(tmpdir) / "Aksam.preset.json"
+            preset_json.write_text(
+                json.dumps({"name": "Aksam", "preset": {"gain": 9, "output_gain": 2}}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path), mock.patch.object(
+                app, "filedialog", mock.Mock(askopenfilename=mock.Mock(return_value=str(preset_json)))
+            ):
+                recorder.import_preset_json()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Aksam", raw["presets"])
+        self.assertEqual(raw["selected"], "Aksam")
+        self.assertEqual(raw["presets"]["Aksam"]["gain"], 9)
+        recorder.refresh_preset_menu.assert_called_once_with("Aksam")
+        self.assertEqual(recorder.status_messages[-1], "Preset içe aktarıldı: Aksam")
+
+    def test_import_preset_json_renames_when_name_conflicts(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_json = Path(tmpdir) / "Temiz_Gitar.preset.json"
+            preset_json.write_text(
+                json.dumps({"name": "Temiz Gitar", "preset": {"gain": 9}}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path), mock.patch.object(
+                app, "filedialog", mock.Mock(askopenfilename=mock.Mock(return_value=str(preset_json)))
+            ):
+                recorder.import_preset_json()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Temiz Gitar Kopya", raw["presets"])
+        self.assertEqual(raw["selected"], "Temiz Gitar Kopya")
+        recorder.refresh_preset_menu.assert_called_once_with("Temiz Gitar Kopya")
+        self.assertEqual(recorder.status_messages[-1], "Preset içe aktarıldı: Temiz Gitar Kopya")
+
+    def test_import_preset_json_reports_cancelled_selection(self) -> None:
+        recorder = self.make_app()
+
+        with mock.patch.object(app, "filedialog", mock.Mock(askopenfilename=mock.Mock(return_value=""))):
+            recorder.import_preset_json()
+
+        self.assertEqual(recorder.status_messages[-1], "Preset JSON seçilmedi.")
+
+    def test_import_preset_json_reports_invalid_payload(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_json = Path(tmpdir) / "broken.preset.json"
+            preset_json.write_text(json.dumps(["invalid"], ensure_ascii=False), encoding="utf-8")
+            with mock.patch.object(
+                app, "filedialog", mock.Mock(askopenfilename=mock.Mock(return_value=str(preset_json)))
+            ):
+                recorder.import_preset_json()
+
+        self.assertEqual(recorder.status_messages[-1], "Preset JSON geçersiz: broken.preset.json")
+
 
 if __name__ == "__main__":
     unittest.main()
