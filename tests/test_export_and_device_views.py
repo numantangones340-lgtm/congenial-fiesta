@@ -68,6 +68,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.share_title = FakeVar("")
         recorder.share_description = FakeVar("")
         recorder.share_image_path = FakeVar("")
+        recorder.share_meta_text = FakeVar("")
         recorder.session_mode = FakeVar("Tek Klasör")
         recorder.session_name = FakeVar("session_20260404")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
@@ -1288,6 +1289,26 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertIn("Kategori: Music", copied)
             self.assertIn("Görünürlük: Herkese Açık", copied)
             self.assertEqual(recorder.status_messages[-1], "YouTube yükleme notu panoya alındı")
+
+    def test_share_meta_summary_reports_audio_image_and_package_state(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            image_path = Path(tmpdir) / "kapak.jpg"
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            package_dir.mkdir(parents=True, exist_ok=True)
+            recorder.last_export_path = audio_path
+            recorder.share_image_path.set(str(image_path))
+            recorder.last_share_package_dir = package_dir
+
+            recorder.update_share_meta_text()
+
+            self.assertEqual(
+                recorder.share_meta_text.get(),
+                "Ses: gitar_take.mp3 | Kapak: kapak.jpg | Paket: gitar_take_youtube_paketi",
+            )
 
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
