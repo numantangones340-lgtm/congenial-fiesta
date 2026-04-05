@@ -1136,6 +1136,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.share_description.set("Kisa aciklama")
             recorder.share_image_path.set(str(image_path))
 
+            recorder.embed_cover_art_in_mp3 = mock.Mock(return_value=(True, "Kapak görseli mp3 içine eklendi."))
             recorder.export_share_package()
 
             package_dir = output_dir / "_paylasim" / "take_001_youtube_paketi"
@@ -1144,6 +1145,8 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual((package_dir / "youtube_baslik.txt").read_text(encoding="utf-8"), "Benim Basligim")
             self.assertEqual((package_dir / "youtube_aciklama.txt").read_text(encoding="utf-8"), "Kisa aciklama")
             self.assertIn("# YouTube Paylaşım Paketi", (package_dir / "paylasim_paketi.md").read_text(encoding="utf-8"))
+            self.assertIn("MP3 Kapak: Kapak görseli mp3 içine eklendi.", (package_dir / "paylasim_paketi.md").read_text(encoding="utf-8"))
+            recorder.embed_cover_art_in_mp3.assert_called_once_with(package_dir / "take_001.mp3", package_dir / "kapak.jpg")
             self.assertEqual(recorder.last_share_package_dir, package_dir)
 
         self.assertEqual(recorder.status_messages[-1], f"YouTube paylaşım paketi hazır: {package_dir}")
@@ -1163,6 +1166,46 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.export_share_package()
 
         self.assertEqual(recorder.status_messages[-1], "Paylaşım için kapak görseli seçin.")
+
+    def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            mp3_path = Path(tmpdir) / "take.mp3"
+            image_path = Path(tmpdir) / "cover.jpg"
+            mp3_path.write_text("audio", encoding="utf-8")
+            image_path.write_bytes(b"fake-image")
+
+            class FakeTags(dict):
+                def add(self, frame) -> None:
+                    self["APIC:new"] = frame
+
+            class FakeAudio:
+                def __init__(self) -> None:
+                    self.tags = FakeTags({"APIC:old": "old"})
+                    self.saved = False
+
+                def add_tags(self) -> None:
+                    self.tags = FakeTags()
+
+                def save(self) -> None:
+                    self.saved = True
+
+            fake_audio = FakeAudio()
+
+            class FakeAPIC:
+                def __init__(self, **kwargs) -> None:
+                    self.kwargs = kwargs
+
+            with mock.patch.object(app, "MUTAGEN_AVAILABLE", True), mock.patch.object(app, "MP3", return_value=fake_audio), mock.patch.object(
+                app, "ID3", object()
+            ), mock.patch.object(app, "APIC", FakeAPIC):
+                ok, message = recorder.embed_cover_art_in_mp3(mp3_path, image_path)
+
+        self.assertTrue(ok)
+        self.assertEqual(message, "Kapak görseli mp3 içine eklendi.")
+        self.assertIn("APIC:new", fake_audio.tags)
+        self.assertEqual(fake_audio.tags["APIC:new"].kwargs["mime"], "image/jpeg")
+        self.assertEqual(fake_audio.tags["APIC:new"].kwargs["data"], b"fake-image")
 
     def test_notify_success_uses_root_bell(self) -> None:
         recorder = self.make_app()

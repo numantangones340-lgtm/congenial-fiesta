@@ -29,6 +29,16 @@ from typing import Optional, Tuple
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
+try:
+    from mutagen.id3 import APIC, ID3
+    from mutagen.mp3 import MP3
+
+    MUTAGEN_AVAILABLE = True
+except Exception:
+    APIC = None
+    ID3 = None
+    MP3 = None
+    MUTAGEN_AVAILABLE = False
 
 VERSION_PATH = Path(__file__).resolve().with_name("VERSION")
 
@@ -4989,13 +4999,48 @@ class GuitarAmpRecorderApp:
         output_dir = self.resolve_output_dir()
         return output_dir / "_paylasim" / f"{self.safe_share_export_name(audio_path.stem)}_youtube_paketi"
 
-    def build_share_package_markdown(self, title: str, description: str, audio_name: str, image_name: str) -> str:
+    def image_mime_type(self, image_path: Path) -> str:
+        suffix = image_path.suffix.lower()
+        if suffix == ".png":
+            return "image/png"
+        if suffix in {".jpg", ".jpeg"}:
+            return "image/jpeg"
+        if suffix == ".webp":
+            return "image/webp"
+        return "image/jpeg"
+
+    def embed_cover_art_in_mp3(self, mp3_path: Path, image_path: Path) -> tuple[bool, str]:
+        if not MUTAGEN_AVAILABLE or MP3 is None or ID3 is None or APIC is None:
+            return False, "Mutagen eksik, kapak yalnızca ayrı görsel dosyası olarak hazır."
+        try:
+            audio = MP3(mp3_path, ID3=ID3)
+            if audio.tags is None:
+                audio.add_tags()
+            for key in list(audio.tags.keys()):
+                if str(key).startswith("APIC"):
+                    del audio.tags[key]
+            audio.tags.add(
+                APIC(
+                    encoding=3,
+                    mime=self.image_mime_type(image_path),
+                    type=3,
+                    desc="Kapak",
+                    data=image_path.read_bytes(),
+                )
+            )
+            audio.save()
+            return True, "Kapak görseli mp3 içine eklendi."
+        except Exception as exc:
+            return False, f"Kapak mp3 içine eklenemedi: {exc}"
+
+    def build_share_package_markdown(self, title: str, description: str, audio_name: str, image_name: str, cover_status: str) -> str:
         lines = [
             "# YouTube Paylaşım Paketi",
             "",
             f"- Başlık: {title}",
             f"- Ses Dosyası: {audio_name}",
             f"- Kapak Görseli: {image_name}",
+            f"- MP3 Kapak: {cover_status}",
             "",
             "## Açıklama",
             "",
@@ -5024,13 +5069,17 @@ class GuitarAmpRecorderApp:
             description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
             package_dir = self.share_package_dir(audio_path)
             package_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(audio_path, package_dir / audio_path.name)
+            audio_target = package_dir / audio_path.name
+            shutil.copy2(audio_path, audio_target)
             image_target = package_dir / f"kapak{image_path.suffix.lower() or '.jpg'}"
             shutil.copy2(image_path, image_target)
+            cover_status = "MP3 değil, kapak ayrı görsel dosyası olarak hazır."
+            if audio_target.suffix.lower() == ".mp3":
+                _, cover_status = self.embed_cover_art_in_mp3(audio_target, image_target)
             (package_dir / "youtube_baslik.txt").write_text(title, encoding="utf-8")
             (package_dir / "youtube_aciklama.txt").write_text(description, encoding="utf-8")
             (package_dir / "paylasim_paketi.md").write_text(
-                self.build_share_package_markdown(title, description, audio_path.name, image_target.name),
+                self.build_share_package_markdown(title, description, audio_path.name, image_target.name, cover_status),
                 encoding="utf-8",
             )
             self.last_share_package_dir = package_dir
