@@ -4965,6 +4965,54 @@ class GuitarAmpRecorderApp:
             parts.append(f"Not: {note}")
         return " | ".join(parts)
 
+    def share_template_audio_label(self, audio_path: Optional[Path]) -> str:
+        if audio_path is None:
+            return "Yeni kayıt"
+        return audio_path.stem.replace("_", " ").strip() or "Yeni kayıt"
+
+    def share_template_note_suffix(self) -> str:
+        note = self.current_preset_note()
+        if not note:
+            return ""
+        return f" | Not: {note}"
+
+    def share_template_values(self, template_name: str, audio_path: Optional[Path] = None) -> tuple[str, str]:
+        source_audio = audio_path or self.current_share_audio_path()
+        audio_label = self.share_template_audio_label(source_audio)
+        preset_name = self.preset_name.get().strip() or "Temiz Gitar"
+        note_suffix = self.share_template_note_suffix()
+        normalized = template_name.strip().lower()
+        if normalized == "canlı":
+            return (
+                f"{audio_label} | Canlı Kayıt",
+                f"Canlı kayıt paylaşımı | Kayıt: {audio_label} | Preset: {preset_name}{note_suffix}",
+            )
+        if normalized == "temiz gitar":
+            return (
+                f"{audio_label} | Temiz Gitar Tonu",
+                f"Temiz gitar tonu paylaşımı | Kayıt: {audio_label} | Preset: {preset_name}{note_suffix}",
+            )
+        if normalized == "konuşma":
+            return (
+                f"{audio_label} | Konuşma Kaydı",
+                f"Konuşma kaydı paylaşımı | Kayıt: {audio_label} | Preset: {preset_name}{note_suffix}",
+            )
+        if normalized == "tanıtım":
+            return (
+                f"{audio_label} | Yeni Paylaşım",
+                f"Yeni kayıt paylaşımı | Kayıt: {audio_label} | Preset: {preset_name}{note_suffix}",
+            )
+        return (
+            self.default_share_title_for_audio(source_audio) if source_audio is not None else "Yeni kayıt",
+            self.default_share_description_for_audio(source_audio) if source_audio is not None else f"Kayıt: {audio_label} | Preset: {preset_name}{note_suffix}",
+        )
+
+    def apply_share_template(self, template_name: str) -> None:
+        title, description = self.share_template_values(template_name)
+        self.share_title.set(title)
+        self.share_description.set(description)
+        self.set_status(f"Paylaşım şablonu uygulandı: {template_name}")
+
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
         if source_audio is None:
@@ -5155,10 +5203,52 @@ class GuitarAmpRecorderApp:
             Entry(container, textvariable=self.share_title, width=48).grid(row=3, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             Label(container, text="Açıklama", bg="#101418", fg="#dce6ef").grid(row=4, column=0, sticky="w")
             Entry(container, textvariable=self.share_description, width=48).grid(row=5, column=0, columnspan=4, sticky="ew", pady=(2, 8))
-            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=6, column=0, sticky="w")
-            Entry(container, textvariable=self.share_image_path, width=48).grid(row=7, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            template_row = Frame(container, bg="#101418")
+            template_row.grid(row=6, column=0, columnspan=4, sticky="w", pady=(0, 8))
+            Label(template_row, text="Şablonlar", bg="#101418", fg="#dce6ef").pack(side="left")
+            live_template_button = Button(
+                template_row,
+                text="Canlı",
+                command=lambda: self.apply_share_template("Canlı"),
+                bg="#16a085",
+                fg="white",
+            )
+            clean_template_button = Button(
+                template_row,
+                text="Temiz Gitar",
+                command=lambda: self.apply_share_template("Temiz Gitar"),
+                bg="#2d7d46",
+                fg="white",
+            )
+            speech_template_button = Button(
+                template_row,
+                text="Konuşma",
+                command=lambda: self.apply_share_template("Konuşma"),
+                bg="#34495e",
+                fg="white",
+            )
+            intro_template_button = Button(
+                template_row,
+                text="Tanıtım",
+                command=lambda: self.apply_share_template("Tanıtım"),
+                bg="#8e44ad",
+                fg="white",
+            )
+            for button, role in (
+                (live_template_button, "success"),
+                (clean_template_button, "success"),
+                (speech_template_button, "secondary"),
+                (intro_template_button, "primary"),
+            ):
+                self.apply_button_style(button, role=role)
+            live_template_button.pack(side="left", padx=(8, 0))
+            clean_template_button.pack(side="left", padx=(8, 0))
+            speech_template_button.pack(side="left", padx=(8, 0))
+            intro_template_button.pack(side="left", padx=(8, 0))
+            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=7, column=0, sticky="w")
+            Entry(container, textvariable=self.share_image_path, width=48).grid(row=8, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
-            button_row.grid(row=8, column=0, columnspan=4, sticky="w", pady=(4, 0))
+            button_row.grid(row=9, column=0, columnspan=4, sticky="w", pady=(4, 0))
             select_button = Button(button_row, text="Görsel Seç", command=self.select_share_image, bg="#34495e", fg="white")
             use_audio_button = Button(button_row, text="Son Kaydı Kullan", command=self.use_last_audio_for_share, bg="#16a085", fg="white")
             export_button = Button(button_row, text="YouTube Paketi Yaz", command=self.export_share_package, bg="#2d7d46", fg="white")

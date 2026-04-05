@@ -1176,6 +1176,34 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         open_mock.assert_called_once_with("https://www.youtube.com/upload")
         self.assertEqual(recorder.status_messages[-1], "YouTube yükleme sayfası açıldı.")
 
+    def test_apply_share_template_sets_live_title_and_description(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "canli_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.preset_name.set("Temiz Gitar")
+            recorder.preset_note.set("Gece için hazır")
+
+            recorder.apply_share_template("Canlı")
+
+            self.assertEqual(recorder.share_title.get(), "canli take | Canlı Kayıt")
+            self.assertEqual(
+                recorder.share_description.get(),
+                "Canlı kayıt paylaşımı | Kayıt: canli take | Preset: Temiz Gitar | Not: Gece için hazır",
+            )
+            self.assertEqual(recorder.status_messages[-1], "Paylaşım şablonu uygulandı: Canlı")
+
+    def test_share_template_values_falls_back_without_audio_path(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        recorder.preset_note.set("")
+
+        title, description = recorder.share_template_values("Tanıtım", None)
+
+        self.assertEqual(title, "Yeni kayıt | Yeni Paylaşım")
+        self.assertEqual(description, "Yeni kayıt paylaşımı | Kayıt: Yeni kayıt | Preset: Temiz Gitar")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
