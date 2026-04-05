@@ -960,6 +960,49 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Yazdırılacak favori Markdown özeti yok.")
 
+    def test_open_quick_favorites_summary_in_finder_prefers_markdown_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            markdown_path = output_dir / "favori_ozeti.md"
+            text_path = output_dir / "favori_ozeti.txt"
+            markdown_path.write_text("# Favori Presetler", encoding="utf-8")
+            text_path.write_text("Hızlı favoriler", encoding="utf-8")
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_quick_favorites_summary_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(markdown_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Favori özeti Finder'da seçildi: favori_ozeti.md")
+
+    def test_open_quick_favorites_summary_in_finder_falls_back_to_text_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            text_path = output_dir / "favori_ozeti.txt"
+            text_path.write_text("Hızlı favoriler", encoding="utf-8")
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_quick_favorites_summary_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(text_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Favori özeti Finder'da seçildi: favori_ozeti.txt")
+
+    def test_open_quick_favorites_summary_in_finder_reports_missing_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.open_quick_favorites_summary_in_finder()
+
+        self.assertEqual(recorder.status_messages[-1], "Favori özeti dosyası yok.")
+
     def test_import_favorite_presets_json_imports_all_and_marks_favorites(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

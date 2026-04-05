@@ -1578,6 +1578,15 @@ class GuitarAmpRecorderApp:
         )
         self.export_quick_favorites_markdown_button.grid(row=6, column=9, sticky="w", padx=(8, 0))
         self.apply_button_style(self.export_quick_favorites_markdown_button, role="secondary")
+        self.open_quick_favorites_button = Button(
+            preset_row,
+            text="Favori Özetini Aç",
+            command=self.open_quick_favorites_summary_in_finder,
+            bg="#1f6feb",
+            fg="white",
+        )
+        self.open_quick_favorites_button.grid(row=6, column=10, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.open_quick_favorites_button, role="primary")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=8, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
@@ -4209,6 +4218,29 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Favori Markdown özeti yazıldı: {export_path}")
         except Exception as exc:
             self.set_status(f"Favori Markdown özeti yazılamadı: {exc}")
+
+    def quick_favorites_summary_path(self) -> Optional[Path]:
+        if not self.output_dir.get().strip():
+            return None
+        output_dir = self.resolve_output_dir()
+        markdown_path = output_dir / "favori_ozeti.md"
+        text_path = output_dir / "favori_ozeti.txt"
+        if markdown_path.exists():
+            return markdown_path
+        if text_path.exists():
+            return text_path
+        return None
+
+    def open_quick_favorites_summary_in_finder(self) -> None:
+        summary_path = self.quick_favorites_summary_path()
+        if summary_path is None or not summary_path.exists():
+            self.set_status("Favori özeti dosyası yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(summary_path)], check=False)
+            self.set_status(self.finder_selected_status("Favori özeti", summary_path.name))
+        except Exception as exc:
+            self.set_status(f"Favori özeti açılamadı: {exc}")
 
     def import_favorite_presets_json(self) -> None:
         if self.block_changes_during_recording("preset"):
