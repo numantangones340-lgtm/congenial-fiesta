@@ -50,6 +50,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.app_version = "0.1.0-test"
         recorder.preset_name = FakeVar("Temiz Gitar")
+        recorder.preset_note = FakeVar("")
         recorder.preset_filter = FakeVar("")
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
@@ -172,6 +173,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(raw["selected"], "Aksam")
         self.assertIn("Aksam", raw["presets"])
         self.assertEqual(raw["presets"]["Aksam"]["gain"], 4)
+        self.assertEqual(raw["presets"]["Aksam"]["preset_note"], "")
         recorder.refresh_preset_menu.assert_called_once_with("Aksam")
         self.assertEqual(recorder.status_messages[-1], "Preset kaydedildi: Aksam")
 
@@ -199,6 +201,18 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(raw["presets"]["Aksam"]["gain"], 7)
         recorder.refresh_preset_menu.assert_called_once_with("Aksam")
         self.assertEqual(recorder.status_messages[-1], "Preset kaydedildi: Aksam")
+
+    def test_save_current_preset_persists_note(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Aksam")
+        recorder.preset_note.set("Akşam için yumuşak ton")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.save_current_preset()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["presets"]["Aksam"]["preset_note"], "Akşam için yumuşak ton")
 
     def test_save_current_preset_rejects_builtin_names(self) -> None:
         recorder = self.make_app()
@@ -413,6 +427,22 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_name.get(), "Aksam")
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 6 | Vokal: 92% | Çıkış Kazancı: 3 dB")
+
+    def test_on_preset_selected_restores_note_and_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "presets": {
+                    "Aksam": {"gain": 6, "vocal_level": 92, "output_gain": 3, "preset_note": "Sakin vokal kayıt"},
+                },
+            }
+        )
+
+        recorder.on_preset_selected("Aksam")
+
+        self.assertEqual(recorder.preset_note.get(), "Sakin vokal kayıt")
+        self.assertEqual(recorder.preset_summary_text.get(), "Gain: 6 | Vokal: 92% | Çıkış Kazancı: 3 dB | Not: Sakin vokal kayıt")
 
     def test_duplicate_selected_preset_creates_copy_of_builtin_preset(self) -> None:
         recorder = self.make_app()

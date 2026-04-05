@@ -1007,6 +1007,7 @@ class GuitarAmpRecorderApp:
         self.mp3_quality = StringVar(value="Yüksek VBR")
         self.wav_export_mode = StringVar(value="Sadece Vokal WAV")
         self.preset_name = StringVar(value="Temiz Gitar")
+        self.preset_note = StringVar(value="")
         self.preset_filter = StringVar(value="")
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
@@ -1434,11 +1435,13 @@ class GuitarAmpRecorderApp:
         Label(preset_row, textvariable=self.preset_filter_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=4, column=0, columnspan=9, sticky="w", pady=(6, 0)
         )
+        Label(preset_row, text="Preset Notu", bg="#151b22", fg="#dce6ef").grid(row=5, column=0, sticky="w", pady=(4, 0))
+        Entry(preset_row, textvariable=self.preset_note, width=24).grid(row=6, column=0, columnspan=2, sticky="ew", pady=(2, 0))
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=5, column=0, columnspan=9, sticky="w", pady=(4, 0)
+            row=7, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=6, column=0, columnspan=9, sticky="w", pady=(4, 0)
+            row=8, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3510,11 +3513,17 @@ class GuitarAmpRecorderApp:
         gain = preset.get("gain", "-")
         vocal = preset.get("vocal_level", "-")
         output_gain = preset.get("output_gain", "-")
-        self.preset_summary_text.set(f"Gain: {gain} | Vokal: {vocal}% | Çıkış Kazancı: {output_gain} dB")
+        note = str(preset.get("preset_note", "")).strip()
+        summary = f"Gain: {gain} | Vokal: {vocal}% | Çıkış Kazancı: {output_gain} dB"
+        if note:
+            summary = f"{summary} | Not: {note}"
+        self.preset_summary_text.set(summary)
 
     def on_preset_selected(self, selected_name: str) -> None:
         self.preset_name.set(selected_name)
         store = self.load_preset_store_data()
+        preset = store.get("presets", {}).get(selected_name, {})
+        self.preset_note.set(str(preset.get("preset_note", "")).strip() if isinstance(preset, dict) else "")
         self.update_preset_scope_text(selected_name)
         self.update_preset_summary_text(selected_name, store)
 
@@ -3596,6 +3605,7 @@ class GuitarAmpRecorderApp:
             "session_name": self.session_name.get(),
             "mp3_quality": self.mp3_quality_value(),
             "wav_export_mode": self.wav_export_mode_value(),
+            "preset_note": self.preset_note.get().strip(),
             "record_limit_hours": self.record_limit_hours.get(),
             "mic_record_seconds": self.mic_record_seconds.get(),
             "gain": int(self.gain.get()),
@@ -3629,6 +3639,7 @@ class GuitarAmpRecorderApp:
         self.session_name.set(str(preset.get("session_name", self.session_name.get())))
         self.mp3_quality.set(normalize_choice(str(preset.get("mp3_quality", self.mp3_quality.get())), MP3_QUALITY_ALIASES, self.mp3_quality_value()))
         self.wav_export_mode.set(normalize_choice(str(preset.get("wav_export_mode", self.wav_export_mode.get())), WAV_EXPORT_MODE_ALIASES, self.wav_export_mode_value()))
+        self.preset_note.set(str(preset.get("preset_note", "")))
         self.record_limit_hours.set(str(preset.get("record_limit_hours", "1")))
         self.mic_record_seconds.set(str(preset.get("mic_record_seconds", "60")))
 
