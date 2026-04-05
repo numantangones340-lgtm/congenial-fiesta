@@ -1349,6 +1349,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertTrue(zip_path.exists())
             self.assertEqual(recorder.status_messages[-1], f"Paylaşım paketi ZIP hazır: {zip_path}")
 
+    def test_open_share_package_zip_in_finder_reveals_existing_zip(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+            zip_path.write_text("zip", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_package_zip_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(zip_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"Paylaşım paketi ZIP açıldı: {zip_path.name}")
+
     def test_write_share_guide_file_writes_combined_share_notes(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
