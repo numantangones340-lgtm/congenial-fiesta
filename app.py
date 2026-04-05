@@ -3646,6 +3646,11 @@ class GuitarAmpRecorderApp:
         others = [name for name in names if name not in favorite_names]
         return favorites + others
 
+    def display_preset_name(self, preset_name: str, store: dict) -> str:
+        if preset_name in self.preset_favorites(store):
+            return f"★ {preset_name}"
+        return preset_name
+
     def update_preset_filter_meta(self, total_count: int, matched_count: int, filter_text: str) -> None:
         favorite_count = len(self.preset_favorites(self.load_preset_store_data()))
         favorite_suffix = f" | Favori: {favorite_count}" if favorite_count else " | Favori: 0"
@@ -3714,7 +3719,7 @@ class GuitarAmpRecorderApp:
         menu = self.preset_menu["menu"]
         menu.delete(0, "end")
         for name in self.preset_names:
-            menu.add_command(label=name, command=lambda value=name: self.on_preset_selected(value))
+            menu.add_command(label=self.display_preset_name(name, store), command=lambda value=name: self.on_preset_selected(value))
         target = selected_name or self.preset_name.get() or store.get("selected", "Temiz Gitar")
         if target not in self.preset_names:
             target = self.preset_names[0]

@@ -460,7 +460,21 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu()
 
         self.assertEqual(recorder.preset_names, ["MacBook Mikrofon Hizli Kayit", "Aksam", "Temiz Gitar"])
-        self.assertEqual(recorder.preset_menu.menu.labels, ["MacBook Mikrofon Hizli Kayit", "Aksam", "Temiz Gitar"])
+        self.assertEqual(recorder.preset_menu.menu.labels, ["★ MacBook Mikrofon Hizli Kayit", "Aksam", "Temiz Gitar"])
+
+    def test_display_preset_name_marks_favorites_with_star(self) -> None:
+        recorder = self.make_app()
+        store = {
+            "selected": "Aksam",
+            "favorites": ["Aksam"],
+            "presets": {
+                "Temiz Gitar": {"gain": 4},
+                "Aksam": {"gain": 5},
+            },
+        }
+
+        self.assertEqual(recorder.display_preset_name("Aksam", store), "★ Aksam")
+        self.assertEqual(recorder.display_preset_name("Temiz Gitar", store), "Temiz Gitar")
 
     def test_toggle_preset_favorites_filter_refreshes_menu_and_status(self) -> None:
         recorder = self.make_app()
