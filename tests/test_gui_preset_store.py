@@ -912,6 +912,54 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Yazdırılacak hızlı favori özeti yok.")
 
+    def test_export_quick_favorites_markdown_writes_markdown_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Aksam")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.load_preset_store_data = mock.Mock(
+                return_value={
+                    "selected": "Aksam",
+                    "favorites": ["Temiz Gitar", "Aksam"],
+                    "presets": {
+                        "Temiz Gitar": {"gain": 4},
+                        "Aksam": {"gain": 7, "preset_note": "Gece için"},
+                    },
+                }
+            )
+
+            recorder.export_quick_favorites_markdown()
+
+            export_path = output_dir / "favori_ozeti.md"
+            self.assertTrue(export_path.exists())
+            self.assertEqual(
+                export_path.read_text(encoding="utf-8"),
+                "# Favori Presetler\n\n- **Aksam**: Gece için\n- **Temiz Gitar**",
+            )
+
+        self.assertEqual(recorder.status_messages[-1], f"Favori Markdown özeti yazıldı: {export_path}")
+
+    def test_export_quick_favorites_markdown_reports_empty_state(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.load_preset_store_data = mock.Mock(
+                return_value={
+                    "selected": "Temiz Gitar",
+                    "favorites": [],
+                    "presets": {"Temiz Gitar": {"gain": 4}},
+                }
+            )
+
+            recorder.export_quick_favorites_markdown()
+
+        self.assertEqual(recorder.status_messages[-1], "Yazdırılacak favori Markdown özeti yok.")
+
     def test_import_favorite_presets_json_imports_all_and_marks_favorites(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
