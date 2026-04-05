@@ -214,6 +214,14 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(raw["presets"]["Aksam"]["preset_note"], "Akşam için yumuşak ton")
 
+    def test_apply_preset_note_template_updates_note_and_status(self) -> None:
+        recorder = self.make_app()
+
+        recorder.apply_preset_note_template("Canlı performans için hazır")
+
+        self.assertEqual(recorder.preset_note.get(), "Canlı performans için hazır")
+        self.assertEqual(recorder.status_messages[-1], "Preset notu şablonu uygulandı: Canlı performans için hazır")
+
     def test_save_current_preset_rejects_builtin_names(self) -> None:
         recorder = self.make_app()
         recorder.preset_name.set("Temiz Gitar")

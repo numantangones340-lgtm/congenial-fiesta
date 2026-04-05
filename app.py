@@ -1437,6 +1437,42 @@ class GuitarAmpRecorderApp:
         )
         Label(preset_row, text="Preset Notu", bg="#151b22", fg="#dce6ef").grid(row=5, column=0, sticky="w", pady=(4, 0))
         Entry(preset_row, textvariable=self.preset_note, width=24).grid(row=6, column=0, columnspan=2, sticky="ew", pady=(2, 0))
+        self.preset_note_speech_button = Button(
+            preset_row,
+            text="Konuşma",
+            command=lambda: self.apply_preset_note_template("Konuşma için net preset"),
+            bg="#34495e",
+            fg="white",
+        )
+        self.preset_note_speech_button.grid(row=6, column=2, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.preset_note_speech_button, role="secondary")
+        self.preset_note_live_button = Button(
+            preset_row,
+            text="Canlı",
+            command=lambda: self.apply_preset_note_template("Canlı performans için hazır"),
+            bg="#16a085",
+            fg="white",
+        )
+        self.preset_note_live_button.grid(row=6, column=3, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.preset_note_live_button, role="success")
+        self.preset_note_night_button = Button(
+            preset_row,
+            text="Gece",
+            command=lambda: self.apply_preset_note_template("Gece sessiz kayıt için uygun"),
+            bg="#5d6d7e",
+            fg="white",
+        )
+        self.preset_note_night_button.grid(row=6, column=4, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.preset_note_night_button, role="secondary")
+        self.preset_note_clean_button = Button(
+            preset_row,
+            text="Temiz Gitar",
+            command=lambda: self.apply_preset_note_template("Temiz gitar tonu için dengeli"),
+            bg="#2d7d46",
+            fg="white",
+        )
+        self.preset_note_clean_button.grid(row=6, column=5, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.preset_note_clean_button, role="success")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=7, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
@@ -3504,6 +3540,10 @@ class GuitarAmpRecorderApp:
             return str(self.preset_note.get()).strip()
         except Exception:
             return ""
+
+    def apply_preset_note_template(self, note: str) -> None:
+        self.preset_note.set(note)
+        self.set_status(f"Preset notu şablonu uygulandı: {note}")
 
     def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
         names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
