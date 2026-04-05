@@ -52,6 +52,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.preset_filter = FakeVar("")
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
+        recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.input_device_id = FakeVar("1")
@@ -355,6 +356,42 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_filter.get(), "")
         recorder.refresh_preset_menu.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Preset filtresi temizlendi.")
+
+    def test_refresh_preset_menu_marks_builtin_selected_preset_scope(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.preset_menu = FakeOptionMenu()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Temiz Gitar",
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "Aksam": {"gain": 5},
+                },
+            }
+        )
+
+        recorder.refresh_preset_menu("Temiz Gitar")
+
+        self.assertEqual(recorder.preset_scope_text.get(), "Yerleşik preset seçili: Temiz Gitar")
+
+    def test_refresh_preset_menu_marks_user_selected_preset_scope(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.preset_menu = FakeOptionMenu()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "Aksam": {"gain": 5},
+                },
+            }
+        )
+
+        recorder.refresh_preset_menu("Aksam")
+
+        self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
 
     def test_duplicate_selected_preset_creates_copy_of_builtin_preset(self) -> None:
         recorder = self.make_app()

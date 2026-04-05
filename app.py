@@ -1009,6 +1009,7 @@ class GuitarAmpRecorderApp:
         self.preset_name = StringVar(value="Temiz Gitar")
         self.preset_filter = StringVar(value="")
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
+        self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -1431,6 +1432,9 @@ class GuitarAmpRecorderApp:
         self.apply_button_style(self.clear_preset_filter_button, role="secondary")
         Label(preset_row, textvariable=self.preset_filter_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=4, column=0, columnspan=9, sticky="w", pady=(6, 0)
+        )
+        Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=5, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3487,6 +3491,13 @@ class GuitarAmpRecorderApp:
             return
         self.preset_filter_meta_text.set(f'Filtre "{filter_text}" için eşleşme yok. Tam liste gösteriliyor.')
 
+    def update_preset_scope_text(self, selected_name: str) -> None:
+        builtin_names = set(builtin_preset_store().get("presets", {}).keys())
+        if selected_name in builtin_names:
+            self.preset_scope_text.set(f"Yerleşik preset seçili: {selected_name}")
+            return
+        self.preset_scope_text.set(f"Kullanıcı preset seçili: {selected_name}")
+
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
         store = self.load_preset_store_data()
         all_names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
@@ -3502,6 +3513,7 @@ class GuitarAmpRecorderApp:
             target = self.preset_names[0]
         self.preset_name.set(target)
         self.update_preset_filter_meta(len(all_names), len(filtered_names), str(self.preset_filter.get()).strip())
+        self.update_preset_scope_text(target)
 
     def apply_preset_filter(self) -> None:
         self.refresh_preset_menu()
