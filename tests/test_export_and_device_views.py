@@ -1272,6 +1272,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             )
             self.assertEqual(recorder.status_messages[-1], "Kısa paylaşım açıklaması uygulandı.")
 
+    def test_copy_share_upload_note_copies_music_defaults(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.preset_name.set("Temiz Gitar")
+
+            recorder.copy_share_upload_note()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once()
+            copied = recorder.root.clipboard_append.call_args[0][0]
+            self.assertIn("Kategori: Music", copied)
+            self.assertIn("Görünürlük: Herkese Açık", copied)
+            self.assertEqual(recorder.status_messages[-1], "YouTube yükleme notu panoya alındı")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

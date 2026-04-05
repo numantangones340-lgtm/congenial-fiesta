@@ -5107,6 +5107,40 @@ class GuitarAmpRecorderApp:
         self.share_description.set(self.concise_share_description())
         self.set_status("Kısa paylaşım açıklaması uygulandı.")
 
+    def share_upload_category(self, audio_path: Optional[Path] = None) -> str:
+        source_audio = audio_path or self.current_share_audio_path()
+        combined = " ".join(
+            part.lower()
+            for part in (
+                self.share_template_audio_label(source_audio),
+                self.preset_name.get().strip(),
+                self.current_preset_note(),
+                str(self.share_title.get()).strip(),
+            )
+            if part
+        )
+        if "konuş" in combined or "konus" in combined:
+            return "People & Blogs"
+        return "Music"
+
+    def share_upload_note_text(self, audio_path: Optional[Path] = None) -> str:
+        category = self.share_upload_category(audio_path)
+        lines = [
+            "YouTube yükleme notu",
+            f"Kategori: {category}",
+            "Görünürlük: Herkese Açık",
+            "Kitle ayarı: Çocuklar için değil",
+            "Kapak: Seçilen görsel hazır",
+        ]
+        return "\n".join(lines)
+
+    def copy_share_upload_note(self) -> None:
+        self.copy_text_to_clipboard(
+            self.share_upload_note_text(),
+            "YouTube yükleme notu panoya alındı",
+            "YouTube yükleme notu kopyalanamadı",
+        )
+
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
         if source_audio is None:
@@ -5363,6 +5397,13 @@ class GuitarAmpRecorderApp:
                 bg="#1d4ed8",
                 fg="white",
             )
+            upload_note_button = Button(
+                template_row,
+                text="Yükleme Notu",
+                command=self.copy_share_upload_note,
+                bg="#7c3aed",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
@@ -5373,6 +5414,7 @@ class GuitarAmpRecorderApp:
                 (footer_button, "success"),
                 (normalize_title_button, "primary"),
                 (concise_description_button, "primary"),
+                (upload_note_button, "primary"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
@@ -5384,6 +5426,7 @@ class GuitarAmpRecorderApp:
             footer_button.pack(side="left", padx=(8, 0))
             normalize_title_button.pack(side="left", padx=(8, 0))
             concise_description_button.pack(side="left", padx=(8, 0))
+            upload_note_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=7, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=8, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
