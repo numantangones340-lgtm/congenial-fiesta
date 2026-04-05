@@ -1383,11 +1383,20 @@ class GuitarAmpRecorderApp:
         )
         self.duplicate_preset_button.grid(row=1, column=4, sticky="w", padx=(8, 0))
         self.apply_button_style(self.duplicate_preset_button, role="accent")
+        self.export_preset_button = Button(
+            preset_row,
+            text="Preset JSON Yaz",
+            command=self.export_selected_preset_json,
+            bg="#5b6ee1",
+            fg="white",
+        )
+        self.export_preset_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.export_preset_button, role="accent")
         self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
-        self.delete_preset_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.delete_preset_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
         self.apply_button_style(self.delete_preset_button, role="danger")
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
-        self.reload_session_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
+        self.reload_session_button.grid(row=1, column=7, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3626,6 +3635,11 @@ class GuitarAmpRecorderApp:
                 return candidate
             index += 1
 
+    def safe_preset_export_name(self, preset_name: str) -> str:
+        cleaned = "".join(ch if ch.isalnum() or ch in "-_ ." else "_" for ch in preset_name).strip()
+        cleaned = cleaned.replace(" ", "_")
+        return cleaned or "preset"
+
     def duplicate_selected_preset(self) -> None:
         if self.block_changes_during_recording("preset"):
             return
@@ -3644,6 +3658,31 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset çoğaltıldı: {source_name} -> {duplicate_name}")
         except Exception as exc:
             self.set_status(f"Preset çoğaltma hatası: {exc}")
+
+    def export_selected_preset_json(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
+        if not self.output_dir.get().strip():
+            self.set_status("Preset JSON için önce kayıt klasörünü seçin.")
+            return
+        try:
+            store = self.load_preset_store_data()
+            name = self.preset_name.get().strip() or str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            presets = store.get("presets", {})
+            if name not in presets:
+                self.set_status(f"Preset bulunamadı: {name}")
+                return
+            output_dir = self.resolve_output_dir()
+            output_dir.mkdir(parents=True, exist_ok=True)
+            export_name = f"{self.safe_preset_export_name(name)}.preset.json"
+            export_path = output_dir / export_name
+            export_path.write_text(
+                json.dumps({"name": name, "preset": presets[name]}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            self.set_status(f"Preset JSON yazıldı: {export_path}")
+        except Exception as exc:
+            self.set_status(f"Preset JSON yazılamadı: {exc}")
 
     def fill_recommended_devices(self) -> None:
         if self.block_changes_during_recording("cihaz ayarları"):

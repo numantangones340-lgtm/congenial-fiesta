@@ -331,6 +331,43 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.refresh_preset_menu.assert_called_once_with("Aksam Kopya 2")
         self.assertEqual(recorder.status_messages[-1], "Preset çoğaltıldı: Aksam -> Aksam Kopya 2")
 
+    def test_export_selected_preset_json_writes_builtin_preset_to_output_dir(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "Presets"
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.export_selected_preset_json()
+
+            export_path = output_dir / "Temiz_Gitar.preset.json"
+            raw = json.loads(export_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["name"], "Temiz Gitar")
+        self.assertEqual(raw["preset"]["gain"], app.builtin_preset_store()["presets"]["Temiz Gitar"]["gain"])
+        self.assertEqual(recorder.status_messages[-1], f"Preset JSON yazıldı: {export_path}")
+
+    def test_export_selected_preset_json_requires_output_dir(self) -> None:
+        recorder = self.make_app()
+        recorder.output_dir.set("")
+
+        recorder.export_selected_preset_json()
+
+        self.assertEqual(recorder.status_messages[-1], "Preset JSON için önce kayıt klasörünü seçin.")
+
+    def test_export_selected_preset_json_reports_missing_preset(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Bulunamayan")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.export_selected_preset_json()
+
+        self.assertEqual(recorder.status_messages[-1], "Preset bulunamadı: Bulunamayan")
+
 
 if __name__ == "__main__":
     unittest.main()
