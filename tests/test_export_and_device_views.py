@@ -1335,6 +1335,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with(str(image_path))
             self.assertEqual(recorder.status_messages[-1], "Kapak görseli yolu panoya alındı")
 
+    def test_export_share_package_zip_creates_zip_next_to_package(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            (package_dir / "youtube_baslik.txt").write_text("Baslik", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            recorder.export_share_package_zip()
+
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+            self.assertTrue(zip_path.exists())
+            self.assertEqual(recorder.status_messages[-1], f"Paylaşım paketi ZIP hazır: {zip_path}")
+
     def test_write_share_guide_file_writes_combined_share_notes(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
