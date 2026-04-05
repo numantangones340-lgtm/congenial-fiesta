@@ -1309,6 +1309,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.last_share_package_dir, note_path.parent)
             self.assertEqual(recorder.status_messages[-1], f"YouTube yükleme notu yazıldı: {note_path}")
 
+    def test_copy_share_package_path_copies_existing_package_dir(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            recorder.last_share_package_dir = package_dir
+
+            recorder.copy_share_package_path()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with(str(package_dir))
+            self.assertEqual(recorder.status_messages[-1], "Paylaşım paketi yolu panoya alındı")
+
     def test_share_meta_summary_reports_audio_image_and_package_state(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

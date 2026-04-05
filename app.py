@@ -5157,6 +5157,17 @@ class GuitarAmpRecorderApp:
         self.update_share_meta_text()
         self.set_status(f"YouTube yükleme notu yazıldı: {note_path}")
 
+    def copy_share_package_path(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak paylaşım paketi yok.")
+            return
+        self.copy_text_to_clipboard(
+            str(package_dir),
+            "Paylaşım paketi yolu panoya alındı",
+            "Paylaşım paketi yolu kopyalanamadı",
+        )
+
     def share_meta_summary(self) -> str:
         audio_path = self.current_share_audio_path()
         audio_part = f"Ses: {audio_path.name}" if audio_path is not None and audio_path.exists() else "Ses: hazır değil"
@@ -5450,6 +5461,13 @@ class GuitarAmpRecorderApp:
                 bg="#6d28d9",
                 fg="white",
             )
+            copy_package_path_button = Button(
+                template_row,
+                text="Paket Yolunu Kopyala",
+                command=self.copy_share_package_path,
+                bg="#475569",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
@@ -5462,6 +5480,7 @@ class GuitarAmpRecorderApp:
                 (concise_description_button, "primary"),
                 (upload_note_button, "primary"),
                 (write_upload_note_button, "primary"),
+                (copy_package_path_button, "secondary"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
@@ -5475,6 +5494,7 @@ class GuitarAmpRecorderApp:
             concise_description_button.pack(side="left", padx=(8, 0))
             upload_note_button.pack(side="left", padx=(8, 0))
             write_upload_note_button.pack(side="left", padx=(8, 0))
+            copy_package_path_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=8, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
