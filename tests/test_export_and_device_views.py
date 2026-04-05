@@ -1204,6 +1204,33 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(title, "Yeni kayıt | Yeni Paylaşım")
         self.assertEqual(description, "Yeni kayıt paylaşımı | Kayıt: Yeni kayıt | Preset: Temiz Gitar")
 
+    def test_append_share_hashtags_adds_expected_tags(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "temiz_gitar_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.preset_name.set("Temiz Gitar")
+            recorder.preset_note.set("Canlı deneme")
+            recorder.share_description.set("Kisa aciklama")
+
+            recorder.append_share_hashtags()
+
+            self.assertIn("Kisa aciklama", recorder.share_description.get())
+            self.assertIn("#YouTube #Muzik #Kayit #Gitar #TemizGitar #CanliKayit", recorder.share_description.get())
+            self.assertEqual(recorder.status_messages[-1], "Paylaşım hashtagleri eklendi.")
+
+    def test_clear_share_text_resets_title_and_description(self) -> None:
+        recorder = self.make_app()
+        recorder.share_title.set("Baslik")
+        recorder.share_description.set("Aciklama")
+
+        recorder.clear_share_text()
+
+        self.assertEqual(recorder.share_title.get(), "")
+        self.assertEqual(recorder.share_description.get(), "")
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım başlık ve açıklaması temizlendi.")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

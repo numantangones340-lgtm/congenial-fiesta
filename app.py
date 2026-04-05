@@ -5013,6 +5013,45 @@ class GuitarAmpRecorderApp:
         self.share_description.set(description)
         self.set_status(f"Paylaşım şablonu uygulandı: {template_name}")
 
+    def share_hashtag_list(self, audio_path: Optional[Path] = None) -> list[str]:
+        source_audio = audio_path or self.current_share_audio_path()
+        tags = ["#YouTube", "#Muzik", "#Kayit"]
+        preset_name = (self.preset_name.get().strip() or "").lower()
+        note = self.current_preset_note().lower()
+        audio_label = self.share_template_audio_label(source_audio).lower()
+        combined = " ".join(part for part in (preset_name, note, audio_label) if part)
+        if "gitar" in combined:
+            tags.extend(["#Gitar", "#TemizGitar"])
+        if "konuş" in combined or "konus" in combined:
+            tags.extend(["#Konusma", "#SesKaydi"])
+        if "canlı" in combined or "canli" in combined:
+            tags.append("#CanliKayit")
+        if "tanıt" in combined or "tanit" in combined:
+            tags.append("#YeniVideo")
+        unique_tags: list[str] = []
+        for tag in tags:
+            if tag not in unique_tags:
+                unique_tags.append(tag)
+        return unique_tags
+
+    def append_share_hashtags(self) -> None:
+        hashtags = " ".join(self.share_hashtag_list())
+        description = str(self.share_description.get()).strip()
+        if hashtags in description:
+            self.set_status("Paylaşım hashtagleri zaten açıklamaya eklendi.")
+            return
+        if description:
+            updated = f"{description}\n\n{hashtags}"
+        else:
+            updated = hashtags
+        self.share_description.set(updated)
+        self.set_status("Paylaşım hashtagleri eklendi.")
+
+    def clear_share_text(self) -> None:
+        self.share_title.set("")
+        self.share_description.set("")
+        self.set_status("Paylaşım başlık ve açıklaması temizlendi.")
+
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
         if source_audio is None:
@@ -5234,17 +5273,35 @@ class GuitarAmpRecorderApp:
                 bg="#8e44ad",
                 fg="white",
             )
+            hashtag_button = Button(
+                template_row,
+                text="Hashtag Ekle",
+                command=self.append_share_hashtags,
+                bg="#d97706",
+                fg="white",
+            )
+            clear_text_button = Button(
+                template_row,
+                text="Metni Temizle",
+                command=self.clear_share_text,
+                bg="#4b5563",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
                 (speech_template_button, "secondary"),
                 (intro_template_button, "primary"),
+                (hashtag_button, "warning"),
+                (clear_text_button, "secondary"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
             clean_template_button.pack(side="left", padx=(8, 0))
             speech_template_button.pack(side="left", padx=(8, 0))
             intro_template_button.pack(side="left", padx=(8, 0))
+            hashtag_button.pack(side="left", padx=(8, 0))
+            clear_text_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=7, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=8, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
