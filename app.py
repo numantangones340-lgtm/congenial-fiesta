@@ -5052,6 +5052,31 @@ class GuitarAmpRecorderApp:
         self.share_description.set("")
         self.set_status("Paylaşım başlık ve açıklaması temizlendi.")
 
+    def share_footer_text(self) -> str:
+        preset_name = self.preset_name.get().strip() or "Temiz Gitar"
+        note = self.current_preset_note()
+        lines = [
+            "Dinlediğiniz için teşekkürler.",
+            f"Kullanılan preset: {preset_name}",
+        ]
+        if note:
+            lines.append(f"Preset notu: {note}")
+        lines.append("Beğendiyseniz paylaşmayı ve kanala destek olmayı unutmayın.")
+        return "\n".join(lines)
+
+    def append_share_footer(self) -> None:
+        footer = self.share_footer_text()
+        description = str(self.share_description.get()).strip()
+        if footer in description:
+            self.set_status("Paylaşım sonu zaten açıklamaya eklendi.")
+            return
+        if description:
+            updated = f"{description}\n\n{footer}"
+        else:
+            updated = footer
+        self.share_description.set(updated)
+        self.set_status("Paylaşım sonu eklendi.")
+
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
         if source_audio is None:
@@ -5287,6 +5312,13 @@ class GuitarAmpRecorderApp:
                 bg="#4b5563",
                 fg="white",
             )
+            footer_button = Button(
+                template_row,
+                text="Son Ekle",
+                command=self.append_share_footer,
+                bg="#0f766e",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
@@ -5294,6 +5326,7 @@ class GuitarAmpRecorderApp:
                 (intro_template_button, "primary"),
                 (hashtag_button, "warning"),
                 (clear_text_button, "secondary"),
+                (footer_button, "success"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
@@ -5302,6 +5335,7 @@ class GuitarAmpRecorderApp:
             intro_template_button.pack(side="left", padx=(8, 0))
             hashtag_button.pack(side="left", padx=(8, 0))
             clear_text_button.pack(side="left", padx=(8, 0))
+            footer_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=7, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=8, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")

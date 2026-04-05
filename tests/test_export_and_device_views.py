@@ -1231,6 +1231,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertEqual(recorder.share_description.get(), "")
         self.assertEqual(recorder.status_messages[-1], "Paylaşım başlık ve açıklaması temizlendi.")
 
+    def test_append_share_footer_adds_ready_closing_text(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        recorder.preset_note.set("Gece için hazır")
+        recorder.share_description.set("Kisa aciklama")
+
+        recorder.append_share_footer()
+
+        self.assertIn("Kisa aciklama", recorder.share_description.get())
+        self.assertIn("Dinlediğiniz için teşekkürler.", recorder.share_description.get())
+        self.assertIn("Kullanılan preset: Temiz Gitar", recorder.share_description.get())
+        self.assertIn("Preset notu: Gece için hazır", recorder.share_description.get())
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım sonu eklendi.")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
