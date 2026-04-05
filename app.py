@@ -1023,10 +1023,12 @@ class GuitarAmpRecorderApp:
         self.preset_name = StringVar(value="Temiz Gitar")
         self.preset_note = StringVar(value="")
         self.preset_filter = StringVar(value="")
+        self.preset_favorites_only = StringVar(value="kapali")
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
         self.preset_favorite_text = StringVar(value="Favori: hayır")
         self.preset_favorite_button_text = StringVar(value="Favoriye Ekle")
+        self.preset_favorites_filter_button_text = StringVar(value="Sadece Favoriler")
         self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
         self.preset_note_meta_text = StringVar(value="0 karakter")
         self.limiter_enabled = StringVar(value="Açık")
@@ -1458,6 +1460,15 @@ class GuitarAmpRecorderApp:
         )
         self.clear_preset_filter_button.grid(row=3, column=2, sticky="w", padx=(8, 0))
         self.apply_button_style(self.clear_preset_filter_button, role="secondary")
+        self.toggle_preset_favorites_filter_button = Button(
+            preset_row,
+            textvariable=self.preset_favorites_filter_button_text,
+            command=self.toggle_preset_favorites_filter,
+            bg="#d4a017",
+            fg="white",
+        )
+        self.toggle_preset_favorites_filter_button.grid(row=3, column=3, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.toggle_preset_favorites_filter_button, role="warning")
         Label(preset_row, textvariable=self.preset_filter_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=4, column=0, columnspan=9, sticky="w", pady=(6, 0)
         )
@@ -3586,6 +3597,14 @@ class GuitarAmpRecorderApp:
     def preset_filter_term(self) -> str:
         return str(self.preset_filter.get() if hasattr(self, "preset_filter") else "").strip().casefold()
 
+    def preset_favorites_only_enabled(self) -> bool:
+        if not hasattr(self, "preset_favorites_only"):
+            return False
+        try:
+            return str(self.preset_favorites_only.get()).strip().casefold() == "acik"
+        except Exception:
+            return False
+
     def current_preset_note(self) -> str:
         if not hasattr(self, "preset_note"):
             return ""
@@ -3610,19 +3629,27 @@ class GuitarAmpRecorderApp:
 
     def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
         names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        if self.preset_favorites_only_enabled():
+            favorite_names = self.preset_favorites(store)
+            names = [name for name in names if name in favorite_names]
         term = (filter_text if filter_text is not None else self.preset_filter_term()).strip().casefold()
         if not term:
             return names
         return [name for name in names if term in name.casefold()]
 
     def update_preset_filter_meta(self, total_count: int, matched_count: int, filter_text: str) -> None:
+        favorites_prefix = "Favoriler açık. " if self.preset_favorites_only_enabled() else ""
         if not filter_text:
-            self.preset_filter_meta_text.set(f"Tüm presetler gösteriliyor: {total_count}")
+            if self.preset_favorites_only_enabled():
+                self.preset_filter_meta_text.set(f"{favorites_prefix}Gösterilen favori presetler: {matched_count}/{total_count}")
+            else:
+                self.preset_filter_meta_text.set(f"{favorites_prefix}Tüm presetler gösteriliyor: {total_count}")
             return
         if matched_count:
-            self.preset_filter_meta_text.set(f'Filtre "{filter_text}" için eşleşme: {matched_count}/{total_count}')
+            self.preset_filter_meta_text.set(f'{favorites_prefix}Filtre "{filter_text}" için eşleşme: {matched_count}/{total_count}')
             return
-        self.preset_filter_meta_text.set(f'Filtre "{filter_text}" için eşleşme yok. Tam liste gösteriliyor.')
+        fallback_text = "Favori listesi gösteriliyor." if self.preset_favorites_only_enabled() else "Tam liste gösteriliyor."
+        self.preset_filter_meta_text.set(f'{favorites_prefix}Filtre "{filter_text}" için eşleşme yok. {fallback_text}')
 
     def update_preset_scope_text(self, selected_name: str) -> None:
         builtin_names = set(builtin_preset_store().get("presets", {}).keys())
@@ -3635,6 +3662,7 @@ class GuitarAmpRecorderApp:
         is_favorite = selected_name in self.preset_favorites(store)
         self.preset_favorite_text.set(f"Favori: {'evet' if is_favorite else 'hayır'}")
         self.preset_favorite_button_text.set("Favoriden Çıkar" if is_favorite else "Favoriye Ekle")
+        self.preset_favorites_filter_button_text.set("Tüm Presetler" if self.preset_favorites_only_enabled() else "Sadece Favoriler")
 
     def update_preset_summary_text(self, selected_name: str, store: dict) -> None:
         preset = store.get("presets", {}).get(selected_name, {})
@@ -3692,6 +3720,15 @@ class GuitarAmpRecorderApp:
         self.preset_filter.set("")
         self.refresh_preset_menu()
         self.set_status("Preset filtresi temizlendi.")
+
+    def toggle_preset_favorites_filter(self) -> None:
+        next_value = "kapali" if self.preset_favorites_only_enabled() else "acik"
+        self.preset_favorites_only.set(next_value)
+        self.refresh_preset_menu()
+        if next_value == "acik":
+            self.set_status("Sadece favori presetler gösteriliyor.")
+        else:
+            self.set_status("Tüm presetler gösteriliyor.")
 
     def load_preset_store(self, initial: bool = False) -> None:
         store = self.load_preset_store_data()

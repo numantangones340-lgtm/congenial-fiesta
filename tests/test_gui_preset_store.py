@@ -52,10 +52,12 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_name = FakeVar("Temiz Gitar")
         recorder.preset_note = FakeVar("")
         recorder.preset_filter = FakeVar("")
+        recorder.preset_favorites_only = FakeVar("kapali")
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
         recorder.preset_favorite_text = FakeVar("Favori: hayır")
         recorder.preset_favorite_button_text = FakeVar("Favoriye Ekle")
+        recorder.preset_favorites_filter_button_text = FakeVar("Sadece Favoriler")
         recorder.preset_summary_text = FakeVar("Preset özeti hazırlanıyor...")
         recorder.preset_note_meta_text = FakeVar("0 karakter")
         recorder.input_device_choice = FakeVar("Built-in Mic")
@@ -370,6 +372,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder = self.make_app()
         store = {
             "selected": "Temiz Gitar",
+            "favorites": [],
             "presets": {
                 "Temiz Gitar": {"gain": 4},
                 "MacBook Mikrofon Hizli Kayit": {"gain": 8},
@@ -381,6 +384,23 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(names, ["MacBook Mikrofon Hizli Kayit"])
 
+    def test_filtered_preset_names_can_limit_to_favorites(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_favorites_only.set("acik")
+        store = {
+            "selected": "Temiz Gitar",
+            "favorites": ["MacBook Mikrofon Hizli Kayit"],
+            "presets": {
+                "Temiz Gitar": {"gain": 4},
+                "MacBook Mikrofon Hizli Kayit": {"gain": 8},
+                "Aksam": {"gain": 5},
+            },
+        }
+
+        names = recorder.filtered_preset_names(store)
+
+        self.assertEqual(names, ["MacBook Mikrofon Hizli Kayit"])
+
     def test_refresh_preset_menu_uses_filter_and_updates_meta(self) -> None:
         recorder = self.make_app()
         recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
@@ -389,6 +409,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.load_preset_store_data = mock.Mock(
             return_value={
                 "selected": "Temiz Gitar",
+                "favorites": [],
                 "presets": {
                     "Temiz Gitar": {"gain": 4},
                     "MacBook Mikrofon Hizli Kayit": {"gain": 8},
@@ -403,6 +424,21 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_name.get(), "MacBook Mikrofon Hizli Kayit")
         self.assertEqual(recorder.preset_menu.menu.labels, ["MacBook Mikrofon Hizli Kayit"])
         self.assertEqual(recorder.preset_filter_meta_text.get(), 'Filtre "macbook" için eşleşme: 1/3')
+
+    def test_toggle_preset_favorites_filter_refreshes_menu_and_status(self) -> None:
+        recorder = self.make_app()
+
+        recorder.toggle_preset_favorites_filter = app.GuitarAmpRecorderApp.toggle_preset_favorites_filter.__get__(
+            recorder, app.GuitarAmpRecorderApp
+        )
+
+        recorder.toggle_preset_favorites_filter()
+        recorder.toggle_preset_favorites_filter()
+
+        self.assertEqual(recorder.preset_favorites_only.get(), "kapali")
+        self.assertEqual(recorder.refresh_preset_menu.call_args_list[0], mock.call())
+        self.assertEqual(recorder.refresh_preset_menu.call_args_list[1], mock.call())
+        self.assertEqual(recorder.status_messages[-1], "Tüm presetler gösteriliyor.")
 
     def test_clear_preset_filter_resets_value_and_refreshes_menu(self) -> None:
         recorder = self.make_app()
@@ -456,7 +492,29 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
         self.assertEqual(recorder.preset_favorite_text.get(), "Favori: evet")
         self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriden Çıkar")
+        self.assertEqual(recorder.preset_favorites_filter_button_text.get(), "Sadece Favoriler")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 5 | Vokal: -% | Çıkış Kazancı: - dB")
+
+    def test_refresh_preset_menu_updates_favorites_only_meta(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.preset_menu = FakeOptionMenu()
+        recorder.preset_favorites_only.set("acik")
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "favorites": ["Aksam"],
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "Aksam": {"gain": 5},
+                },
+            }
+        )
+
+        recorder.refresh_preset_menu("Aksam")
+
+        self.assertEqual(recorder.preset_filter_meta_text.get(), "Favoriler açık. Gösterilen favori presetler: 1/2")
+        self.assertEqual(recorder.preset_favorites_filter_button_text.get(), "Tüm Presetler")
 
     def test_on_preset_selected_updates_scope_and_summary(self) -> None:
         recorder = self.make_app()
