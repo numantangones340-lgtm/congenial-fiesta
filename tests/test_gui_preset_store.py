@@ -722,6 +722,51 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Preset bulunamadı: Bulunamayan")
 
+    def test_export_favorite_presets_json_writes_all_favorites_to_output_dir(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "Presets"
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.load_preset_store_data = mock.Mock(
+                return_value={
+                    "selected": "Aksam",
+                    "favorites": ["Aksam", "Temiz Gitar"],
+                    "presets": {
+                        "Temiz Gitar": {"gain": 4},
+                        "Aksam": {"gain": 7, "preset_note": "Favori ton"},
+                    },
+                }
+            )
+
+            recorder.export_favorite_presets_json()
+
+            export_path = output_dir / "favori_presetler.json"
+            raw = json.loads(export_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(raw["count"], 2)
+        self.assertEqual([item["name"] for item in raw["favorites"]], ["Aksam", "Temiz Gitar"])
+        self.assertEqual(raw["favorites"][0]["preset"]["preset_note"], "Favori ton")
+        self.assertEqual(recorder.status_messages[-1], f"Favori preset JSON yazıldı: {export_path}")
+
+    def test_export_favorite_presets_json_reports_when_no_favorites_exist(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.load_preset_store_data = mock.Mock(
+                return_value={
+                    "selected": "Temiz Gitar",
+                    "favorites": [],
+                    "presets": {"Temiz Gitar": {"gain": 4}},
+                }
+            )
+
+            recorder.export_favorite_presets_json()
+
+        self.assertEqual(recorder.status_messages[-1], "Yazdırılacak favori preset yok.")
+
     def test_import_preset_json_imports_export_format_and_selects_name(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
