@@ -1374,11 +1374,20 @@ class GuitarAmpRecorderApp:
         self.load_preset_button = Button(preset_row, text="Preset Yükle", command=self.load_saved_preset, bg="#2980b9", fg="white")
         self.load_preset_button.grid(row=1, column=3, sticky="w", padx=(8, 0))
         self.apply_button_style(self.load_preset_button, role="primary")
+        self.duplicate_preset_button = Button(
+            preset_row,
+            text="Preset Çoğalt",
+            command=self.duplicate_selected_preset,
+            bg="#8e44ad",
+            fg="white",
+        )
+        self.duplicate_preset_button.grid(row=1, column=4, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.duplicate_preset_button, role="accent")
         self.delete_preset_button = Button(preset_row, text="Preset Sil", command=self.delete_selected_preset, bg="#c0392b", fg="white")
-        self.delete_preset_button.grid(row=1, column=4, sticky="w", padx=(8, 0))
+        self.delete_preset_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
         self.apply_button_style(self.delete_preset_button, role="danger")
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
-        self.reload_session_button.grid(row=1, column=5, sticky="w", padx=(8, 0))
+        self.reload_session_button.grid(row=1, column=6, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3605,6 +3614,36 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Preset silindi: {name}")
         except Exception as exc:
             self.set_status(f"Preset silme hatası: {exc}")
+
+    def next_duplicate_preset_name(self, source_name: str, existing_names: set[str]) -> str:
+        base_name = f"{source_name} Kopya"
+        if base_name not in existing_names:
+            return base_name
+        index = 2
+        while True:
+            candidate = f"{source_name} Kopya {index}"
+            if candidate not in existing_names:
+                return candidate
+            index += 1
+
+    def duplicate_selected_preset(self) -> None:
+        if self.block_changes_during_recording("preset"):
+            return
+        try:
+            store = self.load_preset_store_data()
+            source_name = self.preset_name.get().strip() or str(store.get("selected", "Temiz Gitar") or "Temiz Gitar")
+            presets = store.get("presets", {})
+            if source_name not in presets:
+                self.set_status(f"Preset bulunamadı: {source_name}")
+                return
+            duplicate_name = self.next_duplicate_preset_name(source_name, set(presets.keys()))
+            store.setdefault("presets", {})[duplicate_name] = dict(presets[source_name])
+            store["selected"] = duplicate_name
+            self.write_preset_store_data(store)
+            self.refresh_preset_menu(duplicate_name)
+            self.set_status(f"Preset çoğaltıldı: {source_name} -> {duplicate_name}")
+        except Exception as exc:
+            self.set_status(f"Preset çoğaltma hatası: {exc}")
 
     def fill_recommended_devices(self) -> None:
         if self.block_changes_during_recording("cihaz ayarları"):

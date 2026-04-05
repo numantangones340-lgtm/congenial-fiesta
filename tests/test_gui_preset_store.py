@@ -285,6 +285,52 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(raw["selected"], "Temiz Gitar")
         self.assertEqual(recorder.status_messages[-1], "Hazır preset silinemez: Temiz Gitar")
 
+    def test_duplicate_selected_preset_creates_copy_of_builtin_preset(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.duplicate_selected_preset()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Temiz Gitar Kopya", raw["presets"])
+        self.assertEqual(raw["selected"], "Temiz Gitar Kopya")
+        self.assertEqual(
+            raw["presets"]["Temiz Gitar Kopya"]["gain"],
+            app.builtin_preset_store()["presets"]["Temiz Gitar"]["gain"],
+        )
+        recorder.refresh_preset_menu.assert_called_once_with("Temiz Gitar Kopya")
+        self.assertEqual(recorder.status_messages[-1], "Preset çoğaltıldı: Temiz Gitar -> Temiz Gitar Kopya")
+
+    def test_duplicate_selected_preset_increments_copy_name_when_needed(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Aksam")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            preset_path = Path(tmpdir) / ".gui_saved_preset.json"
+            preset_path.write_text(
+                json.dumps(
+                    {
+                        "selected": "Aksam",
+                        "presets": {
+                            "Aksam": {"gain": 4},
+                            "Aksam Kopya": {"gain": 5},
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            with mock.patch.object(app, "GUI_PRESET_PATH", preset_path):
+                recorder.duplicate_selected_preset()
+                raw = json.loads(preset_path.read_text(encoding="utf-8"))
+
+        self.assertIn("Aksam Kopya 2", raw["presets"])
+        self.assertEqual(raw["selected"], "Aksam Kopya 2")
+        self.assertEqual(raw["presets"]["Aksam Kopya 2"]["gain"], 4)
+        recorder.refresh_preset_menu.assert_called_once_with("Aksam Kopya 2")
+        self.assertEqual(recorder.status_messages[-1], "Preset çoğaltıldı: Aksam -> Aksam Kopya 2")
+
 
 if __name__ == "__main__":
     unittest.main()
