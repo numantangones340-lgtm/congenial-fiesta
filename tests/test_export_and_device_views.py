@@ -1359,6 +1359,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.last_share_package_dir, guide_path.parent)
             self.assertEqual(recorder.status_messages[-1], f"Paylaşım rehberi yazıldı: {guide_path}")
 
+    def test_open_share_guide_in_finder_reveals_existing_guide(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            guide_path = package_dir / "paylasim_rehberi.txt"
+            guide_path.write_text("guide", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_guide_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(guide_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"Paylaşım rehberi açıldı: {guide_path.name}")
+
     def test_share_meta_summary_reports_audio_image_and_package_state(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -5316,6 +5316,21 @@ class GuitarAmpRecorderApp:
         self.update_share_meta_text()
         self.set_status(f"Paylaşım rehberi yazıldı: {guide_path}")
 
+    def open_share_guide_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Paylaşım rehberi yok.")
+            return
+        guide_path = package_dir / "paylasim_rehberi.txt"
+        if not guide_path.exists():
+            self.set_status("Paylaşım rehberi yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(guide_path)], check=False)
+            self.set_status(f"Paylaşım rehberi açıldı: {guide_path.name}")
+        except Exception as exc:
+            self.set_status(f"Paylaşım rehberi açılamadı: {exc}")
+
     def export_share_package(self) -> None:
         if self.block_changes_during_recording("paylaşım paketi"):
             return
@@ -5529,6 +5544,13 @@ class GuitarAmpRecorderApp:
                 bg="#0f766e",
                 fg="white",
             )
+            open_share_guide_button = Button(
+                template_row,
+                text="Rehberi Aç",
+                command=self.open_share_guide_in_finder,
+                bg="#1f6feb",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
@@ -5544,6 +5566,7 @@ class GuitarAmpRecorderApp:
                 (copy_package_path_button, "secondary"),
                 (copy_image_path_button, "secondary"),
                 (write_share_guide_button, "success"),
+                (open_share_guide_button, "primary"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
@@ -5560,6 +5583,7 @@ class GuitarAmpRecorderApp:
             copy_package_path_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
+            open_share_guide_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=8, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
