@@ -1028,6 +1028,7 @@ class GuitarAmpRecorderApp:
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
         self.preset_favorite_text = StringVar(value="Favori: hayır")
         self.preset_favorite_meta_text = StringVar(value="Favori preset yok.")
+        self.preset_favorite_quick_text = StringVar(value="Hızlı favori önerisi hazırlanıyor...")
         self.preset_favorite_button_text = StringVar(value="Favoriye Ekle")
         self.preset_favorites_filter_button_text = StringVar(value="Sadece Favoriler")
         self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
@@ -1559,8 +1560,11 @@ class GuitarAmpRecorderApp:
         Label(preset_row, textvariable=self.preset_favorite_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=10, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
-        Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+        Label(preset_row, textvariable=self.preset_favorite_quick_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=11, column=0, columnspan=10, sticky="w", pady=(4, 0)
+        )
+        Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=12, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3717,10 +3721,20 @@ class GuitarAmpRecorderApp:
         self.preset_favorite_text.set(f"Favori: {'evet' if is_favorite else 'hayır'}")
         if not favorites:
             self.preset_favorite_meta_text.set("Favori preset yok.")
+            self.preset_favorite_quick_text.set("Hızlı favori yok.")
         else:
             preview = ", ".join(favorites[:3])
             extra = "" if len(favorites) <= 3 else f" +{len(favorites) - 3}"
             self.preset_favorite_meta_text.set(f"{len(favorites)} favori: {preview}{extra}")
+            quick_parts = []
+            presets = store.get("presets", {})
+            for name in favorites[:2]:
+                note = ""
+                preset = presets.get(name, {})
+                if isinstance(preset, dict):
+                    note = str(preset.get("preset_note", "")).strip()
+                quick_parts.append(f"{name} ({note})" if note else name)
+            self.preset_favorite_quick_text.set(f"Hızlı favoriler: {' | '.join(quick_parts)}")
         self.preset_favorite_button_text.set("Favoriden Çıkar" if is_favorite else "Favoriye Ekle")
         self.preset_favorites_filter_button_text.set("Tüm Presetler" if self.preset_favorites_only_enabled() else "Sadece Favoriler")
 

@@ -57,6 +57,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
         recorder.preset_favorite_text = FakeVar("Favori: hayır")
         recorder.preset_favorite_meta_text = FakeVar("Favori preset yok.")
+        recorder.preset_favorite_quick_text = FakeVar("Hızlı favori yok.")
         recorder.preset_favorite_button_text = FakeVar("Favoriye Ekle")
         recorder.preset_favorites_filter_button_text = FakeVar("Sadece Favoriler")
         recorder.preset_summary_text = FakeVar("Preset özeti hazırlanıyor...")
@@ -523,6 +524,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_scope_text.get(), "Yerleşik preset seçili: Temiz Gitar")
         self.assertEqual(recorder.preset_favorite_text.get(), "Favori: hayır")
         self.assertEqual(recorder.preset_favorite_meta_text.get(), "Favori preset yok.")
+        self.assertEqual(recorder.preset_favorite_quick_text.get(), "Hızlı favori yok.")
         self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriye Ekle")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 4 | Vokal: -% | Çıkış Kazancı: - dB")
 
@@ -546,9 +548,29 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
         self.assertEqual(recorder.preset_favorite_text.get(), "Favori: evet")
         self.assertEqual(recorder.preset_favorite_meta_text.get(), "1 favori: Aksam")
+        self.assertEqual(recorder.preset_favorite_quick_text.get(), "Hızlı favoriler: Aksam")
         self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriden Çıkar")
         self.assertEqual(recorder.preset_favorites_filter_button_text.get(), "Sadece Favoriler")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 5 | Vokal: -% | Çıkış Kazancı: - dB")
+
+    def test_refresh_preset_menu_shows_quick_favorites_with_note_preview(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.preset_menu = FakeOptionMenu()
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "favorites": ["Aksam", "Temiz Gitar"],
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "Aksam": {"gain": 5, "preset_note": "Gece için"},
+                },
+            }
+        )
+
+        recorder.refresh_preset_menu("Aksam")
+
+        self.assertEqual(recorder.preset_favorite_quick_text.get(), "Hızlı favoriler: Aksam (Gece için) | Temiz Gitar")
 
     def test_refresh_preset_menu_updates_favorites_only_meta(self) -> None:
         recorder = self.make_app()
