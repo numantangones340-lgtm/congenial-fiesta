@@ -3647,18 +3647,26 @@ class GuitarAmpRecorderApp:
         return favorites + others
 
     def update_preset_filter_meta(self, total_count: int, matched_count: int, filter_text: str) -> None:
+        favorite_count = len(self.preset_favorites(self.load_preset_store_data()))
+        favorite_suffix = f" | Favori: {favorite_count}" if favorite_count else " | Favori: 0"
         favorites_prefix = "Favoriler açık. " if self.preset_favorites_only_enabled() else ""
         if not filter_text:
             if self.preset_favorites_only_enabled():
-                self.preset_filter_meta_text.set(f"{favorites_prefix}Gösterilen favori presetler: {matched_count}/{total_count}")
+                self.preset_filter_meta_text.set(
+                    f"{favorites_prefix}Gösterilen favori presetler: {matched_count}/{total_count}{favorite_suffix}"
+                )
             else:
-                self.preset_filter_meta_text.set(f"{favorites_prefix}Tüm presetler gösteriliyor: {total_count}")
+                self.preset_filter_meta_text.set(f"{favorites_prefix}Tüm presetler gösteriliyor: {total_count}{favorite_suffix}")
             return
         if matched_count:
-            self.preset_filter_meta_text.set(f'{favorites_prefix}Filtre "{filter_text}" için eşleşme: {matched_count}/{total_count}')
+            self.preset_filter_meta_text.set(
+                f'{favorites_prefix}Filtre "{filter_text}" için eşleşme: {matched_count}/{total_count}{favorite_suffix}'
+            )
             return
         fallback_text = "Favori listesi gösteriliyor." if self.preset_favorites_only_enabled() else "Tam liste gösteriliyor."
-        self.preset_filter_meta_text.set(f'{favorites_prefix}Filtre "{filter_text}" için eşleşme yok. {fallback_text}')
+        self.preset_filter_meta_text.set(
+            f'{favorites_prefix}Filtre "{filter_text}" için eşleşme yok. {fallback_text}{favorite_suffix}'
+        )
 
     def update_preset_scope_text(self, selected_name: str) -> None:
         builtin_names = set(builtin_preset_store().get("presets", {}).keys())

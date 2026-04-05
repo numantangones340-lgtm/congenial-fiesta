@@ -439,7 +439,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertEqual(recorder.preset_names, ["MacBook Mikrofon Hizli Kayit"])
         self.assertEqual(recorder.preset_name.get(), "MacBook Mikrofon Hizli Kayit")
         self.assertEqual(recorder.preset_menu.menu.labels, ["MacBook Mikrofon Hizli Kayit"])
-        self.assertEqual(recorder.preset_filter_meta_text.get(), 'Filtre "macbook" için eşleşme: 1/3')
+        self.assertEqual(recorder.preset_filter_meta_text.get(), 'Filtre "macbook" için eşleşme: 1/3 | Favori: 0')
 
     def test_refresh_preset_menu_lists_favorites_before_other_presets(self) -> None:
         recorder = self.make_app()
@@ -550,7 +550,7 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         recorder.refresh_preset_menu("Aksam")
 
-        self.assertEqual(recorder.preset_filter_meta_text.get(), "Favoriler açık. Gösterilen favori presetler: 1/2")
+        self.assertEqual(recorder.preset_filter_meta_text.get(), "Favoriler açık. Gösterilen favori presetler: 1/2 | Favori: 1")
         self.assertEqual(recorder.preset_favorites_filter_button_text.get(), "Tüm Presetler")
 
     def test_on_preset_selected_updates_scope_and_summary(self) -> None:
