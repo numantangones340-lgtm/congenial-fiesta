@@ -1551,6 +1551,15 @@ class GuitarAmpRecorderApp:
         )
         self.clear_preset_note_button.grid(row=6, column=6, sticky="w", padx=(8, 0))
         self.apply_button_style(self.clear_preset_note_button, role="secondary")
+        self.copy_quick_favorites_button = Button(
+            preset_row,
+            text="Favori Özetini Kopyala",
+            command=self.copy_quick_favorites_to_clipboard,
+            bg="#6c5ce7",
+            fg="white",
+        )
+        self.copy_quick_favorites_button.grid(row=6, column=7, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.copy_quick_favorites_button, role="accent")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=8, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
@@ -4113,6 +4122,23 @@ class GuitarAmpRecorderApp:
             )
         except Exception as exc:
             self.set_status(f"Favori preset listesi kopyalanamadı: {exc}")
+
+    def copy_quick_favorites_to_clipboard(self) -> None:
+        try:
+            store = self.load_preset_store_data()
+            selected_name = str(self.preset_name.get()).strip() or store.get("selected", "Temiz Gitar")
+            self.update_preset_favorite_text(selected_name, store)
+            content = str(self.preset_favorite_quick_text.get()).strip()
+            if not content or content == "Hızlı favori yok.":
+                self.set_status("Kopyalanacak hızlı favori özeti yok.")
+                return
+            self.copy_text_to_clipboard(
+                content,
+                "Hızlı favori özeti panoya alındı",
+                "Hızlı favori özeti kopyalanamadı",
+            )
+        except Exception as exc:
+            self.set_status(f"Hızlı favori özeti kopyalanamadı: {exc}")
 
     def import_favorite_presets_json(self) -> None:
         if self.block_changes_during_recording("preset"):

@@ -829,6 +829,44 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.copy_text_to_clipboard.assert_not_called()
         self.assertEqual(recorder.status_messages[-1], "Kopyalanacak favori preset yok.")
 
+    def test_copy_quick_favorites_to_clipboard_copies_quick_summary(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Aksam")
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Aksam",
+                "favorites": ["Temiz Gitar", "Aksam"],
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "Aksam": {"gain": 7, "preset_note": "Gece için"},
+                },
+            }
+        )
+
+        recorder.copy_quick_favorites_to_clipboard()
+
+        recorder.copy_text_to_clipboard.assert_called_once_with(
+            "Hızlı favoriler: Aksam (Gece için) | Temiz Gitar",
+            "Hızlı favori özeti panoya alındı",
+            "Hızlı favori özeti kopyalanamadı",
+        )
+
+    def test_copy_quick_favorites_to_clipboard_reports_empty_state(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_name.set("Temiz Gitar")
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Temiz Gitar",
+                "favorites": [],
+                "presets": {"Temiz Gitar": {"gain": 4}},
+            }
+        )
+
+        recorder.copy_quick_favorites_to_clipboard()
+
+        recorder.copy_text_to_clipboard.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], "Kopyalanacak hızlı favori özeti yok.")
+
     def test_import_favorite_presets_json_imports_all_and_marks_favorites(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
