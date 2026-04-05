@@ -2319,6 +2319,9 @@ class GuitarAmpRecorderApp:
             f"Take: {take_text}",
             f"Hedef: {target_text}",
         ]
+        preset_note = self.current_preset_note()
+        if preset_note:
+            parts.append(f"Preset Notu: {preset_note}")
         if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
             if self.last_export_path is not None and self.last_export_path.exists():
                 parts.append(f"Kurtarma: var | Son iyi kayıt: {recent_audio_status_text(self.last_export_path)}")
@@ -3280,9 +3283,21 @@ class GuitarAmpRecorderApp:
     def update_recent_output_summary(self) -> None:
         try:
             self.update_recent_output_subtitle()
+        except Exception:
+            pass
+        try:
             self.recent_output_summary_text.set(self.build_recent_output_summary_text())
+        except Exception:
+            pass
+        try:
             self.recent_output_meta_text.set(self.build_recent_output_meta_text())
+        except Exception:
+            pass
+        try:
             self.update_hero_overview_cards()
+        except Exception:
+            pass
+        try:
             label = getattr(self, "recent_output_summary_label", None)
             if label is not None:
                 label.configure(**self.build_recent_output_summary_palette())
@@ -3482,6 +3497,14 @@ class GuitarAmpRecorderApp:
     def preset_filter_term(self) -> str:
         return str(self.preset_filter.get() if hasattr(self, "preset_filter") else "").strip().casefold()
 
+    def current_preset_note(self) -> str:
+        if not hasattr(self, "preset_note"):
+            return ""
+        try:
+            return str(self.preset_note.get()).strip()
+        except Exception:
+            return ""
+
     def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
         names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
         term = (filter_text if filter_text is not None else self.preset_filter_term()).strip().casefold()
@@ -3605,7 +3628,7 @@ class GuitarAmpRecorderApp:
             "session_name": self.session_name.get(),
             "mp3_quality": self.mp3_quality_value(),
             "wav_export_mode": self.wav_export_mode_value(),
-            "preset_note": self.preset_note.get().strip(),
+            "preset_note": self.current_preset_note(),
             "record_limit_hours": self.record_limit_hours.get(),
             "mic_record_seconds": self.mic_record_seconds.get(),
             "gain": int(self.gain.get()),
@@ -3936,6 +3959,9 @@ class GuitarAmpRecorderApp:
             f"Sure plani: {self.planned_duration_summary()}",
             f"Durum: {self.planned_readiness_summary()}",
         ]
+        preset_note = self.current_preset_note()
+        if preset_note:
+            lines.insert(2, f"Preset Notu: {preset_note}")
         return "\n".join(lines)
 
     def refresh_recording_readiness(self, *_args) -> None:
@@ -3956,6 +3982,7 @@ class GuitarAmpRecorderApp:
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             "output_dir": str(output_dir),
             "preset_name": self.preset_name.get(),
+            "preset_note": self.current_preset_note(),
             "session_mode": self.session_mode_value(),
             "session_name": self.session_name.get(),
             "input_device_choice": self.input_device_choice.get(),
@@ -4035,6 +4062,9 @@ class GuitarAmpRecorderApp:
             f"Preset: {summary.get('preset_name', 'bilinmiyor') or 'bilinmiyor'}",
             f"Clip Durumu: {clip_warning}",
         ]
+        preset_note = str(summary.get("preset_note", "")).strip()
+        if preset_note:
+            lines.append(f"Preset Notu: {preset_note}")
         if recording.get("mode"):
             lines.append(f"Mod: {recording['mode']}")
         if "duration_seconds" in recording:
@@ -4562,6 +4592,9 @@ class GuitarAmpRecorderApp:
         ]
         if summary.get("preset_name"):
             lines.append(f"Preset: {summary['preset_name']}")
+        preset_note = str(summary.get("preset_note", "")).strip()
+        if preset_note:
+            lines.append(f"Preset Notu: {preset_note}")
         if recording:
             mode = recording.get("mode", "")
             if mode:
@@ -5060,23 +5093,28 @@ class GuitarAmpRecorderApp:
 
     def set_recent_output_button_states(self, enabled: bool) -> None:
         state = "normal" if enabled else "disabled"
-        self.open_last_export_button.configure(state=state)
-        self.play_last_export_button.configure(state=state)
-        self.open_visible_recent_output_button.configure(state=state)
-        self.copy_visible_recent_output_path_button.configure(state=state)
-        self.copy_last_export_path_button.configure(state=state)
-        self.open_last_summary_button.configure(state=state)
-        self.copy_last_summary_button.configure(state=state)
-        self.copy_last_summary_path_button.configure(state=state)
-        self.copy_last_brief_button.configure(state=state)
-        self.export_last_brief_button.configure(state=state)
-        self.open_last_take_notes_button.configure(state=state)
-        self.copy_last_recovery_note_button.configure(state=state)
-        self.open_last_output_dir_button.configure(state=state)
-        self.open_last_preparation_button.configure(state=state)
-        self.archive_last_session_button.configure(state=state)
-        self.reset_session_state_button.configure(state=state)
-        self.cleanup_old_trials_button.configure(state=state)
+        for name in (
+            "open_last_export_button",
+            "play_last_export_button",
+            "open_visible_recent_output_button",
+            "copy_visible_recent_output_path_button",
+            "copy_last_export_path_button",
+            "open_last_summary_button",
+            "copy_last_summary_button",
+            "copy_last_summary_path_button",
+            "copy_last_brief_button",
+            "export_last_brief_button",
+            "open_last_take_notes_button",
+            "copy_last_recovery_note_button",
+            "open_last_output_dir_button",
+            "open_last_preparation_button",
+            "archive_last_session_button",
+            "reset_session_state_button",
+            "cleanup_old_trials_button",
+        ):
+            button = getattr(self, name, None)
+            if button is not None:
+                button.configure(state=state)
 
     def begin_recording_progress(self, mode: str, total_seconds: float) -> None:
         self.recording_active = True

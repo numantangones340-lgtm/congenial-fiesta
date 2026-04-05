@@ -41,6 +41,7 @@ class RecordingReadinessTests(unittest.TestCase):
         recorder.mp3_quality = FakeVar("Yuksek VBR")
         recorder.wav_export_mode = FakeVar("Sadece Vocal WAV")
         recorder.preset_name = FakeVar("Temiz Gitar")
+        recorder.preset_note = FakeVar("")
         recorder.record_limit_hours = FakeVar("1")
         recorder.mic_record_seconds = FakeVar("60")
         recorder.record_progress_text = FakeVar("onceki")
@@ -86,6 +87,15 @@ class RecordingReadinessTests(unittest.TestCase):
         self.assertIn("Ciktilar: Mix WAV + Vocal WAV", summary)
         self.assertIn("Sure plani: Backing dosyasi boyunca (ust sinir kayit limiti)", summary)
         self.assertIn("Durum: Hazir gorunuyor. Once 5 saniyelik test yapip sonra kayda gecin.", summary)
+
+    def test_build_recording_readiness_summary_includes_preset_note_when_present(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recorder = self.make_app(tmpdir)
+            recorder.preset_note.set("Aksam vokal denemesi")
+
+            summary = app.GuitarAmpRecorderApp.build_recording_readiness_summary(recorder)
+
+        self.assertIn("Preset Notu: Aksam vokal denemesi", summary)
 
     def test_refresh_recording_readiness_updates_only_when_idle(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
