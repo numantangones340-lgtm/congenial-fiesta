@@ -1007,6 +1007,8 @@ class GuitarAmpRecorderApp:
         self.mp3_quality = StringVar(value="Yüksek VBR")
         self.wav_export_mode = StringVar(value="Sadece Vokal WAV")
         self.preset_name = StringVar(value="Temiz Gitar")
+        self.preset_filter = StringVar(value="")
+        self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -1407,6 +1409,29 @@ class GuitarAmpRecorderApp:
         self.reload_session_button = Button(preset_row, text="Son Oturumu Yükle", command=self.reload_last_session, bg="#6c5ce7", fg="white")
         self.reload_session_button.grid(row=1, column=8, sticky="w", padx=(8, 0))
         self.apply_button_style(self.reload_session_button, role="accent")
+        Label(preset_row, text="Preset Filtresi", bg="#151b22", fg="#dce6ef").grid(row=2, column=0, sticky="w", pady=(0, 0))
+        Entry(preset_row, textvariable=self.preset_filter, width=18).grid(row=3, column=0, sticky="ew", pady=(2, 0))
+        self.apply_preset_filter_button = Button(
+            preset_row,
+            text="Filtreyi Uygula",
+            command=self.apply_preset_filter,
+            bg="#34495e",
+            fg="white",
+        )
+        self.apply_preset_filter_button.grid(row=3, column=1, sticky="w", padx=(18, 0))
+        self.apply_button_style(self.apply_preset_filter_button, role="secondary")
+        self.clear_preset_filter_button = Button(
+            preset_row,
+            text="Filtreyi Temizle",
+            command=self.clear_preset_filter,
+            bg="#5d6d7e",
+            fg="white",
+        )
+        self.clear_preset_filter_button.grid(row=3, column=2, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.clear_preset_filter_button, role="secondary")
+        Label(preset_row, textvariable=self.preset_filter_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=4, column=0, columnspan=9, sticky="w", pady=(6, 0)
+        )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
             anchor="w", padx=14, pady=(0, 4)
@@ -3443,9 +3468,30 @@ class GuitarAmpRecorderApp:
         GUI_PRESET_PATH.parent.mkdir(parents=True, exist_ok=True)
         GUI_PRESET_PATH.write_text(json.dumps(store, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    def preset_filter_term(self) -> str:
+        return str(self.preset_filter.get() if hasattr(self, "preset_filter") else "").strip().casefold()
+
+    def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
+        names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        term = (filter_text if filter_text is not None else self.preset_filter_term()).strip().casefold()
+        if not term:
+            return names
+        return [name for name in names if term in name.casefold()]
+
+    def update_preset_filter_meta(self, total_count: int, matched_count: int, filter_text: str) -> None:
+        if not filter_text:
+            self.preset_filter_meta_text.set(f"Tüm presetler gösteriliyor: {total_count}")
+            return
+        if matched_count:
+            self.preset_filter_meta_text.set(f'Filtre "{filter_text}" için eşleşme: {matched_count}/{total_count}')
+            return
+        self.preset_filter_meta_text.set(f'Filtre "{filter_text}" için eşleşme yok. Tam liste gösteriliyor.')
+
     def refresh_preset_menu(self, selected_name: Optional[str] = None) -> None:
         store = self.load_preset_store_data()
-        names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        all_names = sorted(store.get("presets", {}).keys()) or ["Temiz Gitar"]
+        filtered_names = self.filtered_preset_names(store)
+        names = filtered_names or all_names
         self.preset_names = names
         menu = self.preset_menu["menu"]
         menu.delete(0, "end")
@@ -3455,6 +3501,20 @@ class GuitarAmpRecorderApp:
         if target not in self.preset_names:
             target = self.preset_names[0]
         self.preset_name.set(target)
+        self.update_preset_filter_meta(len(all_names), len(filtered_names), str(self.preset_filter.get()).strip())
+
+    def apply_preset_filter(self) -> None:
+        self.refresh_preset_menu()
+        term = str(self.preset_filter.get()).strip()
+        if term:
+            self.set_status(f"Preset filtresi uygulandı: {term}")
+        else:
+            self.set_status("Preset filtresi kapalı. Tüm presetler gösteriliyor.")
+
+    def clear_preset_filter(self) -> None:
+        self.preset_filter.set("")
+        self.refresh_preset_menu()
+        self.set_status("Preset filtresi temizlendi.")
 
     def load_preset_store(self, initial: bool = False) -> None:
         store = self.load_preset_store_data()

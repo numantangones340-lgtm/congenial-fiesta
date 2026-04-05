@@ -24,11 +24,34 @@ class FakeVar:
         self.value = value
 
 
+class FakeMenu:
+    def __init__(self) -> None:
+        self.labels = []
+
+    def delete(self, _start, _end=None) -> None:
+        self.labels = []
+
+    def add_command(self, label, command) -> None:
+        self.labels.append(label)
+
+
+class FakeOptionMenu:
+    def __init__(self) -> None:
+        self.menu = FakeMenu()
+
+    def __getitem__(self, key):
+        if key != "menu":
+            raise KeyError(key)
+        return self.menu
+
+
 class GuiPresetStoreTests(unittest.TestCase):
     def make_app(self) -> app.GuitarAmpRecorderApp:
         recorder = app.GuitarAmpRecorderApp.__new__(app.GuitarAmpRecorderApp)
         recorder.app_version = "0.1.0-test"
         recorder.preset_name = FakeVar("Temiz Gitar")
+        recorder.preset_filter = FakeVar("")
+        recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.input_device_id = FakeVar("1")
@@ -284,6 +307,54 @@ class GuiPresetStoreTests(unittest.TestCase):
         self.assertIn("Kullanici", raw["presets"])
         self.assertEqual(raw["selected"], "Temiz Gitar")
         self.assertEqual(recorder.status_messages[-1], "Hazır preset silinemez: Temiz Gitar")
+
+    def test_filtered_preset_names_matches_case_insensitive_filter(self) -> None:
+        recorder = self.make_app()
+        store = {
+            "selected": "Temiz Gitar",
+            "presets": {
+                "Temiz Gitar": {"gain": 4},
+                "MacBook Mikrofon Hizli Kayit": {"gain": 8},
+                "Aksam": {"gain": 5},
+            },
+        }
+
+        names = recorder.filtered_preset_names(store, "macbook")
+
+        self.assertEqual(names, ["MacBook Mikrofon Hizli Kayit"])
+
+    def test_refresh_preset_menu_uses_filter_and_updates_meta(self) -> None:
+        recorder = self.make_app()
+        recorder.refresh_preset_menu = app.GuitarAmpRecorderApp.refresh_preset_menu.__get__(recorder, app.GuitarAmpRecorderApp)
+        recorder.preset_menu = FakeOptionMenu()
+        recorder.preset_filter.set("macbook")
+        recorder.load_preset_store_data = mock.Mock(
+            return_value={
+                "selected": "Temiz Gitar",
+                "presets": {
+                    "Temiz Gitar": {"gain": 4},
+                    "MacBook Mikrofon Hizli Kayit": {"gain": 8},
+                    "Aksam": {"gain": 5},
+                },
+            }
+        )
+
+        recorder.refresh_preset_menu()
+
+        self.assertEqual(recorder.preset_names, ["MacBook Mikrofon Hizli Kayit"])
+        self.assertEqual(recorder.preset_name.get(), "MacBook Mikrofon Hizli Kayit")
+        self.assertEqual(recorder.preset_menu.menu.labels, ["MacBook Mikrofon Hizli Kayit"])
+        self.assertEqual(recorder.preset_filter_meta_text.get(), 'Filtre "macbook" için eşleşme: 1/3')
+
+    def test_clear_preset_filter_resets_value_and_refreshes_menu(self) -> None:
+        recorder = self.make_app()
+        recorder.preset_filter.set("aksam")
+
+        recorder.clear_preset_filter()
+
+        self.assertEqual(recorder.preset_filter.get(), "")
+        recorder.refresh_preset_menu.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Preset filtresi temizlendi.")
 
     def test_duplicate_selected_preset_creates_copy_of_builtin_preset(self) -> None:
         recorder = self.make_app()
