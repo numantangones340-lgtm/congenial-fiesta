@@ -1335,6 +1335,30 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with(str(image_path))
             self.assertEqual(recorder.status_messages[-1], "Kapak görseli yolu panoya alındı")
 
+    def test_write_share_guide_file_writes_combined_share_notes(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "gitar_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.share_title.set("Benim Basligim")
+            recorder.share_description.set("Benim Aciklamam")
+
+            recorder.write_share_guide_file()
+
+            guide_path = output_dir / "_paylasim" / "gitar_take_youtube_paketi" / "paylasim_rehberi.txt"
+            self.assertTrue(guide_path.exists())
+            content = guide_path.read_text(encoding="utf-8")
+            self.assertIn("Başlık: Benim Basligim", content)
+            self.assertIn("Benim Aciklamam", content)
+            self.assertIn("YouTube yükleme notu", content)
+            self.assertEqual(recorder.last_share_package_dir, guide_path.parent)
+            self.assertEqual(recorder.status_messages[-1], f"Paylaşım rehberi yazıldı: {guide_path}")
+
     def test_share_meta_summary_reports_audio_image_and_package_state(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

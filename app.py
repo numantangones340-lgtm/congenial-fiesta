@@ -5284,6 +5284,38 @@ class GuitarAmpRecorderApp:
         ]
         return "\n".join(lines)
 
+    def build_share_guide_text(self, audio_path: Path, title: str, description: str) -> str:
+        lines = [
+            "YouTube paylaşım rehberi",
+            "",
+            f"Ses dosyası: {audio_path.name}",
+            f"Başlık: {title}",
+            "",
+            "Açıklama:",
+            description or "-",
+            "",
+            self.share_upload_note_text(audio_path),
+        ]
+        return "\n".join(lines)
+
+    def write_share_guide_file(self) -> None:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            self.set_status("Paylaşım rehberi için ses dosyası yok.")
+            return
+        self.ensure_share_defaults(audio_path)
+        title = str(self.share_title.get()).strip() or self.default_share_title_for_audio(audio_path)
+        description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            package_dir = self.share_package_dir(audio_path)
+            package_dir.mkdir(parents=True, exist_ok=True)
+        guide_path = package_dir / "paylasim_rehberi.txt"
+        guide_path.write_text(self.build_share_guide_text(audio_path, title, description), encoding="utf-8")
+        self.last_share_package_dir = package_dir
+        self.update_share_meta_text()
+        self.set_status(f"Paylaşım rehberi yazıldı: {guide_path}")
+
     def export_share_package(self) -> None:
         if self.block_changes_during_recording("paylaşım paketi"):
             return
@@ -5490,6 +5522,13 @@ class GuitarAmpRecorderApp:
                 bg="#64748b",
                 fg="white",
             )
+            write_share_guide_button = Button(
+                template_row,
+                text="Rehberi Yaz",
+                command=self.write_share_guide_file,
+                bg="#0f766e",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
@@ -5504,6 +5543,7 @@ class GuitarAmpRecorderApp:
                 (write_upload_note_button, "primary"),
                 (copy_package_path_button, "secondary"),
                 (copy_image_path_button, "secondary"),
+                (write_share_guide_button, "success"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
@@ -5519,6 +5559,7 @@ class GuitarAmpRecorderApp:
             write_upload_note_button.pack(side="left", padx=(8, 0))
             copy_package_path_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
+            write_share_guide_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=8, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
