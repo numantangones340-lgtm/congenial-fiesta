@@ -46,6 +46,7 @@ def import_stubs():
         Canvas=object,
         Frame=object,
         Scrollbar=object,
+        Toplevel=object,
     )
     try:
         yield

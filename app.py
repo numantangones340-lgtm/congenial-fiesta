@@ -22,6 +22,7 @@ from tkinter import (
     Canvas,
     Frame,
     Scrollbar,
+    Toplevel,
 )
 from typing import Optional, Tuple
 
@@ -1033,6 +1034,9 @@ class GuitarAmpRecorderApp:
         self.preset_favorites_filter_button_text = StringVar(value="Sadece Favoriler")
         self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
         self.preset_note_meta_text = StringVar(value="0 karakter")
+        self.share_title = StringVar(value="")
+        self.share_description = StringVar(value="")
+        self.share_image_path = StringVar(value="")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -1086,6 +1090,8 @@ class GuitarAmpRecorderApp:
         self.last_take_notes_path: Optional[Path] = None
         self.last_recovery_note_path: Optional[Path] = None
         self.last_preparation_summary_path: Optional[Path] = None
+        self.last_share_package_dir: Optional[Path] = None
+        self.share_window = None
         self.recent_exports_text = StringVar(value="Henüz çıktı yok.")
         self.preset_names = ["Temiz Gitar"]
         self.input_device_options = ["Varsayılan macOS girişi"]
@@ -1970,6 +1976,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.open_share_window_button = Button(
+            recent_buttons,
+            text="Paylaşım Penceresi",
+            command=self.open_share_window,
+            bg="#e67e22",
+            fg="white",
+            state="normal",
+        )
         self.open_last_preparation_button = Button(
             recent_buttons,
             text="Hazırlık Dosyasını Aç",
@@ -2014,6 +2028,7 @@ class GuitarAmpRecorderApp:
                 self.open_last_summary_button,
                 self.open_last_take_notes_button,
                 self.open_last_output_dir_button,
+                self.open_share_window_button,
                 self.open_last_preparation_button,
                 self.archive_last_session_button,
                 self.reset_session_state_button,
@@ -2031,6 +2046,7 @@ class GuitarAmpRecorderApp:
             (self.open_last_summary_button, "accent"),
             (self.open_last_take_notes_button, "accent"),
             (self.open_last_output_dir_button, "secondary"),
+            (self.open_share_window_button, "warning"),
             (self.open_last_preparation_button, "primary"),
             (self.archive_last_session_button, "secondary"),
             (self.reset_session_state_button, "secondary"),
@@ -4919,6 +4935,192 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Klasör açıldı: {output_dir.name}")
         except Exception as exc:
             self.set_status(f"Klasör açılamadı: {exc}")
+
+    def current_share_audio_path(self) -> Optional[Path]:
+        if self.last_export_path is not None and self.last_export_path.exists():
+            return self.last_export_path
+        audio_path = self.current_filtered_recent_audio_file()
+        if audio_path is not None and audio_path.exists():
+            return audio_path
+        return None
+
+    def default_share_title_for_audio(self, audio_path: Path) -> str:
+        return audio_path.stem.replace("_", " ").strip() or "Yeni kayıt"
+
+    def default_share_description_for_audio(self, audio_path: Path) -> str:
+        parts = [f"Kayıt: {audio_path.stem.replace('_', ' ')}", f"Preset: {self.preset_name.get().strip() or 'Temiz Gitar'}"]
+        note = self.current_preset_note()
+        if note:
+            parts.append(f"Not: {note}")
+        return " | ".join(parts)
+
+    def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
+        source_audio = audio_path or self.current_share_audio_path()
+        if source_audio is None:
+            return
+        if not str(self.share_title.get()).strip():
+            self.share_title.set(self.default_share_title_for_audio(source_audio))
+        if not str(self.share_description.get()).strip():
+            self.share_description.set(self.default_share_description_for_audio(source_audio))
+
+    def select_share_image(self) -> None:
+        file_path = filedialog.askopenfilename(
+            title="Kapak Görseli Seç",
+            filetypes=[
+                ("Görseller", "*.png *.jpg *.jpeg *.webp"),
+                ("PNG", "*.png"),
+                ("JPEG", "*.jpg *.jpeg"),
+                ("WEBP", "*.webp"),
+                ("Tüm Dosyalar", "*.*"),
+            ],
+        )
+        if not file_path:
+            self.set_status("Paylaşım görseli seçilmedi.")
+            return
+        self.share_image_path.set(file_path)
+        self.set_status(f"Paylaşım görseli seçildi: {Path(file_path).name}")
+
+    def safe_share_export_name(self, text: str) -> str:
+        cleaned = "".join(ch if ch.isalnum() or ch in "-_ ." else "_" for ch in text).strip()
+        cleaned = cleaned.replace(" ", "_")
+        return cleaned or "paylasim"
+
+    def share_package_dir(self, audio_path: Path) -> Path:
+        output_dir = self.resolve_output_dir()
+        return output_dir / "_paylasim" / f"{self.safe_share_export_name(audio_path.stem)}_youtube_paketi"
+
+    def build_share_package_markdown(self, title: str, description: str, audio_name: str, image_name: str) -> str:
+        lines = [
+            "# YouTube Paylaşım Paketi",
+            "",
+            f"- Başlık: {title}",
+            f"- Ses Dosyası: {audio_name}",
+            f"- Kapak Görseli: {image_name}",
+            "",
+            "## Açıklama",
+            "",
+            description or "-",
+        ]
+        return "\n".join(lines)
+
+    def export_share_package(self) -> None:
+        if self.block_changes_during_recording("paylaşım paketi"):
+            return
+        try:
+            audio_path = self.current_share_audio_path()
+            if audio_path is None or not audio_path.exists():
+                self.set_status("Paylaşım için ses dosyası yok.")
+                return
+            image_value = str(self.share_image_path.get()).strip()
+            if not image_value:
+                self.set_status("Paylaşım için kapak görseli seçin.")
+                return
+            image_path = Path(image_value)
+            if not image_path.exists():
+                self.set_status(f"Kapak görseli bulunamadı: {image_path}")
+                return
+            self.ensure_share_defaults(audio_path)
+            title = str(self.share_title.get()).strip() or self.default_share_title_for_audio(audio_path)
+            description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
+            package_dir = self.share_package_dir(audio_path)
+            package_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(audio_path, package_dir / audio_path.name)
+            image_target = package_dir / f"kapak{image_path.suffix.lower() or '.jpg'}"
+            shutil.copy2(image_path, image_target)
+            (package_dir / "youtube_baslik.txt").write_text(title, encoding="utf-8")
+            (package_dir / "youtube_aciklama.txt").write_text(description, encoding="utf-8")
+            (package_dir / "paylasim_paketi.md").write_text(
+                self.build_share_package_markdown(title, description, audio_path.name, image_target.name),
+                encoding="utf-8",
+            )
+            self.last_share_package_dir = package_dir
+            self.set_status(f"YouTube paylaşım paketi hazır: {package_dir}")
+        except Exception as exc:
+            self.set_status(f"Paylaşım paketi hazırlanamadı: {exc}")
+
+    def open_last_share_package_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Paylaşım paketi yok.")
+            return
+        try:
+            subprocess.run(["open", str(package_dir)], check=False)
+            self.set_status(f"Paylaşım paketi açıldı: {package_dir.name}")
+        except Exception as exc:
+            self.set_status(f"Paylaşım paketi açılamadı: {exc}")
+
+    def use_last_audio_for_share(self) -> None:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            self.set_status("Paylaşım için kullanılacak ses dosyası yok.")
+            return
+        self.ensure_share_defaults(audio_path)
+        self.set_status(f"Paylaşım paketi son kayıtla hazırlandı: {audio_path.name}")
+
+    def open_share_window(self) -> None:
+        self.ensure_share_defaults()
+        if self.share_window is not None:
+            try:
+                self.share_window.lift()
+                self.share_window.focus_force()
+                return
+            except Exception:
+                self.share_window = None
+        try:
+            window = Toplevel(self.root)
+            self.share_window = window
+            window.title("YouTube Paylaşım Paketi")
+            window.configure(bg="#101418")
+            window.geometry("760x260")
+
+            def close_window() -> None:
+                self.share_window = None
+                try:
+                    window.destroy()
+                except Exception:
+                    pass
+
+            window.protocol("WM_DELETE_WINDOW", close_window)
+            container = Frame(window, bg="#101418")
+            container.pack(fill="both", expand=True, padx=16, pady=16)
+            Label(container, text="YouTube Paylaşım Paketi", bg="#101418", fg="#f4f7fb", font=("Helvetica", 15, "bold")).grid(
+                row=0, column=0, columnspan=4, sticky="w"
+            )
+            Label(
+                container,
+                text="Son mp3 kaydınızı, kapak görseli ve başlık/açıklama ile birlikte paylaşım klasörüne hazırlar.",
+                bg="#101418",
+                fg="#c7d2de",
+                justify="left",
+                wraplength=700,
+            ).grid(row=1, column=0, columnspan=4, sticky="w", pady=(4, 12))
+            Label(container, text="Başlık", bg="#101418", fg="#dce6ef").grid(row=2, column=0, sticky="w")
+            Entry(container, textvariable=self.share_title, width=48).grid(row=3, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, text="Açıklama", bg="#101418", fg="#dce6ef").grid(row=4, column=0, sticky="w")
+            Entry(container, textvariable=self.share_description, width=48).grid(row=5, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=6, column=0, sticky="w")
+            Entry(container, textvariable=self.share_image_path, width=48).grid(row=7, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            button_row = Frame(container, bg="#101418")
+            button_row.grid(row=8, column=0, columnspan=4, sticky="w", pady=(4, 0))
+            select_button = Button(button_row, text="Görsel Seç", command=self.select_share_image, bg="#34495e", fg="white")
+            use_audio_button = Button(button_row, text="Son Kaydı Kullan", command=self.use_last_audio_for_share, bg="#16a085", fg="white")
+            export_button = Button(button_row, text="YouTube Paketi Yaz", command=self.export_share_package, bg="#2d7d46", fg="white")
+            open_button = Button(button_row, text="Paketi Aç", command=self.open_last_share_package_in_finder, bg="#1f6feb", fg="white")
+            for button, role in (
+                (select_button, "secondary"),
+                (use_audio_button, "success"),
+                (export_button, "success"),
+                (open_button, "primary"),
+            ):
+                self.apply_button_style(button, role=role)
+            select_button.pack(side="left")
+            use_audio_button.pack(side="left", padx=(8, 0))
+            export_button.pack(side="left", padx=(8, 0))
+            open_button.pack(side="left", padx=(8, 0))
+            self.set_status("Paylaşım penceresi açıldı. Kapak görseli seçip YouTube paketini hazırlayabilirsiniz.")
+        except Exception as exc:
+            self.share_window = None
+            self.set_status(f"Paylaşım penceresi açılamadı: {exc}")
 
     def open_last_export_in_finder(self) -> None:
         if self.last_export_path is None or not self.last_export_path.exists():

@@ -64,6 +64,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.selected_route_text = FakeVar("")
         recorder.output_dir = FakeVar("/tmp/gar-default-out")
         recorder.preset_name = FakeVar("Temiz Gitar")
+        recorder.preset_note = FakeVar("")
+        recorder.share_title = FakeVar("")
+        recorder.share_description = FakeVar("")
+        recorder.share_image_path = FakeVar("")
         recorder.session_mode = FakeVar("Tek Klasör")
         recorder.session_name = FakeVar("session_20260404")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
@@ -100,6 +104,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_take_notes_path = None
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
+        recorder.last_share_package_dir = None
         recorder.open_preparation_button = mock.Mock()
         recorder.open_last_preparation_button = mock.Mock()
         recorder.open_last_output_dir_button = mock.Mock()
@@ -1112,6 +1117,52 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
         recorder.resolve_output_dir.assert_not_called()
         self.assertEqual(recorder.status_messages[-1], f"Klasör açıldı: {output_dir.name}")
+
+    def test_export_share_package_writes_audio_image_and_metadata_files(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "take_001.mp3"
+            image_path = output_dir / "cover.jpg"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.preset_name.set("Temiz Gitar")
+            recorder.preset_note.set("YouTube deneme")
+            recorder.share_title.set("Benim Basligim")
+            recorder.share_description.set("Kisa aciklama")
+            recorder.share_image_path.set(str(image_path))
+
+            recorder.export_share_package()
+
+            package_dir = output_dir / "_paylasim" / "take_001_youtube_paketi"
+            self.assertTrue((package_dir / "take_001.mp3").exists())
+            self.assertTrue((package_dir / "kapak.jpg").exists())
+            self.assertEqual((package_dir / "youtube_baslik.txt").read_text(encoding="utf-8"), "Benim Basligim")
+            self.assertEqual((package_dir / "youtube_aciklama.txt").read_text(encoding="utf-8"), "Kisa aciklama")
+            self.assertIn("# YouTube Paylaşım Paketi", (package_dir / "paylasim_paketi.md").read_text(encoding="utf-8"))
+            self.assertEqual(recorder.last_share_package_dir, package_dir)
+
+        self.assertEqual(recorder.status_messages[-1], f"YouTube paylaşım paketi hazır: {package_dir}")
+
+    def test_export_share_package_reports_missing_image(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "take_001.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.share_image_path.set("")
+
+            recorder.export_share_package()
+
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım için kapak görseli seçin.")
 
     def test_notify_success_uses_root_bell(self) -> None:
         recorder = self.make_app()
