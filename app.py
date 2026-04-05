@@ -1012,6 +1012,7 @@ class GuitarAmpRecorderApp:
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
         self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
+        self.preset_note_meta_text = StringVar(value="0 karakter")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -1437,6 +1438,9 @@ class GuitarAmpRecorderApp:
         )
         Label(preset_row, text="Preset Notu", bg="#151b22", fg="#dce6ef").grid(row=5, column=0, sticky="w", pady=(4, 0))
         Entry(preset_row, textvariable=self.preset_note, width=24).grid(row=6, column=0, columnspan=2, sticky="ew", pady=(2, 0))
+        Label(preset_row, textvariable=self.preset_note_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=7, column=0, columnspan=2, sticky="w", pady=(4, 0)
+        )
         self.preset_note_speech_button = Button(
             preset_row,
             text="Konuşma",
@@ -1483,10 +1487,10 @@ class GuitarAmpRecorderApp:
         self.clear_preset_note_button.grid(row=6, column=6, sticky="w", padx=(8, 0))
         self.apply_button_style(self.clear_preset_note_button, role="secondary")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=7, column=0, columnspan=9, sticky="w", pady=(4, 0)
+            row=8, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=8, column=0, columnspan=9, sticky="w", pady=(4, 0)
+            row=9, column=0, columnspan=9, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3550,12 +3554,18 @@ class GuitarAmpRecorderApp:
         except Exception:
             return ""
 
+    def update_preset_note_meta_text(self) -> None:
+        note = self.current_preset_note()
+        self.preset_note_meta_text.set(f"{len(note)} karakter")
+
     def apply_preset_note_template(self, note: str) -> None:
         self.preset_note.set(note)
+        self.update_preset_note_meta_text()
         self.set_status(f"Preset notu şablonu uygulandı: {note}")
 
     def clear_preset_note(self) -> None:
         self.preset_note.set("")
+        self.update_preset_note_meta_text()
         self.set_status("Preset notu temizlendi.")
 
     def filtered_preset_names(self, store: dict, filter_text: Optional[str] = None) -> list[str]:
@@ -3600,6 +3610,7 @@ class GuitarAmpRecorderApp:
         store = self.load_preset_store_data()
         preset = store.get("presets", {}).get(selected_name, {})
         self.preset_note.set(str(preset.get("preset_note", "")).strip() if isinstance(preset, dict) else "")
+        self.update_preset_note_meta_text()
         self.update_preset_scope_text(selected_name)
         self.update_preset_summary_text(selected_name, store)
 
@@ -3618,6 +3629,7 @@ class GuitarAmpRecorderApp:
             target = self.preset_names[0]
         self.preset_name.set(target)
         self.update_preset_filter_meta(len(all_names), len(filtered_names), str(self.preset_filter.get()).strip())
+        self.update_preset_note_meta_text()
         self.update_preset_scope_text(target)
         self.update_preset_summary_text(target, store)
 
@@ -3716,6 +3728,7 @@ class GuitarAmpRecorderApp:
         self.mp3_quality.set(normalize_choice(str(preset.get("mp3_quality", self.mp3_quality.get())), MP3_QUALITY_ALIASES, self.mp3_quality_value()))
         self.wav_export_mode.set(normalize_choice(str(preset.get("wav_export_mode", self.wav_export_mode.get())), WAV_EXPORT_MODE_ALIASES, self.wav_export_mode_value()))
         self.preset_note.set(str(preset.get("preset_note", "")))
+        self.update_preset_note_meta_text()
         self.record_limit_hours.set(str(preset.get("record_limit_hours", "1")))
         self.mic_record_seconds.set(str(preset.get("mic_record_seconds", "60")))
 

@@ -55,6 +55,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
         recorder.preset_summary_text = FakeVar("Preset özeti hazırlanıyor...")
+        recorder.preset_note_meta_text = FakeVar("0 karakter")
         recorder.input_device_choice = FakeVar("Built-in Mic")
         recorder.output_device_choice = FakeVar("Built-in Output")
         recorder.input_device_id = FakeVar("1")
@@ -220,6 +221,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.apply_preset_note_template("Canlı performans için hazır")
 
         self.assertEqual(recorder.preset_note.get(), "Canlı performans için hazır")
+        self.assertEqual(recorder.preset_note_meta_text.get(), "27 karakter")
         self.assertEqual(recorder.status_messages[-1], "Preset notu şablonu uygulandı: Canlı performans için hazır")
 
     def test_clear_preset_note_resets_note_and_status(self) -> None:
@@ -229,6 +231,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.clear_preset_note()
 
         self.assertEqual(recorder.preset_note.get(), "")
+        self.assertEqual(recorder.preset_note_meta_text.get(), "0 karakter")
         self.assertEqual(recorder.status_messages[-1], "Preset notu temizlendi.")
 
     def test_save_current_preset_rejects_builtin_names(self) -> None:
@@ -459,6 +462,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.on_preset_selected("Aksam")
 
         self.assertEqual(recorder.preset_note.get(), "Sakin vokal kayıt")
+        self.assertEqual(recorder.preset_note_meta_text.get(), "17 karakter")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 6 | Vokal: 92% | Çıkış Kazancı: 3 dB | Not: Sakin vokal kayıt")
 
     def test_duplicate_selected_preset_creates_copy_of_builtin_preset(self) -> None:
