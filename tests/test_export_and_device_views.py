@@ -1255,6 +1255,23 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertLessEqual(len(recorder.share_title.get()), 100)
         self.assertEqual(recorder.status_messages[-1], "Paylaşım başlığı düzenlendi.")
 
+    def test_apply_concise_share_description_uses_audio_preset_and_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "aksam_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.preset_name.set("Temiz Gitar")
+            recorder.preset_note.set("Gece için hazır")
+
+            recorder.apply_concise_share_description()
+
+            self.assertEqual(
+                recorder.share_description.get(),
+                "Kayıt: aksam take | Preset: Temiz Gitar | Not: Gece için hazır",
+            )
+            self.assertEqual(recorder.status_messages[-1], "Kısa paylaşım açıklaması uygulandı.")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
