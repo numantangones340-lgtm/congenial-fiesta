@@ -56,6 +56,7 @@ class GuiPresetStoreTests(unittest.TestCase):
         recorder.preset_filter_meta_text = FakeVar("Preset filtresi kapalı.")
         recorder.preset_scope_text = FakeVar("Yerleşik preset seçili.")
         recorder.preset_favorite_text = FakeVar("Favori: hayır")
+        recorder.preset_favorite_meta_text = FakeVar("Favori preset yok.")
         recorder.preset_favorite_button_text = FakeVar("Favoriye Ekle")
         recorder.preset_favorites_filter_button_text = FakeVar("Sadece Favoriler")
         recorder.preset_summary_text = FakeVar("Preset özeti hazırlanıyor...")
@@ -521,6 +522,7 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.preset_scope_text.get(), "Yerleşik preset seçili: Temiz Gitar")
         self.assertEqual(recorder.preset_favorite_text.get(), "Favori: hayır")
+        self.assertEqual(recorder.preset_favorite_meta_text.get(), "Favori preset yok.")
         self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriye Ekle")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 4 | Vokal: -% | Çıkış Kazancı: - dB")
 
@@ -543,6 +545,7 @@ class GuiPresetStoreTests(unittest.TestCase):
 
         self.assertEqual(recorder.preset_scope_text.get(), "Kullanıcı preset seçili: Aksam")
         self.assertEqual(recorder.preset_favorite_text.get(), "Favori: evet")
+        self.assertEqual(recorder.preset_favorite_meta_text.get(), "1 favori: Aksam")
         self.assertEqual(recorder.preset_favorite_button_text.get(), "Favoriden Çıkar")
         self.assertEqual(recorder.preset_favorites_filter_button_text.get(), "Sadece Favoriler")
         self.assertEqual(recorder.preset_summary_text.get(), "Gain: 5 | Vokal: -% | Çıkış Kazancı: - dB")

@@ -1027,6 +1027,7 @@ class GuitarAmpRecorderApp:
         self.preset_filter_meta_text = StringVar(value="Preset filtresi kapalı.")
         self.preset_scope_text = StringVar(value="Yerleşik preset seçili.")
         self.preset_favorite_text = StringVar(value="Favori: hayır")
+        self.preset_favorite_meta_text = StringVar(value="Favori preset yok.")
         self.preset_favorite_button_text = StringVar(value="Favoriye Ekle")
         self.preset_favorites_filter_button_text = StringVar(value="Sadece Favoriler")
         self.preset_summary_text = StringVar(value="Preset özeti hazırlanıyor...")
@@ -1555,8 +1556,11 @@ class GuitarAmpRecorderApp:
         Label(preset_row, textvariable=self.preset_favorite_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=9, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
-        Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+        Label(preset_row, textvariable=self.preset_favorite_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=10, column=0, columnspan=10, sticky="w", pady=(4, 0)
+        )
+        Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
+            row=11, column=0, columnspan=10, sticky="w", pady=(4, 0)
         )
 
         Label(setup, text="Canlı Mikrofon Seviyesi", bg="#151b22", fg="#f4f7fb", font=("Helvetica", 12, "bold")).pack(
@@ -3708,8 +3712,15 @@ class GuitarAmpRecorderApp:
         self.preset_scope_text.set(f"Kullanıcı preset seçili: {selected_name}")
 
     def update_preset_favorite_text(self, selected_name: str, store: dict) -> None:
-        is_favorite = selected_name in self.preset_favorites(store)
+        favorites = sorted(self.preset_favorites(store))
+        is_favorite = selected_name in favorites
         self.preset_favorite_text.set(f"Favori: {'evet' if is_favorite else 'hayır'}")
+        if not favorites:
+            self.preset_favorite_meta_text.set("Favori preset yok.")
+        else:
+            preview = ", ".join(favorites[:3])
+            extra = "" if len(favorites) <= 3 else f" +{len(favorites) - 3}"
+            self.preset_favorite_meta_text.set(f"{len(favorites)} favori: {preview}{extra}")
         self.preset_favorite_button_text.set("Favoriden Çıkar" if is_favorite else "Favoriye Ekle")
         self.preset_favorites_filter_button_text.set("Tüm Presetler" if self.preset_favorites_only_enabled() else "Sadece Favoriler")
 
