@@ -5077,6 +5077,22 @@ class GuitarAmpRecorderApp:
         self.share_description.set(updated)
         self.set_status("Paylaşım sonu eklendi.")
 
+    def cleaned_share_title(self, raw_title: str) -> str:
+        collapsed = " ".join(str(raw_title).replace("\n", " ").replace("\r", " ").split())
+        cleaned = collapsed.replace(" | | ", " | ").strip(" |")
+        if len(cleaned) > 100:
+            cleaned = cleaned[:100].rstrip(" |")
+        return cleaned
+
+    def normalize_share_title(self) -> None:
+        current_title = str(self.share_title.get())
+        cleaned = self.cleaned_share_title(current_title)
+        if not cleaned:
+            self.set_status("Düzenlenecek paylaşım başlığı yok.")
+            return
+        self.share_title.set(cleaned)
+        self.set_status("Paylaşım başlığı düzenlendi.")
+
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
         if source_audio is None:
@@ -5319,6 +5335,13 @@ class GuitarAmpRecorderApp:
                 bg="#0f766e",
                 fg="white",
             )
+            normalize_title_button = Button(
+                template_row,
+                text="Başlığı Düzenle",
+                command=self.normalize_share_title,
+                bg="#2563eb",
+                fg="white",
+            )
             for button, role in (
                 (live_template_button, "success"),
                 (clean_template_button, "success"),
@@ -5327,6 +5350,7 @@ class GuitarAmpRecorderApp:
                 (hashtag_button, "warning"),
                 (clear_text_button, "secondary"),
                 (footer_button, "success"),
+                (normalize_title_button, "primary"),
             ):
                 self.apply_button_style(button, role=role)
             live_template_button.pack(side="left", padx=(8, 0))
@@ -5336,6 +5360,7 @@ class GuitarAmpRecorderApp:
             hashtag_button.pack(side="left", padx=(8, 0))
             clear_text_button.pack(side="left", padx=(8, 0))
             footer_button.pack(side="left", padx=(8, 0))
+            normalize_title_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=7, column=0, sticky="w")
             Entry(container, textvariable=self.share_image_path, width=48).grid(row=8, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")

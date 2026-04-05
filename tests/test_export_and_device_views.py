@@ -1245,6 +1245,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         self.assertIn("Preset notu: Gece için hazır", recorder.share_description.get())
         self.assertEqual(recorder.status_messages[-1], "Paylaşım sonu eklendi.")
 
+    def test_normalize_share_title_collapses_spaces_and_limits_length(self) -> None:
+        recorder = self.make_app()
+        recorder.share_title.set("  Yeni   Kayıt  |  Çok   Uzun   Başlık  " + ("x" * 120))
+
+        recorder.normalize_share_title()
+
+        self.assertTrue(recorder.share_title.get().startswith("Yeni Kayıt | Çok Uzun Başlık"))
+        self.assertLessEqual(len(recorder.share_title.get()), 100)
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım başlığı düzenlendi.")
+
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
