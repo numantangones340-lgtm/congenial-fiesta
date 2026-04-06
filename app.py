@@ -5274,10 +5274,13 @@ class GuitarAmpRecorderApp:
     def share_package_size_text(self, package_dir: Optional[Path]) -> str:
         if package_dir is None or not package_dir.exists():
             return "henüz yok"
-        total_size = 0
-        for path in package_dir.rglob("*"):
-            if path.is_file():
-                total_size += path.stat().st_size
+        if package_dir.is_file():
+            total_size = package_dir.stat().st_size
+        else:
+            total_size = 0
+            for path in package_dir.rglob("*"):
+                if path.is_file():
+                    total_size += path.stat().st_size
         if total_size < 1024:
             return f"{total_size} B"
         if total_size < 1024 * 1024:
@@ -5295,7 +5298,9 @@ class GuitarAmpRecorderApp:
             package_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(package_dir.stat().st_mtime))
             package_part = f"Son paket zamanı: {package_time}"
         size_part = f"Paket boyutu: {self.share_package_size_text(package_dir)}"
-        return " | ".join([image_part, package_part, size_part])
+        zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None
+        zip_part = f"ZIP boyutu: {self.share_package_size_text(zip_path)}" if zip_path is not None and zip_path.exists() else "ZIP boyutu: henüz yok"
+        return " | ".join([image_part, package_part, size_part, zip_part])
 
     def update_share_meta_text(self) -> None:
         if hasattr(self, "share_meta_text"):
