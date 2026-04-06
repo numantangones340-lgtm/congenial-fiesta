@@ -1539,7 +1539,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.update_share_meta_text()
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                "Kapak dosyası: yok | Son paket zamanı: henüz yok | Paket boyutu: henüz yok | ZIP boyutu: henüz yok",
+                "Kapak dosyası: yok | Son paket zamanı: henüz yok | Paket boyutu: henüz yok | ZIP boyutu: henüz yok | Paket içeriği: henüz yok",
             )
 
             image_path.write_text("image", encoding="utf-8")
@@ -1557,7 +1557,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected_zip_size = zip_path.stat().st_size
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                f"Kapak dosyası: kapak.jpg | Son paket zamanı: {expected_time} | Paket boyutu: 5 B | ZIP boyutu: {expected_zip_size} B",
+                f"Kapak dosyası: kapak.jpg | Son paket zamanı: {expected_time} | Paket boyutu: 5 B | ZIP boyutu: {expected_zip_size} B | Paket içeriği: 1 dosya",
             )
 
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:

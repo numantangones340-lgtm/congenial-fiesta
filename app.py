@@ -5287,6 +5287,16 @@ class GuitarAmpRecorderApp:
             return f"{total_size / 1024:.1f} KB"
         return f"{total_size / (1024 * 1024):.1f} MB"
 
+    def share_package_file_count_text(self, package_dir: Optional[Path]) -> str:
+        if package_dir is None or not package_dir.exists():
+            return "henüz yok"
+        if package_dir.is_file():
+            return "1 dosya"
+        file_count = sum(1 for path in package_dir.rglob("*") if path.is_file())
+        if file_count == 1:
+            return "1 dosya"
+        return f"{file_count} dosya"
+
     def share_detail_summary(self) -> str:
         image_value = str(self.share_image_path.get()).strip()
         image_path = Path(image_value) if image_value else None
@@ -5300,7 +5310,8 @@ class GuitarAmpRecorderApp:
         size_part = f"Paket boyutu: {self.share_package_size_text(package_dir)}"
         zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None
         zip_part = f"ZIP boyutu: {self.share_package_size_text(zip_path)}" if zip_path is not None and zip_path.exists() else "ZIP boyutu: henüz yok"
-        return " | ".join([image_part, package_part, size_part, zip_part])
+        count_part = f"Paket içeriği: {self.share_package_file_count_text(package_dir)}"
+        return " | ".join([image_part, package_part, size_part, zip_part, count_part])
 
     def update_share_meta_text(self) -> None:
         if hasattr(self, "share_meta_text"):
