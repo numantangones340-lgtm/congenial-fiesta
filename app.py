@@ -5170,6 +5170,17 @@ class GuitarAmpRecorderApp:
             "Paylaşım paketi yolu kopyalanamadı",
         )
 
+    def copy_share_package_name(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak paylaşım paketi adı yok.")
+            return
+        self.copy_text_to_clipboard(
+            package_dir.name,
+            "Paylaşım paketi adı panoya alındı",
+            "Paylaşım paketi adı kopyalanamadı",
+        )
+
     def copy_share_package_zip_path(self) -> None:
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
@@ -5729,6 +5740,13 @@ class GuitarAmpRecorderApp:
                 bg="#475569",
                 fg="white",
             )
+            copy_package_name_button = Button(
+                template_row,
+                text="Paket Adını Kopyala",
+                command=self.copy_share_package_name,
+                bg="#64748b",
+                fg="white",
+            )
             copy_image_path_button = Button(
                 template_row,
                 text="Kapak Yolunu Kopyala",
@@ -5766,6 +5784,7 @@ class GuitarAmpRecorderApp:
                 (write_share_summary_button, "secondary"),
                 (open_share_summary_button, "primary"),
                 (copy_package_path_button, "secondary"),
+                (copy_package_name_button, "secondary"),
                 (copy_image_path_button, "secondary"),
                 (write_share_guide_button, "success"),
                 (open_share_guide_button, "primary"),
@@ -5786,6 +5805,7 @@ class GuitarAmpRecorderApp:
             write_share_summary_button.pack(side="left", padx=(8, 0))
             open_share_summary_button.pack(side="left", padx=(8, 0))
             copy_package_path_button.pack(side="left", padx=(8, 0))
+            copy_package_name_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
             open_share_guide_button.pack(side="left", padx=(8, 0))
