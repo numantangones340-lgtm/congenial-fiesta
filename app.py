@@ -5301,6 +5301,11 @@ class GuitarAmpRecorderApp:
         image_value = str(self.share_image_path.get()).strip()
         image_path = Path(image_value) if image_value else None
         image_part = f"Kapak dosyası: {image_path.name}" if image_path is not None and image_path.exists() else "Kapak dosyası: yok"
+        image_suffix_part = (
+            f"Kapak türü: {image_path.suffix.lower().lstrip('.') or 'bilinmiyor'}"
+            if image_path is not None and image_path.exists()
+            else "Kapak türü: yok"
+        )
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
             package_part = "Son paket zamanı: henüz yok"
@@ -5316,7 +5321,7 @@ class GuitarAmpRecorderApp:
         else:
             zip_time_part = "Son ZIP zamanı: henüz yok"
         count_part = f"Paket içeriği: {self.share_package_file_count_text(package_dir)}"
-        return " | ".join([image_part, package_part, size_part, zip_part, zip_time_part, count_part])
+        return " | ".join([image_part, image_suffix_part, package_part, size_part, zip_part, zip_time_part, count_part])
 
     def update_share_meta_text(self) -> None:
         if hasattr(self, "share_meta_text"):
