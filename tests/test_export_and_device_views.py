@@ -1370,6 +1370,31 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with(expected_summary)
             self.assertEqual(recorder.status_messages[-1], "Paylaşım özeti panoya alındı")
 
+    def test_write_share_meta_summary_writes_text_file_into_share_package(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "gitar_take.mp3"
+            image_path = output_dir / "kapak.jpg"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.share_image_path.set(str(image_path))
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.write_share_meta_summary()
+
+            summary_path = output_dir / "_paylasim" / "gitar_take_youtube_paketi" / "paylasim_ozeti.txt"
+            self.assertTrue(summary_path.exists())
+            self.assertEqual(
+                summary_path.read_text(encoding="utf-8"),
+                "Ses: gitar_take.mp3 | Kapak: kapak.jpg | Paket: gitar_take_youtube_paketi",
+            )
+            self.assertEqual(recorder.last_share_package_dir, summary_path.parent)
+            self.assertEqual(recorder.status_messages[-1], f"Paylaşım özeti yazıldı: {summary_path}")
+
     def test_export_share_package_zip_creates_zip_next_to_package(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

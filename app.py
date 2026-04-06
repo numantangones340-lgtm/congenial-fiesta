@@ -5209,6 +5209,25 @@ class GuitarAmpRecorderApp:
             "Paylaşım özeti kopyalanamadı",
         )
 
+    def write_share_meta_summary(self) -> None:
+        audio_path = self.current_share_audio_path()
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            if audio_path is None or not audio_path.exists():
+                self.set_status("Yazılacak paylaşım özeti için ses dosyası yok.")
+                return
+            package_dir = self.share_package_dir(audio_path)
+            package_dir.mkdir(parents=True, exist_ok=True)
+        self.last_share_package_dir = package_dir
+        summary = self.share_meta_summary().strip()
+        if not summary:
+            self.set_status("Yazılacak paylaşım özeti yok.")
+            return
+        summary_path = package_dir / "paylasim_ozeti.txt"
+        summary_path.write_text(summary, encoding="utf-8")
+        self.update_share_meta_text()
+        self.set_status(f"Paylaşım özeti yazıldı: {summary_path}")
+
     def share_meta_summary(self) -> str:
         audio_path = self.current_share_audio_path()
         audio_part = f"Ses: {audio_path.name}" if audio_path is not None and audio_path.exists() else "Ses: hazır değil"
@@ -5588,6 +5607,13 @@ class GuitarAmpRecorderApp:
                 bg="#334155",
                 fg="white",
             )
+            write_share_summary_button = Button(
+                template_row,
+                text="Özeti Yaz",
+                command=self.write_share_meta_summary,
+                bg="#475569",
+                fg="white",
+            )
             copy_package_path_button = Button(
                 template_row,
                 text="Paket Yolunu Kopyala",
@@ -5629,6 +5655,7 @@ class GuitarAmpRecorderApp:
                 (upload_note_button, "primary"),
                 (write_upload_note_button, "primary"),
                 (copy_share_summary_button, "secondary"),
+                (write_share_summary_button, "secondary"),
                 (copy_package_path_button, "secondary"),
                 (copy_image_path_button, "secondary"),
                 (write_share_guide_button, "success"),
@@ -5647,6 +5674,7 @@ class GuitarAmpRecorderApp:
             upload_note_button.pack(side="left", padx=(8, 0))
             write_upload_note_button.pack(side="left", padx=(8, 0))
             copy_share_summary_button.pack(side="left", padx=(8, 0))
+            write_share_summary_button.pack(side="left", padx=(8, 0))
             copy_package_path_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
