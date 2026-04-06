@@ -1049,6 +1049,7 @@ class GuitarAmpRecorderApp:
         self.share_description = StringVar(value="")
         self.share_image_path = StringVar(value="")
         self.share_meta_text = StringVar(value="Paylaşım özeti hazırlanıyor...")
+        self.share_status_text = StringVar(value="Durum: paylaşım hazırlanıyor...")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -5253,9 +5254,27 @@ class GuitarAmpRecorderApp:
         package_part = f"Paket: {package_dir.name}" if package_dir is not None and package_dir.exists() else "Paket: henüz yok"
         return " | ".join([audio_part, image_part, package_part])
 
+    def share_status_badge_text(self) -> str:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            return "Durum: ses hazır değil"
+        image_value = str(self.share_image_path.get()).strip()
+        image_path = Path(image_value) if image_value else None
+        if image_path is None or not image_path.exists():
+            return "Durum: kapak seçilmedi"
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            return "Durum: paket bekliyor"
+        zip_path = self.share_package_zip_path(package_dir)
+        if zip_path.exists():
+            return "Durum: paket ve ZIP hazır"
+        return "Durum: paket hazır"
+
     def update_share_meta_text(self) -> None:
         if hasattr(self, "share_meta_text"):
             self.share_meta_text.set(self.share_meta_summary())
+        if hasattr(self, "share_status_text"):
+            self.share_status_text.set(self.share_status_badge_text())
 
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
@@ -5531,12 +5550,15 @@ class GuitarAmpRecorderApp:
             Label(container, textvariable=self.share_meta_text, bg="#101418", fg="#9fb0c2", justify="left", wraplength=700).grid(
                 row=2, column=0, columnspan=4, sticky="w", pady=(0, 10)
             )
-            Label(container, text="Başlık", bg="#101418", fg="#dce6ef").grid(row=3, column=0, sticky="w")
-            Entry(container, textvariable=self.share_title, width=48).grid(row=4, column=0, columnspan=4, sticky="ew", pady=(2, 8))
-            Label(container, text="Açıklama", bg="#101418", fg="#dce6ef").grid(row=5, column=0, sticky="w")
-            Entry(container, textvariable=self.share_description, width=48).grid(row=6, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, textvariable=self.share_status_text, bg="#101418", fg="#86efac", justify="left", wraplength=700).grid(
+                row=3, column=0, columnspan=4, sticky="w", pady=(0, 8)
+            )
+            Label(container, text="Başlık", bg="#101418", fg="#dce6ef").grid(row=4, column=0, sticky="w")
+            Entry(container, textvariable=self.share_title, width=48).grid(row=5, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, text="Açıklama", bg="#101418", fg="#dce6ef").grid(row=6, column=0, sticky="w")
+            Entry(container, textvariable=self.share_description, width=48).grid(row=7, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             template_row = Frame(container, bg="#101418")
-            template_row.grid(row=7, column=0, columnspan=4, sticky="w", pady=(0, 8))
+            template_row.grid(row=8, column=0, columnspan=4, sticky="w", pady=(0, 8))
             Label(template_row, text="Şablonlar", bg="#101418", fg="#dce6ef").pack(side="left")
             live_template_button = Button(
                 template_row,
@@ -5703,10 +5725,10 @@ class GuitarAmpRecorderApp:
             copy_image_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
             open_share_guide_button.pack(side="left", padx=(8, 0))
-            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=8, column=0, sticky="w")
-            Entry(container, textvariable=self.share_image_path, width=48).grid(row=9, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=9, column=0, sticky="w")
+            Entry(container, textvariable=self.share_image_path, width=48).grid(row=10, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             button_row = Frame(container, bg="#101418")
-            button_row.grid(row=10, column=0, columnspan=4, sticky="w", pady=(4, 0))
+            button_row.grid(row=11, column=0, columnspan=4, sticky="w", pady=(4, 0))
             select_button = Button(button_row, text="Görsel Seç", command=self.select_share_image, bg="#34495e", fg="white")
             use_audio_button = Button(button_row, text="Son Kaydı Kullan", command=self.use_last_audio_for_share, bg="#16a085", fg="white")
             export_button = Button(button_row, text="YouTube Paketi Yaz", command=self.export_share_package, bg="#2d7d46", fg="white")

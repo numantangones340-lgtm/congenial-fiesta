@@ -69,6 +69,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.share_description = FakeVar("")
         recorder.share_image_path = FakeVar("")
         recorder.share_meta_text = FakeVar("")
+        recorder.share_status_text = FakeVar("")
         recorder.session_mode = FakeVar("Tek Klasör")
         recorder.session_name = FakeVar("session_20260404")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
@@ -1497,6 +1498,33 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 recorder.share_meta_text.get(),
                 "Ses: gitar_take.mp3 | Kapak: kapak.jpg | Paket: gitar_take_youtube_paketi",
             )
+
+    def test_share_status_badge_reports_cover_and_zip_state(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            image_path = Path(tmpdir) / "kapak.jpg"
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_status_text.get(), "Durum: kapak seçilmedi")
+
+            image_path.write_text("image", encoding="utf-8")
+            recorder.share_image_path.set(str(image_path))
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_status_text.get(), "Durum: paket bekliyor")
+
+            package_dir.mkdir(parents=True, exist_ok=True)
+            recorder.last_share_package_dir = package_dir
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_status_text.get(), "Durum: paket hazır")
+
+            zip_path.write_text("zip", encoding="utf-8")
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_status_text.get(), "Durum: paket ve ZIP hazır")
 
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
         recorder = self.make_app()
