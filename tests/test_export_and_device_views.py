@@ -1537,11 +1537,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.last_export_path = audio_path
 
             recorder.update_share_meta_text()
-            self.assertEqual(recorder.share_detail_text.get(), "Kapak dosyası: yok | Son paket zamanı: henüz yok")
+            self.assertEqual(
+                recorder.share_detail_text.get(),
+                "Kapak dosyası: yok | Son paket zamanı: henüz yok | Paket boyutu: henüz yok",
+            )
 
             image_path.write_text("image", encoding="utf-8")
             recorder.share_image_path.set(str(image_path))
             package_dir.mkdir(parents=True, exist_ok=True)
+            (package_dir / "note.txt").write_text("hello", encoding="utf-8")
             ts = 1760000000
             os.utime(package_dir, (ts, ts))
             recorder.last_share_package_dir = package_dir
@@ -1550,7 +1554,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(ts))
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                f"Kapak dosyası: kapak.jpg | Son paket zamanı: {expected_time}",
+                f"Kapak dosyası: kapak.jpg | Son paket zamanı: {expected_time} | Paket boyutu: 5 B",
             )
 
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
