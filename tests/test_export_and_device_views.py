@@ -1380,6 +1380,19 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with(str(image_path))
             self.assertEqual(recorder.status_messages[-1], "Kapak görseli yolu panoya alındı")
 
+    def test_copy_share_image_name_copies_existing_image_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            image_path = Path(tmpdir) / "kapak.jpg"
+            image_path.write_text("image", encoding="utf-8")
+            recorder.share_image_path.set(str(image_path))
+
+            recorder.copy_share_image_name()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with("kapak.jpg")
+            self.assertEqual(recorder.status_messages[-1], "Kapak görseli adı panoya alındı")
+
     def test_copy_share_meta_summary_copies_visible_summary(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

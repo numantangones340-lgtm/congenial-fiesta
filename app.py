@@ -5226,6 +5226,21 @@ class GuitarAmpRecorderApp:
             "Kapak görseli yolu kopyalanamadı",
         )
 
+    def copy_share_image_name(self) -> None:
+        image_value = str(self.share_image_path.get()).strip()
+        if not image_value:
+            self.set_status("Kopyalanacak kapak görseli adı yok.")
+            return
+        image_path = Path(image_value)
+        if not image_path.exists():
+            self.set_status(f"Kapak görseli bulunamadı: {image_path}")
+            return
+        self.copy_text_to_clipboard(
+            image_path.name,
+            "Kapak görseli adı panoya alındı",
+            "Kapak görseli adı kopyalanamadı",
+        )
+
     def copy_share_meta_summary(self) -> None:
         summary = self.share_meta_summary().strip()
         if not summary:
@@ -5769,6 +5784,13 @@ class GuitarAmpRecorderApp:
                 bg="#64748b",
                 fg="white",
             )
+            copy_image_name_button = Button(
+                template_row,
+                text="Kapak Adını Kopyala",
+                command=self.copy_share_image_name,
+                bg="#64748b",
+                fg="white",
+            )
             write_share_guide_button = Button(
                 template_row,
                 text="Rehberi Yaz",
@@ -5801,6 +5823,7 @@ class GuitarAmpRecorderApp:
                 (copy_package_path_button, "secondary"),
                 (copy_package_name_button, "secondary"),
                 (copy_image_path_button, "secondary"),
+                (copy_image_name_button, "secondary"),
                 (write_share_guide_button, "success"),
                 (open_share_guide_button, "primary"),
             ):
@@ -5822,6 +5845,7 @@ class GuitarAmpRecorderApp:
             copy_package_path_button.pack(side="left", padx=(8, 0))
             copy_package_name_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
+            copy_image_name_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
             open_share_guide_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=10, column=0, sticky="w")
