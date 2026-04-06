@@ -1395,6 +1395,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.last_share_package_dir, summary_path.parent)
             self.assertEqual(recorder.status_messages[-1], f"Paylaşım özeti yazıldı: {summary_path}")
 
+    def test_open_share_meta_summary_in_finder_reveals_existing_summary(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            summary_path = package_dir / "paylasim_ozeti.txt"
+            summary_path.write_text("summary", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_meta_summary_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(summary_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"Paylaşım özeti açıldı: {summary_path.name}")
+
     def test_export_share_package_zip_creates_zip_next_to_package(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

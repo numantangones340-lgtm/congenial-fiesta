@@ -5228,6 +5228,21 @@ class GuitarAmpRecorderApp:
         self.update_share_meta_text()
         self.set_status(f"Paylaşım özeti yazıldı: {summary_path}")
 
+    def open_share_meta_summary_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Paylaşım özeti yok.")
+            return
+        summary_path = package_dir / "paylasim_ozeti.txt"
+        if not summary_path.exists():
+            self.set_status("Paylaşım özeti yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(summary_path)], check=False)
+            self.set_status(f"Paylaşım özeti açıldı: {summary_path.name}")
+        except Exception as exc:
+            self.set_status(f"Paylaşım özeti açılamadı: {exc}")
+
     def share_meta_summary(self) -> str:
         audio_path = self.current_share_audio_path()
         audio_part = f"Ses: {audio_path.name}" if audio_path is not None and audio_path.exists() else "Ses: hazır değil"
@@ -5614,6 +5629,13 @@ class GuitarAmpRecorderApp:
                 bg="#475569",
                 fg="white",
             )
+            open_share_summary_button = Button(
+                template_row,
+                text="Özeti Aç",
+                command=self.open_share_meta_summary_in_finder,
+                bg="#1f6feb",
+                fg="white",
+            )
             copy_package_path_button = Button(
                 template_row,
                 text="Paket Yolunu Kopyala",
@@ -5656,6 +5678,7 @@ class GuitarAmpRecorderApp:
                 (write_upload_note_button, "primary"),
                 (copy_share_summary_button, "secondary"),
                 (write_share_summary_button, "secondary"),
+                (open_share_summary_button, "primary"),
                 (copy_package_path_button, "secondary"),
                 (copy_image_path_button, "secondary"),
                 (write_share_guide_button, "success"),
@@ -5675,6 +5698,7 @@ class GuitarAmpRecorderApp:
             write_upload_note_button.pack(side="left", padx=(8, 0))
             copy_share_summary_button.pack(side="left", padx=(8, 0))
             write_share_summary_button.pack(side="left", padx=(8, 0))
+            open_share_summary_button.pack(side="left", padx=(8, 0))
             copy_package_path_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
