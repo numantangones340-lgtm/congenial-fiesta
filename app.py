@@ -5252,6 +5252,17 @@ class GuitarAmpRecorderApp:
             "Ses dosyası adı kopyalanamadı",
         )
 
+    def copy_share_audio_path(self) -> None:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            self.set_status("Kopyalanacak ses dosyası yolu yok.")
+            return
+        self.copy_text_to_clipboard(
+            str(audio_path),
+            "Ses dosyası yolu panoya alındı",
+            "Ses dosyası yolu kopyalanamadı",
+        )
+
     def copy_share_meta_summary(self) -> None:
         summary = self.share_meta_summary().strip()
         if not summary:
@@ -5809,6 +5820,13 @@ class GuitarAmpRecorderApp:
                 bg="#64748b",
                 fg="white",
             )
+            copy_audio_path_button = Button(
+                template_row,
+                text="Ses Yolunu Kopyala",
+                command=self.copy_share_audio_path,
+                bg="#64748b",
+                fg="white",
+            )
             write_share_guide_button = Button(
                 template_row,
                 text="Rehberi Yaz",
@@ -5843,6 +5861,7 @@ class GuitarAmpRecorderApp:
                 (copy_image_path_button, "secondary"),
                 (copy_image_name_button, "secondary"),
                 (copy_audio_name_button, "secondary"),
+                (copy_audio_path_button, "secondary"),
                 (write_share_guide_button, "success"),
                 (open_share_guide_button, "primary"),
             ):
@@ -5866,6 +5885,7 @@ class GuitarAmpRecorderApp:
             copy_image_path_button.pack(side="left", padx=(8, 0))
             copy_image_name_button.pack(side="left", padx=(8, 0))
             copy_audio_name_button.pack(side="left", padx=(8, 0))
+            copy_audio_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
             open_share_guide_button.pack(side="left", padx=(8, 0))
             Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=10, column=0, sticky="w")
