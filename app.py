@@ -5198,6 +5198,17 @@ class GuitarAmpRecorderApp:
             "Kapak görseli yolu kopyalanamadı",
         )
 
+    def copy_share_meta_summary(self) -> None:
+        summary = self.share_meta_summary().strip()
+        if not summary:
+            self.set_status("Kopyalanacak paylaşım özeti yok.")
+            return
+        self.copy_text_to_clipboard(
+            summary,
+            "Paylaşım özeti panoya alındı",
+            "Paylaşım özeti kopyalanamadı",
+        )
+
     def share_meta_summary(self) -> str:
         audio_path = self.current_share_audio_path()
         audio_part = f"Ses: {audio_path.name}" if audio_path is not None and audio_path.exists() else "Ses: hazır değil"
@@ -5570,6 +5581,13 @@ class GuitarAmpRecorderApp:
                 bg="#6d28d9",
                 fg="white",
             )
+            copy_share_summary_button = Button(
+                template_row,
+                text="Özeti Kopyala",
+                command=self.copy_share_meta_summary,
+                bg="#334155",
+                fg="white",
+            )
             copy_package_path_button = Button(
                 template_row,
                 text="Paket Yolunu Kopyala",
@@ -5610,6 +5628,7 @@ class GuitarAmpRecorderApp:
                 (concise_description_button, "primary"),
                 (upload_note_button, "primary"),
                 (write_upload_note_button, "primary"),
+                (copy_share_summary_button, "secondary"),
                 (copy_package_path_button, "secondary"),
                 (copy_image_path_button, "secondary"),
                 (write_share_guide_button, "success"),
@@ -5627,6 +5646,7 @@ class GuitarAmpRecorderApp:
             concise_description_button.pack(side="left", padx=(8, 0))
             upload_note_button.pack(side="left", padx=(8, 0))
             write_upload_note_button.pack(side="left", padx=(8, 0))
+            copy_share_summary_button.pack(side="left", padx=(8, 0))
             copy_package_path_button.pack(side="left", padx=(8, 0))
             copy_image_path_button.pack(side="left", padx=(8, 0))
             write_share_guide_button.pack(side="left", padx=(8, 0))
