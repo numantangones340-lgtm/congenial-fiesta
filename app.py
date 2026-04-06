@@ -5196,6 +5196,21 @@ class GuitarAmpRecorderApp:
             "Paylaşım paketi ZIP yolu kopyalanamadı",
         )
 
+    def copy_share_package_zip_name(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak paylaşım paketi ZIP adı yok.")
+            return
+        zip_path = self.share_package_zip_path(package_dir)
+        if not zip_path.exists():
+            self.set_status("Kopyalanacak paylaşım paketi ZIP adı yok.")
+            return
+        self.copy_text_to_clipboard(
+            zip_path.name,
+            "Paylaşım paketi ZIP adı panoya alındı",
+            "Paylaşım paketi ZIP adı kopyalanamadı",
+        )
+
     def copy_share_image_path(self) -> None:
         image_value = str(self.share_image_path.get()).strip()
         if not image_value:
@@ -5819,6 +5834,7 @@ class GuitarAmpRecorderApp:
             zip_button = Button(button_row, text="Paketi ZIP Yap", command=self.export_share_package_zip, bg="#2563eb", fg="white")
             zip_open_button = Button(button_row, text="ZIP Göster", command=self.open_share_package_zip_in_finder, bg="#475569", fg="white")
             zip_copy_button = Button(button_row, text="ZIP Yolunu Kopyala", command=self.copy_share_package_zip_path, bg="#64748b", fg="white")
+            zip_name_button = Button(button_row, text="ZIP Adını Kopyala", command=self.copy_share_package_zip_name, bg="#64748b", fg="white")
             open_button = Button(button_row, text="Paketi Aç", command=self.open_last_share_package_in_finder, bg="#1f6feb", fg="white")
             upload_button = Button(button_row, text="YouTube Yükle", command=self.open_youtube_upload_page, bg="#c0392b", fg="white")
             for button, role in (
@@ -5828,6 +5844,7 @@ class GuitarAmpRecorderApp:
                 (zip_button, "primary"),
                 (zip_open_button, "secondary"),
                 (zip_copy_button, "secondary"),
+                (zip_name_button, "secondary"),
                 (open_button, "primary"),
                 (upload_button, "danger"),
             ):
@@ -5838,6 +5855,7 @@ class GuitarAmpRecorderApp:
             zip_button.pack(side="left", padx=(8, 0))
             zip_open_button.pack(side="left", padx=(8, 0))
             zip_copy_button.pack(side="left", padx=(8, 0))
+            zip_name_button.pack(side="left", padx=(8, 0))
             open_button.pack(side="left", padx=(8, 0))
             upload_button.pack(side="left", padx=(8, 0))
             self.set_status("Paylaşım penceresi açıldı. Kapak görseli seçip YouTube paketini hazırlayabilirsiniz.")
