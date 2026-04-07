@@ -143,6 +143,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.planned_output_labels = mock.Mock(return_value=["MP3", "Vokal WAV"])
         return recorder
 
+    def write_share_package_fixture(self, package_dir: Path, audio_name: str = "gitar_take.mp3", image_name: str = "kapak.jpg") -> None:
+        package_dir.mkdir(parents=True, exist_ok=True)
+        (package_dir / audio_name).write_text("audio", encoding="utf-8")
+        (package_dir / image_name).write_text("image", encoding="utf-8")
+        (package_dir / "youtube_baslik.txt").write_text("Baslik", encoding="utf-8")
+        (package_dir / "youtube_aciklama.txt").write_text("Aciklama", encoding="utf-8")
+        (package_dir / "paylasim_paketi.md").write_text("Paket", encoding="utf-8")
+        (package_dir / "youtube_yukleme_notu.txt").write_text("Not", encoding="utf-8")
+        (package_dir / "paylasim_rehberi.txt").write_text("Rehber", encoding="utf-8")
+        (package_dir / "paylasim_ozeti.txt").write_text("Ozet", encoding="utf-8")
+        (package_dir / "youtube_yukleme_sirasi.txt").write_text("Sira", encoding="utf-8")
+
     def test_refresh_recent_exports_shows_newest_audio_and_artifact_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1774,6 +1786,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             package_dir.mkdir(parents=True, exist_ok=True)
             recorder.last_share_package_dir = package_dir
             recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_status_text.get(), "Durum: paket eksik")
+
+            self.write_share_package_fixture(package_dir)
+            recorder.update_share_meta_text()
             self.assertEqual(recorder.share_status_text.get(), "Durum: paket hazır")
 
             zip_path.write_text("zip", encoding="utf-8")
@@ -1812,6 +1828,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             package_dir.mkdir(parents=True, exist_ok=True)
             recorder.last_share_package_dir = package_dir
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses hazır | Kapak seçildi | Paket eksik | ZIP yok",
+            )
+
+            self.write_share_package_fixture(package_dir)
             recorder.update_share_meta_text()
             self.assertEqual(
                 recorder.share_quickstart_text.get(),
@@ -1864,6 +1887,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.update_share_meta_text()
             self.assertEqual(
                 recorder.share_next_step_text.get(),
+                "Öneri: YouTube Paketi Yaz ile eksik paylaşım dosyalarını tamamlayın.",
+            )
+
+            self.write_share_package_fixture(package_dir)
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
                 "Öneri: Paketi ZIP Yap ile gönderime hazır arşivi çıkarın.",
             )
 
@@ -1897,6 +1927,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             package_dir.mkdir(parents=True, exist_ok=True)
             recorder.last_share_package_dir = package_dir
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_next_step_button_text.get(), "YouTube Paketi Yaz")
+
+            self.write_share_package_fixture(package_dir)
             recorder.update_share_meta_text()
             self.assertEqual(recorder.share_next_step_button_text.get(), "Paketi ZIP Yap")
 
@@ -1937,6 +1971,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             package_dir.mkdir(parents=True, exist_ok=True)
             recorder.last_share_package_dir = package_dir
             recorder.apply_share_next_step_action()
+            recorder.export_share_package.assert_called_once_with()
+
+            recorder.export_share_package.reset_mock()
+            self.write_share_package_fixture(package_dir)
+            recorder.apply_share_next_step_action()
             recorder.export_share_package_zip.assert_called_once_with()
 
             recorder.export_share_package_zip.reset_mock()
@@ -1963,6 +2002,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.share_image_path.set(str(image_path))
             recorder.last_share_package_dir = package_dir
 
+            recorder.update_share_meta_text()
+
+            self.assertEqual(recorder.share_ready_text.get(), "Hazırlık sürüyor")
+
+            self.write_share_package_fixture(package_dir)
             recorder.update_share_meta_text()
 
             self.assertEqual(recorder.share_ready_text.get(), "YouTube'a Hazır")
