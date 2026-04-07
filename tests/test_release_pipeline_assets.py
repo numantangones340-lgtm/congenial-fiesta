@@ -68,6 +68,13 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('"${SPEC_PATH}"', content)
         self.assertNotIn('rm -rf build dist "${APP_NAME}.spec"', content)
 
+    def test_package_script_copies_checksum_to_desktop_when_zip_copy_succeeds(self) -> None:
+        content = (ROOT_DIR / "package_macos_release.sh").read_text(encoding="utf-8")
+        self.assertIn('ZIP_SHA_PATH="${ZIP_PATH}.sha256"', content)
+        self.assertIn('DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"', content)
+        self.assertIn('cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"', content)
+        self.assertIn("SHA256 de masaustune kopyalandi", content)
+
     def test_spec_declares_microphone_usage_description(self) -> None:
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
         self.assertIn("NSMicrophoneUsageDescription", content)
