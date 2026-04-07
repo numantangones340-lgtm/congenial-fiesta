@@ -5603,6 +5603,15 @@ class GuitarAmpRecorderApp:
             else "Kapak türü: yok"
         )
         package_dir = self.last_share_package_dir
+        progress_value = sum(
+            (
+                1 if audio_path is not None and audio_path.exists() else 0,
+                1 if image_path is not None and image_path.exists() else 0,
+                1 if self.share_package_complete(package_dir) else 0,
+                1 if self.share_zip_current(package_dir) else 0,
+            )
+        )
+        progress_part = f"Ilerleme: {progress_value}/4"
         if package_dir is None or not package_dir.exists():
             package_status_part = "Paket durumu: henüz yok"
         elif self.share_package_complete(package_dir):
@@ -5649,6 +5658,7 @@ class GuitarAmpRecorderApp:
                 image_status_part,
                 image_part,
                 image_suffix_part,
+                progress_part,
                 package_status_part,
                 package_part,
                 size_part,
