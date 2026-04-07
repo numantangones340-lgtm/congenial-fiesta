@@ -157,9 +157,24 @@ def test_package_script_rebuilds_when_bundle_version_mismatches() -> None:
         'CURRENT_APP_VERSION="$(',
         'Path("dist/GuitarAmpRecorder.app/Contents/Info.plist")',
         '[ "$CURRENT_APP_VERSION" != "$EXPECTED_VERSION" ]',
+        'ZIP_SHA_PATH="${ZIP_PATH}.sha256"',
+        'DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"',
+        'cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"package_macos_release.sh surum uyum kontrolu eksik: {snippet}"
+
+
+def test_release_script_reports_checksum_locations() -> None:
+    script = (ROOT / "release_macos_desktop.sh").read_text(encoding="utf-8")
+    expected_snippets = [
+        'ZIP_SHA_PATH="${ZIP_PATH}.sha256"',
+        'DESKTOP_ZIP_SHA="$HOME/Desktop/GuitarAmpRecorder-macOS.zip.sha256"',
+        'echo "- Zip SHA256: $ZIP_SHA_PATH"',
+        'echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"',
+    ]
+    for snippet in expected_snippets:
+        assert snippet in script, f"release_macos_desktop.sh checksum ciktilari eksik: {snippet}"
 
 
 def test_release_metadata_is_version_aligned() -> None:
