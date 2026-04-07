@@ -5391,6 +5391,29 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Yükleme sırası kopyalanamadı: {exc}")
 
+    def copy_share_note_paths(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak not yolu yok.")
+            return
+        note_paths = [
+            package_dir / "youtube_yukleme_notu.txt",
+            package_dir / "paylasim_paketi.md",
+            package_dir / "paylasim_ozeti.txt",
+            package_dir / "paylasim_detayi.txt",
+            self.share_upload_checklist_path(package_dir),
+            package_dir / "paylasim_rehberi.txt",
+        ]
+        existing_paths = [str(path) for path in note_paths if path.exists()]
+        if not existing_paths:
+            self.set_status("Kopyalanacak not yolu yok.")
+            return
+        self.copy_text_to_clipboard(
+            "\n".join(existing_paths),
+            "Not yolları panoya alındı",
+            "Not yolları kopyalanamadı",
+        )
+
     def copy_share_package_markdown(self) -> None:
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
@@ -6344,6 +6367,7 @@ class GuitarAmpRecorderApp:
                     ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
                     ("Notu Aç", self.open_share_upload_note_in_finder, "primary", "#1f6feb"),
                     ("Not Yolunu Kopyala", self.copy_share_upload_note_path, "secondary", "#475569"),
+                    ("Not Yollarını Kopyala", self.copy_share_note_paths, "secondary", "#475569"),
                     ("Paketi MD Kopyala", self.copy_share_package_markdown, "secondary", "#334155"),
                     ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
                     ("Detayı Kopyala", self.copy_share_detail_summary, "secondary", "#334155"),

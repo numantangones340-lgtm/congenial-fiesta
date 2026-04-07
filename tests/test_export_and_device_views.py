@@ -1745,6 +1745,29 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with("1. Baslik\n2. Aciklama")
             self.assertEqual(recorder.status_messages[-1], "Yükleme sırası panoya alındı")
 
+    def test_copy_share_note_paths_copies_existing_note_paths(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            self.write_share_package_fixture(package_dir)
+            recorder.last_share_package_dir = package_dir
+
+            recorder.copy_share_note_paths()
+
+            expected = "\n".join(
+                [
+                    str(package_dir / "youtube_yukleme_notu.txt"),
+                    str(package_dir / "paylasim_paketi.md"),
+                    str(package_dir / "paylasim_ozeti.txt"),
+                    str(package_dir / "paylasim_detayi.txt"),
+                    str(package_dir / "youtube_yukleme_sirasi.txt"),
+                    str(package_dir / "paylasim_rehberi.txt"),
+                ]
+            )
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with(expected)
+            self.assertEqual(recorder.status_messages[-1], "Not yolları panoya alındı")
+
     def test_copy_share_package_markdown_copies_existing_markdown(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
