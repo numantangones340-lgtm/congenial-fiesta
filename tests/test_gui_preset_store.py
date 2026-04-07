@@ -977,6 +977,42 @@ class GuiPresetStoreTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", "-R", str(markdown_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], "Favori özeti Finder'da seçildi: favori_ozeti.md")
 
+    def test_copy_quick_favorites_summary_path_to_clipboard_prefers_markdown_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            markdown_path = output_dir / "favori_ozeti.md"
+            text_path = output_dir / "favori_ozeti.txt"
+            markdown_path.write_text("# Favori Presetler", encoding="utf-8")
+            text_path.write_text("Hızlı favoriler", encoding="utf-8")
+
+            recorder.copy_quick_favorites_summary_path_to_clipboard()
+
+        recorder.copy_text_to_clipboard.assert_called_once_with(
+            str(markdown_path),
+            "Favori özeti yolu panoya alındı: favori_ozeti.md",
+            "Favori özeti yolu kopyalanamadı",
+        )
+
+    def test_copy_quick_favorites_summary_name_to_clipboard_falls_back_to_text_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            text_path = output_dir / "favori_ozeti.txt"
+            text_path.write_text("Hızlı favoriler", encoding="utf-8")
+
+            recorder.copy_quick_favorites_summary_name_to_clipboard()
+
+        recorder.copy_text_to_clipboard.assert_called_once_with(
+            "favori_ozeti.txt",
+            "Favori özeti adı panoya alındı: favori_ozeti.txt",
+            "Favori özeti adı kopyalanamadı",
+        )
+
     def test_open_quick_favorites_summary_in_finder_falls_back_to_text_file(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

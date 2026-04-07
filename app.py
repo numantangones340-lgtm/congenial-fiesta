@@ -1615,17 +1615,35 @@ class GuitarAmpRecorderApp:
         )
         self.open_quick_favorites_button.grid(row=6, column=10, sticky="w", padx=(8, 0))
         self.apply_button_style(self.open_quick_favorites_button, role="primary")
+        self.copy_quick_favorites_path_button = Button(
+            preset_row,
+            text="Favori Yolunu Kopyala",
+            command=self.copy_quick_favorites_summary_path_to_clipboard,
+            bg="#475569",
+            fg="white",
+        )
+        self.copy_quick_favorites_path_button.grid(row=6, column=11, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.copy_quick_favorites_path_button, role="secondary")
+        self.copy_quick_favorites_name_button = Button(
+            preset_row,
+            text="Favori Adını Kopyala",
+            command=self.copy_quick_favorites_summary_name_to_clipboard,
+            bg="#64748b",
+            fg="white",
+        )
+        self.copy_quick_favorites_name_button.grid(row=6, column=12, sticky="w", padx=(8, 0))
+        self.apply_button_style(self.copy_quick_favorites_name_button, role="secondary")
         Label(preset_row, textvariable=self.preset_scope_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=8, column=0, columnspan=10, sticky="w", pady=(4, 0)
+            row=8, column=0, columnspan=13, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_favorite_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=9, column=0, columnspan=10, sticky="w", pady=(4, 0)
+            row=9, column=0, columnspan=13, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_favorite_meta_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=10, column=0, columnspan=10, sticky="w", pady=(4, 0)
+            row=10, column=0, columnspan=13, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_favorite_quick_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
-            row=11, column=0, columnspan=10, sticky="w", pady=(4, 0)
+            row=11, column=0, columnspan=13, sticky="w", pady=(4, 0)
         )
         Label(preset_row, textvariable=self.preset_summary_text, bg="#151b22", fg="#9fb0c2", justify="left").grid(
             row=12, column=0, columnspan=10, sticky="w", pady=(4, 0)
@@ -4462,6 +4480,28 @@ class GuitarAmpRecorderApp:
         if text_path.exists():
             return text_path
         return None
+
+    def copy_quick_favorites_summary_path_to_clipboard(self) -> None:
+        summary_path = self.quick_favorites_summary_path()
+        if summary_path is None or not summary_path.exists():
+            self.set_status("Favori özeti dosyası yok.")
+            return
+        self.copy_text_to_clipboard(
+            str(summary_path),
+            self.copied_item_status("Favori özeti yolu", summary_path.name),
+            "Favori özeti yolu kopyalanamadı",
+        )
+
+    def copy_quick_favorites_summary_name_to_clipboard(self) -> None:
+        summary_path = self.quick_favorites_summary_path()
+        if summary_path is None or not summary_path.exists():
+            self.set_status("Favori özeti dosyası yok.")
+            return
+        self.copy_text_to_clipboard(
+            summary_path.name,
+            self.copied_item_status("Favori özeti adı", summary_path.name),
+            "Favori özeti adı kopyalanamadı",
+        )
 
     def open_quick_favorites_summary_in_finder(self) -> None:
         summary_path = self.quick_favorites_summary_path()
