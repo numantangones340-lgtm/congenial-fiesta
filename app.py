@@ -2142,6 +2142,22 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_recovery_note_path_button = Button(
+            recent_copy_buttons,
+            text="Kurtarma Yolu Kopyala",
+            command=self.copy_last_recovery_note_path_to_clipboard,
+            bg="#8e44ad",
+            fg="white",
+            state="disabled",
+        )
+        self.open_last_recovery_note_button = Button(
+            recent_copy_buttons,
+            text="Kurtarma Notunu Aç",
+            command=self.open_last_recovery_note_in_finder,
+            bg="#e74c3c",
+            fg="white",
+            state="disabled",
+        )
         self.copy_recent_outputs_button = Button(
             recent_copy_buttons,
             text="Listeyi Kopyala",
@@ -2161,6 +2177,8 @@ class GuitarAmpRecorderApp:
                 self.copy_last_brief_path_button,
                 self.open_last_brief_button,
                 self.copy_last_recovery_note_button,
+                self.copy_last_recovery_note_path_button,
+                self.open_last_recovery_note_button,
                 self.copy_recent_outputs_button,
             ],
             columns=3,
@@ -2174,6 +2192,8 @@ class GuitarAmpRecorderApp:
             (self.copy_last_brief_path_button, "accent"),
             (self.open_last_brief_button, "primary"),
             (self.copy_last_recovery_note_button, "danger"),
+            (self.copy_last_recovery_note_path_button, "accent"),
+            (self.open_last_recovery_note_button, "danger"),
             (self.copy_recent_outputs_button, "secondary"),
         ):
             self.apply_button_style(button, role=role)
@@ -6709,6 +6729,26 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Kurtarma notu kopyalanamadı: {exc}")
 
+    def copy_last_recovery_note_path_to_clipboard(self) -> None:
+        if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
+            self.set_status(self.missing_item_status("Kurtarma notu"))
+            return
+        self.copy_text_to_clipboard(
+            str(self.last_recovery_note_path),
+            self.copied_item_status("Kurtarma notu yolu", self.last_recovery_note_path.name),
+            "Kurtarma notu yolu kopyalanamadı",
+        )
+
+    def open_last_recovery_note_in_finder(self) -> None:
+        if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
+            self.set_status(self.missing_item_status("Kurtarma notu"))
+            return
+        try:
+            subprocess.run(["open", "-R", str(self.last_recovery_note_path)], check=False)
+            self.set_status(self.finder_selected_status("Kurtarma notu", self.last_recovery_note_path.name))
+        except Exception as exc:
+            self.set_status(f"Kurtarma notu açılamadı: {exc}")
+
     def build_device_summary(self) -> str:
         inputs = list_input_devices()
         outputs = list_output_devices()
@@ -7144,6 +7184,8 @@ class GuitarAmpRecorderApp:
             "open_last_brief_button",
             "open_last_take_notes_button",
             "copy_last_recovery_note_button",
+            "copy_last_recovery_note_path_button",
+            "open_last_recovery_note_button",
             "open_last_output_dir_button",
             "open_last_preparation_button",
             "archive_last_session_button",
@@ -7219,8 +7261,12 @@ class GuitarAmpRecorderApp:
                 self.open_last_take_notes_button.configure(state="disabled")
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.copy_last_recovery_note_button.configure(state="normal")
+                self.copy_last_recovery_note_path_button.configure(state="normal")
+                self.open_last_recovery_note_button.configure(state="normal")
             else:
                 self.copy_last_recovery_note_button.configure(state="disabled")
+                self.copy_last_recovery_note_path_button.configure(state="disabled")
+                self.open_last_recovery_note_button.configure(state="disabled")
             if self.current_recent_exports_dir().exists():
                 self.open_last_output_dir_button.configure(state="normal")
             else:

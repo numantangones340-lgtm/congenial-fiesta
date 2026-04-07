@@ -122,6 +122,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
         recorder.last_share_package_dir = None
+        recorder.copy_last_recovery_note_button = mock.Mock()
+        recorder.copy_last_recovery_note_path_button = mock.Mock()
+        recorder.open_last_recovery_note_button = mock.Mock()
         recorder.open_preparation_button = mock.Mock()
         recorder.open_last_preparation_button = mock.Mock()
         recorder.open_last_output_dir_button = mock.Mock()
@@ -841,6 +844,33 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_append.assert_called_once_with("Kurtarma Notu")
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Kurtarma notu panoya alındı: export_recovery_note.txt")
+
+    def test_copy_last_recovery_note_path_to_clipboard_copies_existing_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_path.write_text("Kurtarma Notu", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_path
+
+            recorder.copy_last_recovery_note_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(recovery_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Kurtarma notu yolu panoya alındı: export_recovery_note.txt")
+
+    def test_open_last_recovery_note_in_finder_reveals_existing_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_path.write_text("Kurtarma Notu", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_recovery_note_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(recovery_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Kurtarma notu Finder'da seçildi: export_recovery_note.txt")
 
     def test_copy_current_preparation_to_clipboard_copies_live_preparation_summary(self) -> None:
         recorder = self.make_app()
