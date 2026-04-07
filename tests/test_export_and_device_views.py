@@ -122,6 +122,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
         recorder.last_share_package_dir = None
+        recorder.copy_last_export_name_button = mock.Mock()
         recorder.copy_last_output_dir_path_button = mock.Mock()
         recorder.copy_last_take_notes_button = mock.Mock()
         recorder.copy_last_take_notes_path_button = mock.Mock()
@@ -753,6 +754,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_append.assert_called_once_with(str(export_path))
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Dosya yolu panoya alındı: take.mp3")
+
+    def test_copy_last_export_name_to_clipboard_copies_file_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            export_path = Path(tmpdir) / "take.mp3"
+            export_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = export_path
+
+            recorder.copy_last_export_name_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("take.mp3")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Dosya adı panoya alındı: take.mp3")
 
     def test_copy_last_session_summary_path_to_clipboard_copies_file_path(self) -> None:
         recorder = self.make_app()
