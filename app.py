@@ -5422,9 +5422,11 @@ class GuitarAmpRecorderApp:
             return "Durum: paket bekliyor"
         if not self.share_package_complete(package_dir):
             return "Durum: paket eksik"
+        if self.share_zip_current(package_dir):
+            return "Durum: paket ve ZIP hazır"
         zip_path = self.share_package_zip_path(package_dir)
         if zip_path.exists():
-            return "Durum: paket ve ZIP hazır"
+            return "Durum: ZIP güncellenmeli"
         return "Durum: paket hazır"
 
     def share_package_expected_paths(self, package_dir: Path) -> list[Path]:
@@ -5457,18 +5459,36 @@ class GuitarAmpRecorderApp:
             return []
         return [path.name for path in self.share_package_expected_paths(package_dir) if not path.exists()]
 
+    def share_package_latest_mtime(self, package_dir: Optional[Path]) -> float:
+        if package_dir is None or not package_dir.exists():
+            return 0.0
+        candidate_paths = [path for path in self.share_package_expected_paths(package_dir) if path.exists()]
+        if not candidate_paths:
+            return package_dir.stat().st_mtime
+        return max(path.stat().st_mtime for path in candidate_paths)
+
+    def share_zip_current(self, package_dir: Optional[Path]) -> bool:
+        if not self.share_package_complete(package_dir):
+            return False
+        assert package_dir is not None
+        zip_path = self.share_package_zip_path(package_dir)
+        if not zip_path.exists():
+            return False
+        return zip_path.stat().st_mtime >= self.share_package_latest_mtime(package_dir)
+
     def share_quickstart_badges(self) -> list[str]:
         audio_path = self.current_share_audio_path()
         image_value = str(self.share_image_path.get()).strip()
         image_path = Path(image_value) if image_value else None
         package_dir = self.last_share_package_dir
         package_ready = self.share_package_complete(package_dir)
-        zip_path = self.share_package_zip_path(package_dir) if package_ready else None
+        zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None
+        zip_ready = self.share_zip_current(package_dir)
         return [
             "Ses hazır" if audio_path is not None and audio_path.exists() else "Ses bekliyor",
             "Kapak seçildi" if image_path is not None and image_path.exists() else "Kapak bekliyor",
             "Paket hazır" if package_ready else ("Paket eksik" if package_dir is not None and package_dir.exists() else "Paket yok"),
-            "ZIP hazır" if zip_path is not None and zip_path.exists() else "ZIP yok",
+            "ZIP hazır" if zip_ready else ("ZIP eski" if zip_path is not None and zip_path.exists() else "ZIP yok"),
         ]
 
     def share_quickstart_badge_text(self) -> str:
@@ -5497,8 +5517,7 @@ class GuitarAmpRecorderApp:
             return "Öneri: YouTube Paketi Yaz ile paylaşım klasörünü oluşturun."
         if not self.share_package_complete(package_dir):
             return "Öneri: YouTube Paketi Yaz ile eksik paylaşım dosyalarını tamamlayın."
-        zip_path = self.share_package_zip_path(package_dir)
-        if not zip_path.exists():
+        if not self.share_zip_current(package_dir):
             return "Öneri: Paketi ZIP Yap ile gönderime hazır arşivi çıkarın."
         return "Öneri: YouTube Yükle ile yükleme sayfasını açıp hazır dosyaları kullanın."
 
@@ -5515,8 +5534,7 @@ class GuitarAmpRecorderApp:
             return ("YouTube Paketi Yaz", self.export_share_package)
         if not self.share_package_complete(package_dir):
             return ("YouTube Paketi Yaz", self.export_share_package)
-        zip_path = self.share_package_zip_path(package_dir)
-        if not zip_path.exists():
+        if not self.share_zip_current(package_dir):
             return ("Paketi ZIP Yap", self.export_share_package_zip)
         return ("YouTube Yükle", self.open_youtube_upload_page)
 
@@ -5529,15 +5547,13 @@ class GuitarAmpRecorderApp:
         image_value = str(self.share_image_path.get()).strip()
         image_path = Path(image_value) if image_value else None
         package_dir = self.last_share_package_dir
-        zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None
         is_ready = (
             audio_path is not None
             and audio_path.exists()
             and image_path is not None
             and image_path.exists()
             and self.share_package_complete(package_dir)
-            and zip_path is not None
-            and zip_path.exists()
+            and self.share_zip_current(package_dir)
         )
         if is_ready:
             return ("YouTube'a Hazır", "#173226", "#d8f3dc")

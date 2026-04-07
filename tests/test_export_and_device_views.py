@@ -155,6 +155,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         (package_dir / "paylasim_ozeti.txt").write_text("Ozet", encoding="utf-8")
         (package_dir / "youtube_yukleme_sirasi.txt").write_text("Sira", encoding="utf-8")
 
+    def set_tree_mtime(self, root: Path, timestamp: int) -> None:
+        for path in root.rglob("*"):
+            os.utime(path, (timestamp, timestamp))
+        os.utime(root, (timestamp, timestamp))
+
     def test_refresh_recent_exports_shows_newest_audio_and_artifact_files(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1793,6 +1798,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.share_status_text.get(), "Durum: paket hazır")
 
             zip_path.write_text("zip", encoding="utf-8")
+            stale_ts = 1760000000
+            package_ts = stale_ts + 60
+            os.utime(zip_path, (stale_ts, stale_ts))
+            self.set_tree_mtime(package_dir, package_ts)
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_status_text.get(), "Durum: ZIP güncellenmeli")
+
+            current_ts = package_ts + 60
+            os.utime(zip_path, (current_ts, current_ts))
             recorder.update_share_meta_text()
             self.assertEqual(recorder.share_status_text.get(), "Durum: paket ve ZIP hazır")
 
@@ -1842,6 +1856,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             )
 
             zip_path.write_text("zip", encoding="utf-8")
+            stale_ts = 1760000000
+            package_ts = stale_ts + 60
+            os.utime(zip_path, (stale_ts, stale_ts))
+            self.set_tree_mtime(package_dir, package_ts)
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses hazır | Kapak seçildi | Paket hazır | ZIP eski",
+            )
+
+            current_ts = package_ts + 60
+            os.utime(zip_path, (current_ts, current_ts))
             recorder.update_share_meta_text()
             self.assertEqual(
                 recorder.share_quickstart_text.get(),
@@ -1898,6 +1924,18 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             )
 
             zip_path.write_text("zip", encoding="utf-8")
+            stale_ts = 1760000000
+            package_ts = stale_ts + 60
+            os.utime(zip_path, (stale_ts, stale_ts))
+            self.set_tree_mtime(package_dir, package_ts)
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
+                "Öneri: Paketi ZIP Yap ile gönderime hazır arşivi çıkarın.",
+            )
+
+            current_ts = package_ts + 60
+            os.utime(zip_path, (current_ts, current_ts))
             recorder.update_share_meta_text()
             self.assertEqual(
                 recorder.share_next_step_text.get(),
@@ -1935,6 +1973,15 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.share_next_step_button_text.get(), "Paketi ZIP Yap")
 
             zip_path.write_text("zip", encoding="utf-8")
+            stale_ts = 1760000000
+            package_ts = stale_ts + 60
+            os.utime(zip_path, (stale_ts, stale_ts))
+            self.set_tree_mtime(package_dir, package_ts)
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_next_step_button_text.get(), "Paketi ZIP Yap")
+
+            current_ts = package_ts + 60
+            os.utime(zip_path, (current_ts, current_ts))
             recorder.update_share_meta_text()
             self.assertEqual(recorder.share_next_step_button_text.get(), "YouTube Yükle")
 
@@ -1980,6 +2027,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             recorder.export_share_package_zip.reset_mock()
             zip_path.write_text("zip", encoding="utf-8")
+            stale_ts = 1760000000
+            package_ts = stale_ts + 60
+            os.utime(zip_path, (stale_ts, stale_ts))
+            self.set_tree_mtime(package_dir, package_ts)
+            recorder.apply_share_next_step_action()
+            recorder.export_share_package_zip.assert_called_once_with()
+
+            recorder.export_share_package_zip.reset_mock()
+            current_ts = package_ts + 60
+            os.utime(zip_path, (current_ts, current_ts))
             recorder.apply_share_next_step_action()
             recorder.open_youtube_upload_page.assert_called_once_with()
 
@@ -2007,6 +2064,16 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.share_ready_text.get(), "Hazırlık sürüyor")
 
             self.write_share_package_fixture(package_dir)
+            stale_ts = 1760000000
+            package_ts = stale_ts + 60
+            os.utime(zip_path, (stale_ts, stale_ts))
+            self.set_tree_mtime(package_dir, package_ts)
+            recorder.update_share_meta_text()
+
+            self.assertEqual(recorder.share_ready_text.get(), "Hazırlık sürüyor")
+
+            current_ts = package_ts + 60
+            os.utime(zip_path, (current_ts, current_ts))
             recorder.update_share_meta_text()
 
             self.assertEqual(recorder.share_ready_text.get(), "YouTube'a Hazır")
