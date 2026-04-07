@@ -115,10 +115,10 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('echo "HATA: Release checksum bulunamadi: $ZIP_SHA_PATH" >&2', content)
         self.assertIn('if [ -f "$DESKTOP_ZIP" ]; then', content)
         self.assertIn('echo "- Masaustu kopyasi: $DESKTOP_ZIP"', content)
-        self.assertIn('echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"', content)
+        self.assertIn('echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir: $ZIP_PATH"', content)
         self.assertIn('if [ -f "$DESKTOP_ZIP_SHA" ]; then', content)
         self.assertIn('echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"', content)
-        self.assertIn('echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"', content)
+        self.assertIn('echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir: $ZIP_SHA_PATH"', content)
 
     def test_professional_install_script_copies_and_reports_desktop_checksum(self) -> None:
         content = (ROOT_DIR / "install_macos_professional.sh").read_text(encoding="utf-8")

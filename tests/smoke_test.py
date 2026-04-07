@@ -185,10 +185,10 @@ def test_release_script_reports_checksum_locations() -> None:
         'echo "- Zip SHA256: $ZIP_SHA_PATH"',
         'if [ -f "$DESKTOP_ZIP" ]; then',
         'echo "- Masaustu kopyasi: $DESKTOP_ZIP"',
-        'echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"',
+        'echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir: $ZIP_PATH"',
         'if [ -f "$DESKTOP_ZIP_SHA" ]; then',
         'echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"',
-        'echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"',
+        'echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir: $ZIP_SHA_PATH"',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"release_macos_desktop.sh checksum ciktilari eksik: {snippet}"

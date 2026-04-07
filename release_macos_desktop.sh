@@ -52,11 +52,11 @@ echo "- Zip SHA256: $ZIP_SHA_PATH"
 if [ -f "$DESKTOP_ZIP" ]; then
   echo "- Masaustu kopyasi: $DESKTOP_ZIP"
 else
-  echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"
+  echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir: $ZIP_PATH"
 fi
 
 if [ -f "$DESKTOP_ZIP_SHA" ]; then
   echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"
 else
-  echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"
+  echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir: $ZIP_SHA_PATH"
 fi
