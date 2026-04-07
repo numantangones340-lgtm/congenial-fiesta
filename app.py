@@ -5587,6 +5587,7 @@ class GuitarAmpRecorderApp:
 
     def share_detail_summary(self) -> str:
         audio_path = self.current_share_audio_path()
+        audio_status_part = "Ses durumu: hazir" if audio_path is not None and audio_path.exists() else "Ses durumu: bekleniyor"
         audio_suffix_part = (
             f"Ses türü: {audio_path.suffix.lower().lstrip('.') or 'bilinmiyor'}"
             if audio_path is not None and audio_path.exists()
@@ -5594,6 +5595,7 @@ class GuitarAmpRecorderApp:
         )
         image_value = str(self.share_image_path.get()).strip()
         image_path = Path(image_value) if image_value else None
+        image_status_part = "Kapak durumu: hazir" if image_path is not None and image_path.exists() else "Kapak durumu: bekleniyor"
         image_part = f"Kapak dosyası: {image_path.name}" if image_path is not None and image_path.exists() else "Kapak dosyası: yok"
         image_suffix_part = (
             f"Kapak türü: {image_path.suffix.lower().lstrip('.') or 'bilinmiyor'}"
@@ -5641,7 +5643,9 @@ class GuitarAmpRecorderApp:
             overall_part = "Hazırlık durumu: suruyor"
         return " | ".join(
             [
+                audio_status_part,
                 audio_suffix_part,
+                image_status_part,
                 image_part,
                 image_suffix_part,
                 package_status_part,
