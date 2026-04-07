@@ -1051,6 +1051,13 @@ class GuitarAmpRecorderApp:
         self.share_meta_text = StringVar(value="Paylaşım özeti hazırlanıyor...")
         self.share_status_text = StringVar(value="Durum: paylaşım hazırlanıyor...")
         self.share_detail_text = StringVar(value="Detay: paylaşım bilgisi hazırlanıyor...")
+        self.share_quickstart_text = StringVar(value="Hızlı durum: paylaşım hazırlanıyor...")
+        self.share_quick_audio_text = StringVar(value="Ses bekliyor")
+        self.share_quick_cover_text = StringVar(value="Kapak bekliyor")
+        self.share_quick_package_text = StringVar(value="Paket yok")
+        self.share_quick_zip_text = StringVar(value="ZIP yok")
+        self.share_ready_text = StringVar(value="Hazırlık sürüyor")
+        self.share_next_step_text = StringVar(value="Öneri: Son kaydı seçip paylaşım akışını başlatın.")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -5144,6 +5151,55 @@ class GuitarAmpRecorderApp:
             "YouTube yükleme notu kopyalanamadı",
         )
 
+    def copy_share_title(self) -> None:
+        title = str(self.share_title.get()).strip()
+        if not title:
+            self.set_status("Kopyalanacak paylaşım başlığı yok.")
+            return
+        self.copy_text_to_clipboard(
+            title,
+            "Paylaşım başlığı panoya alındı",
+            "Paylaşım başlığı kopyalanamadı",
+        )
+
+    def copy_share_description(self) -> None:
+        description = str(self.share_description.get()).strip()
+        if not description:
+            self.set_status("Kopyalanacak paylaşım açıklaması yok.")
+            return
+        self.copy_text_to_clipboard(
+            description,
+            "Paylaşım açıklaması panoya alındı",
+            "Paylaşım açıklaması kopyalanamadı",
+        )
+
+    def share_upload_ready_text(self, audio_path: Path) -> str:
+        self.ensure_share_defaults(audio_path)
+        title = str(self.share_title.get()).strip() or self.default_share_title_for_audio(audio_path)
+        description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
+        lines = [
+            "YouTube hazır yükleme metni",
+            "",
+            f"Başlık: {title}",
+            "",
+            "Açıklama:",
+            description or "-",
+            "",
+            self.share_upload_note_text(audio_path),
+        ]
+        return "\n".join(lines)
+
+    def copy_share_upload_ready_text(self) -> None:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            self.set_status("Hazır yükleme metni için ses dosyası yok.")
+            return
+        self.copy_text_to_clipboard(
+            self.share_upload_ready_text(audio_path),
+            "Hazır yükleme metni panoya alındı",
+            "Hazır yükleme metni kopyalanamadı",
+        )
+
     def write_share_upload_note(self) -> None:
         audio_path = self.current_share_audio_path()
         if audio_path is None or not audio_path.exists():
@@ -5274,6 +5330,25 @@ class GuitarAmpRecorderApp:
             "Paylaşım özeti kopyalanamadı",
         )
 
+    def copy_share_upload_checklist(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak yükleme sırası yok.")
+            return
+        checklist_path = self.share_upload_checklist_path(package_dir)
+        if not checklist_path.exists():
+            self.set_status("Kopyalanacak yükleme sırası yok.")
+            return
+        try:
+            content = checklist_path.read_text(encoding="utf-8")
+            self.copy_text_to_clipboard(
+                content,
+                "Yükleme sırası panoya alındı",
+                "Yükleme sırası kopyalanamadı",
+            )
+        except Exception as exc:
+            self.set_status(f"Yükleme sırası kopyalanamadı: {exc}")
+
     def write_share_meta_summary(self) -> None:
         audio_path = self.current_share_audio_path()
         package_dir = self.last_share_package_dir
@@ -5308,6 +5383,21 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Paylaşım özeti açılamadı: {exc}")
 
+    def open_share_upload_checklist_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Yükleme sırası yok.")
+            return
+        checklist_path = self.share_upload_checklist_path(package_dir)
+        if not checklist_path.exists():
+            self.set_status("Yükleme sırası yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(checklist_path)], check=False)
+            self.set_status(f"Yükleme sırası açıldı: {checklist_path.name}")
+        except Exception as exc:
+            self.set_status(f"Yükleme sırası açılamadı: {exc}")
+
     def share_meta_summary(self) -> str:
         audio_path = self.current_share_audio_path()
         audio_part = f"Ses: {audio_path.name}" if audio_path is not None and audio_path.exists() else "Ses: hazır değil"
@@ -5333,6 +5423,68 @@ class GuitarAmpRecorderApp:
         if zip_path.exists():
             return "Durum: paket ve ZIP hazır"
         return "Durum: paket hazır"
+
+    def share_quickstart_badges(self) -> list[str]:
+        audio_path = self.current_share_audio_path()
+        image_value = str(self.share_image_path.get()).strip()
+        image_path = Path(image_value) if image_value else None
+        package_dir = self.last_share_package_dir
+        zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None
+        return [
+            "Ses hazır" if audio_path is not None and audio_path.exists() else "Ses bekliyor",
+            "Kapak seçildi" if image_path is not None and image_path.exists() else "Kapak bekliyor",
+            "Paket hazır" if package_dir is not None and package_dir.exists() else "Paket yok",
+            "ZIP hazır" if zip_path is not None and zip_path.exists() else "ZIP yok",
+        ]
+
+    def share_quickstart_badge_text(self) -> str:
+        return f"Hızlı durum: {' | '.join(self.share_quickstart_badges())}"
+
+    def share_quickstart_badge_configs(self) -> list[tuple[str, str, str, str]]:
+        badges = self.share_quickstart_badges()
+        configs: list[tuple[str, str, str, str]] = []
+        for key, text in zip(("audio", "cover", "package", "zip"), badges):
+            is_ready = "hazır" in text.lower() or "seçildi" in text.lower()
+            bg = "#173226" if is_ready else "#3a2616"
+            fg = "#d8f3dc" if is_ready else "#f6e7cb"
+            configs.append((key, text, bg, fg))
+        return configs
+
+    def share_next_step_hint(self) -> str:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            return "Öneri: Önce Son Kaydı Kullan ile paylaşılacak sesi seçin."
+        image_value = str(self.share_image_path.get()).strip()
+        image_path = Path(image_value) if image_value else None
+        if image_path is None or not image_path.exists():
+            return "Öneri: Görsel Seç ile kapak görselini ekleyin."
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            return "Öneri: YouTube Paketi Yaz ile paylaşım klasörünü oluşturun."
+        zip_path = self.share_package_zip_path(package_dir)
+        if not zip_path.exists():
+            return "Öneri: Paketi ZIP Yap ile gönderime hazır arşivi çıkarın."
+        return "Öneri: YouTube Yükle ile yükleme sayfasını açıp hazır dosyaları kullanın."
+
+    def share_ready_badge_config(self) -> tuple[str, str, str]:
+        audio_path = self.current_share_audio_path()
+        image_value = str(self.share_image_path.get()).strip()
+        image_path = Path(image_value) if image_value else None
+        package_dir = self.last_share_package_dir
+        zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None
+        is_ready = (
+            audio_path is not None
+            and audio_path.exists()
+            and image_path is not None
+            and image_path.exists()
+            and package_dir is not None
+            and package_dir.exists()
+            and zip_path is not None
+            and zip_path.exists()
+        )
+        if is_ready:
+            return ("YouTube'a Hazır", "#173226", "#d8f3dc")
+        return ("Hazırlık sürüyor", "#3a2616", "#f6e7cb")
 
     def share_package_size_text(self, package_dir: Optional[Path]) -> str:
         if package_dir is None or not package_dir.exists():
@@ -5399,6 +5551,29 @@ class GuitarAmpRecorderApp:
             self.share_status_text.set(self.share_status_badge_text())
         if hasattr(self, "share_detail_text"):
             self.share_detail_text.set(self.share_detail_summary())
+        if hasattr(self, "share_quickstart_text"):
+            self.share_quickstart_text.set(self.share_quickstart_badge_text())
+        for key, text, bg, fg in self.share_quickstart_badge_configs():
+            text_var = getattr(self, f"share_quick_{key}_text", None)
+            if text_var is not None:
+                text_var.set(text)
+            label = getattr(self, f"share_quick_{key}_label", None)
+            if label is not None:
+                try:
+                    label.configure(bg=bg, fg=fg)
+                except Exception:
+                    pass
+        if hasattr(self, "share_next_step_text"):
+            self.share_next_step_text.set(self.share_next_step_hint())
+        ready_text, ready_bg, ready_fg = self.share_ready_badge_config()
+        if hasattr(self, "share_ready_text"):
+            self.share_ready_text.set(ready_text)
+        ready_label = getattr(self, "share_ready_label", None)
+        if ready_label is not None:
+            try:
+                ready_label.configure(bg=ready_bg, fg=ready_fg)
+            except Exception:
+                pass
 
     def ensure_share_defaults(self, audio_path: Optional[Path] = None) -> None:
         source_audio = audio_path or self.current_share_audio_path()
@@ -5440,6 +5615,9 @@ class GuitarAmpRecorderApp:
 
     def share_package_zip_path(self, package_dir: Path) -> Path:
         return package_dir.parent / f"{package_dir.name}.zip"
+
+    def share_upload_checklist_path(self, package_dir: Path) -> Path:
+        return package_dir / "youtube_yukleme_sirasi.txt"
 
     def image_mime_type(self, image_path: Path) -> str:
         suffix = image_path.suffix.lower()
@@ -5504,20 +5682,48 @@ class GuitarAmpRecorderApp:
         ]
         return "\n".join(lines)
 
+    def build_share_upload_checklist_text(self, audio_name: str, image_name: str) -> str:
+        lines = [
+            "YouTube yükleme sırası",
+            "",
+            "1. youtube_baslik.txt dosyasındaki başlığı kontrol edin ve kopyalayın.",
+            "2. youtube_aciklama.txt dosyasındaki açıklamayı kontrol edin ve kopyalayın.",
+            f"3. Ses dosyasını yükleyin: {audio_name}",
+            f"4. Kapak görselini yükleyin: {image_name}",
+            "5. youtube_yukleme_notu.txt içindeki kategori ve görünürlük ayarlarını uygulayın.",
+            "6. paylasim_rehberi.txt ile son kez metinleri gözden geçirin.",
+            "7. paylasim_ozeti.txt üzerinden paket içeriğini hızlıca doğrulayın.",
+        ]
+        return "\n".join(lines)
+
+    def share_guide_text(self, audio_path: Path) -> str:
+        self.ensure_share_defaults(audio_path)
+        title = str(self.share_title.get()).strip() or self.default_share_title_for_audio(audio_path)
+        description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
+        return self.build_share_guide_text(audio_path, title, description)
+
+    def copy_share_guide_text(self) -> None:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            self.set_status("Paylaşım rehberi için ses dosyası yok.")
+            return
+        self.copy_text_to_clipboard(
+            self.share_guide_text(audio_path),
+            "Paylaşım rehberi panoya alındı",
+            "Paylaşım rehberi kopyalanamadı",
+        )
+
     def write_share_guide_file(self) -> None:
         audio_path = self.current_share_audio_path()
         if audio_path is None or not audio_path.exists():
             self.set_status("Paylaşım rehberi için ses dosyası yok.")
             return
-        self.ensure_share_defaults(audio_path)
-        title = str(self.share_title.get()).strip() or self.default_share_title_for_audio(audio_path)
-        description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
             package_dir = self.share_package_dir(audio_path)
             package_dir.mkdir(parents=True, exist_ok=True)
         guide_path = package_dir / "paylasim_rehberi.txt"
-        guide_path.write_text(self.build_share_guide_text(audio_path, title, description), encoding="utf-8")
+        guide_path.write_text(self.share_guide_text(audio_path), encoding="utf-8")
         self.last_share_package_dir = package_dir
         self.update_share_meta_text()
         self.set_status(f"Paylaşım rehberi yazıldı: {guide_path}")
@@ -5537,22 +5743,22 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Paylaşım rehberi açılamadı: {exc}")
 
-    def export_share_package(self) -> None:
+    def create_share_package(self) -> Optional[Path]:
         if self.block_changes_during_recording("paylaşım paketi"):
-            return
+            return None
         try:
             audio_path = self.current_share_audio_path()
             if audio_path is None or not audio_path.exists():
                 self.set_status("Paylaşım için ses dosyası yok.")
-                return
+                return None
             image_value = str(self.share_image_path.get()).strip()
             if not image_value:
                 self.set_status("Paylaşım için kapak görseli seçin.")
-                return
+                return None
             image_path = Path(image_value)
             if not image_path.exists():
                 self.set_status(f"Kapak görseli bulunamadı: {image_path}")
-                return
+                return None
             self.ensure_share_defaults(audio_path)
             title = str(self.share_title.get()).strip() or self.default_share_title_for_audio(audio_path)
             description = str(self.share_description.get()).strip() or self.default_share_description_for_audio(audio_path)
@@ -5572,10 +5778,23 @@ class GuitarAmpRecorderApp:
                 encoding="utf-8",
             )
             self.last_share_package_dir = package_dir
+            (package_dir / "youtube_yukleme_notu.txt").write_text(self.share_upload_note_text(audio_path), encoding="utf-8")
+            (package_dir / "paylasim_rehberi.txt").write_text(self.share_guide_text(audio_path), encoding="utf-8")
+            (package_dir / "paylasim_ozeti.txt").write_text(self.share_meta_summary().strip(), encoding="utf-8")
+            self.share_upload_checklist_path(package_dir).write_text(
+                self.build_share_upload_checklist_text(audio_target.name, image_target.name),
+                encoding="utf-8",
+            )
             self.update_share_meta_text()
-            self.set_status(f"YouTube paylaşım paketi hazır: {package_dir}")
+            return package_dir
         except Exception as exc:
             self.set_status(f"Paylaşım paketi hazırlanamadı: {exc}")
+            return None
+
+    def export_share_package(self) -> None:
+        package_dir = self.create_share_package()
+        if package_dir is not None:
+            self.set_status(f"YouTube paylaşım paketi hazır: {package_dir}")
 
     def open_last_share_package_in_finder(self) -> None:
         package_dir = self.last_share_package_dir
@@ -5588,19 +5807,49 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Paylaşım paketi açılamadı: {exc}")
 
-    def export_share_package_zip(self) -> None:
-        package_dir = self.last_share_package_dir
+    def create_share_package_zip(self, package_dir: Optional[Path] = None) -> Optional[Path]:
+        package_dir = package_dir or self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
             self.set_status("ZIP yapılacak paylaşım paketi yok.")
-            return
+            return None
         zip_path = self.share_package_zip_path(package_dir)
         try:
             if zip_path.exists():
                 zip_path.unlink()
             shutil.make_archive(str(zip_path.with_suffix("")), "zip", root_dir=package_dir.parent, base_dir=package_dir.name)
-            self.set_status(f"Paylaşım paketi ZIP hazır: {zip_path}")
+            self.update_share_meta_text()
+            return zip_path
         except Exception as exc:
             self.set_status(f"Paylaşım paketi ZIP yapılamadı: {exc}")
+            return None
+
+    def export_share_package_zip(self) -> None:
+        zip_path = self.create_share_package_zip()
+        if zip_path is not None:
+            self.set_status(f"Paylaşım paketi ZIP hazır: {zip_path}")
+
+    def prepare_share_package_complete(self) -> None:
+        package_dir = self.create_share_package()
+        if package_dir is None:
+            return
+        zip_path = self.create_share_package_zip(package_dir)
+        if zip_path is None:
+            return
+        self.set_status(f"Tam paylaşım hazırlığı hazır: {zip_path}")
+
+    def prepare_share_package_complete_and_open(self) -> None:
+        package_dir = self.create_share_package()
+        if package_dir is None:
+            return
+        zip_path = self.create_share_package_zip(package_dir)
+        if zip_path is None:
+            return
+        checklist_path = self.share_upload_checklist_path(package_dir)
+        try:
+            subprocess.run(["open", "-R", str(checklist_path)], check=False)
+            self.set_status(f"Tam paylaşım hazırlığı açıldı: {checklist_path.name}")
+        except Exception as exc:
+            self.set_status(f"Tam paylaşım hazırlığı hazır ama açılamadı: {exc}")
 
     def open_share_package_zip_in_finder(self) -> None:
         package_dir = self.last_share_package_dir
@@ -5647,7 +5896,7 @@ class GuitarAmpRecorderApp:
             self.share_window = window
             window.title("YouTube Paylaşım Paketi")
             window.configure(bg="#101418")
-            window.geometry("760x260")
+            window.geometry("860x460")
 
             def close_window() -> None:
                 self.share_window = None
@@ -5655,6 +5904,33 @@ class GuitarAmpRecorderApp:
                     window.destroy()
                 except Exception:
                     pass
+
+            def build_share_action_row(
+                row_index: int,
+                label_text: str,
+                hint_text: str,
+                items: list[tuple[str, object, str, str]],
+            ) -> None:
+                row_frame = Frame(container, bg="#101418")
+                row_frame.grid(row=row_index, column=0, columnspan=4, sticky="w", pady=(0, 8))
+                label_frame = Frame(row_frame, bg="#101418")
+                label_frame.pack(side="left", anchor="n")
+                Label(label_frame, text=label_text, bg="#101418", fg="#dce6ef", width=16, anchor="w").pack(side="top", anchor="w")
+                Label(
+                    label_frame,
+                    text=hint_text,
+                    bg="#101418",
+                    fg="#7f8c99",
+                    width=16,
+                    anchor="w",
+                    justify="left",
+                    wraplength=140,
+                    font=("Helvetica", 9),
+                ).pack(side="top", anchor="w", pady=(2, 0))
+                for text, command, role, bg in items:
+                    button = Button(row_frame, text=text, command=command, bg=bg, fg="white")
+                    self.apply_button_style(button, role=role)
+                    button.pack(side="left", padx=(8, 0), anchor="n")
 
             window.protocol("WM_DELETE_WINDOW", close_window)
             container = Frame(window, bg="#101418")
@@ -5684,216 +5960,140 @@ class GuitarAmpRecorderApp:
             Entry(container, textvariable=self.share_title, width=48).grid(row=6, column=0, columnspan=4, sticky="ew", pady=(2, 8))
             Label(container, text="Açıklama", bg="#101418", fg="#dce6ef").grid(row=7, column=0, sticky="w")
             Entry(container, textvariable=self.share_description, width=48).grid(row=8, column=0, columnspan=4, sticky="ew", pady=(2, 8))
-            template_row = Frame(container, bg="#101418")
-            template_row.grid(row=9, column=0, columnspan=4, sticky="w", pady=(0, 8))
-            Label(template_row, text="Şablonlar", bg="#101418", fg="#dce6ef").pack(side="left")
-            live_template_button = Button(
-                template_row,
-                text="Canlı",
-                command=lambda: self.apply_share_template("Canlı"),
-                bg="#16a085",
-                fg="white",
+            build_share_action_row(
+                9,
+                "Hızlı Başlangıç",
+                "En sık kullanılan adımları sırayla öne çıkarır.",
+                [
+                    ("Son Kaydı Kullan", self.use_last_audio_for_share, "success", "#16a085"),
+                    ("Görsel Seç", self.select_share_image, "secondary", "#34495e"),
+                    ("Tam Hazırla", self.prepare_share_package_complete, "success", "#1f8f55"),
+                    ("Hazırla + Aç", self.prepare_share_package_complete_and_open, "primary", "#1f6feb"),
+                    ("YouTube Paketi Yaz", self.export_share_package, "success", "#2d7d46"),
+                    ("Paketi Aç", self.open_last_share_package_in_finder, "primary", "#1f6feb"),
+                    ("YouTube Yükle", self.open_youtube_upload_page, "danger", "#c0392b"),
+                ],
             )
-            clean_template_button = Button(
-                template_row,
-                text="Temiz Gitar",
-                command=lambda: self.apply_share_template("Temiz Gitar"),
-                bg="#2d7d46",
-                fg="white",
+            quick_badge_row = Frame(container, bg="#101418")
+            quick_badge_row.grid(row=10, column=0, columnspan=4, sticky="w", pady=(0, 8))
+            self.share_quick_audio_label = Label(
+                quick_badge_row,
+                textvariable=self.share_quick_audio_text,
+                bg="#173226",
+                fg="#d8f3dc",
+                font=("Helvetica", 9, "bold"),
+                padx=10,
+                pady=5,
             )
-            speech_template_button = Button(
-                template_row,
-                text="Konuşma",
-                command=lambda: self.apply_share_template("Konuşma"),
-                bg="#34495e",
-                fg="white",
+            self.share_quick_cover_label = Label(
+                quick_badge_row,
+                textvariable=self.share_quick_cover_text,
+                bg="#3a2616",
+                fg="#f6e7cb",
+                font=("Helvetica", 9, "bold"),
+                padx=10,
+                pady=5,
             )
-            intro_template_button = Button(
-                template_row,
-                text="Tanıtım",
-                command=lambda: self.apply_share_template("Tanıtım"),
-                bg="#8e44ad",
-                fg="white",
+            self.share_quick_package_label = Label(
+                quick_badge_row,
+                textvariable=self.share_quick_package_text,
+                bg="#3a2616",
+                fg="#f6e7cb",
+                font=("Helvetica", 9, "bold"),
+                padx=10,
+                pady=5,
             )
-            hashtag_button = Button(
-                template_row,
-                text="Hashtag Ekle",
-                command=self.append_share_hashtags,
-                bg="#d97706",
-                fg="white",
+            self.share_quick_zip_label = Label(
+                quick_badge_row,
+                textvariable=self.share_quick_zip_text,
+                bg="#3a2616",
+                fg="#f6e7cb",
+                font=("Helvetica", 9, "bold"),
+                padx=10,
+                pady=5,
             )
-            clear_text_button = Button(
-                template_row,
-                text="Metni Temizle",
-                command=self.clear_share_text,
-                bg="#4b5563",
-                fg="white",
+            self.share_quick_audio_label.pack(side="left")
+            self.share_quick_cover_label.pack(side="left", padx=(8, 0))
+            self.share_quick_package_label.pack(side="left", padx=(8, 0))
+            self.share_quick_zip_label.pack(side="left", padx=(8, 0))
+            self.share_ready_label = Label(
+                container,
+                textvariable=self.share_ready_text,
+                bg="#3a2616",
+                fg="#f6e7cb",
+                font=("Helvetica", 10, "bold"),
+                padx=10,
+                pady=5,
             )
-            footer_button = Button(
-                template_row,
-                text="Son Ekle",
-                command=self.append_share_footer,
-                bg="#0f766e",
-                fg="white",
+            self.share_ready_label.grid(row=11, column=0, columnspan=4, sticky="w", pady=(0, 8))
+            Label(container, textvariable=self.share_next_step_text, bg="#101418", fg="#fbbf24", justify="left", wraplength=700).grid(
+                row=12, column=0, columnspan=4, sticky="w", pady=(0, 8)
             )
-            normalize_title_button = Button(
-                template_row,
-                text="Başlığı Düzenle",
-                command=self.normalize_share_title,
-                bg="#2563eb",
-                fg="white",
+            build_share_action_row(
+                13,
+                "Şablonlar",
+                "Hazır ton ve paylaşım tiplerini tek dokunuşla yerleştirir.",
+                [
+                    ("Canlı", lambda: self.apply_share_template("Canlı"), "success", "#16a085"),
+                    ("Temiz Gitar", lambda: self.apply_share_template("Temiz Gitar"), "success", "#2d7d46"),
+                    ("Konuşma", lambda: self.apply_share_template("Konuşma"), "secondary", "#34495e"),
+                    ("Tanıtım", lambda: self.apply_share_template("Tanıtım"), "primary", "#8e44ad"),
+                ],
             )
-            concise_description_button = Button(
-                template_row,
-                text="Kısa Açıklama",
-                command=self.apply_concise_share_description,
-                bg="#1d4ed8",
-                fg="white",
+            build_share_action_row(
+                14,
+                "Metin Araçları",
+                "Başlık ve açıklamayı hızla toparlar, kopyalar ve kısaltır.",
+                [
+                    ("Hashtag Ekle", self.append_share_hashtags, "warning", "#d97706"),
+                    ("Metni Temizle", self.clear_share_text, "secondary", "#4b5563"),
+                    ("Son Ekle", self.append_share_footer, "success", "#0f766e"),
+                    ("Başlığı Düzenle", self.normalize_share_title, "primary", "#2563eb"),
+                    ("Kısa Açıklama", self.apply_concise_share_description, "primary", "#1d4ed8"),
+                    ("Başlığı Kopyala", self.copy_share_title, "secondary", "#475569"),
+                    ("Açıklamayı Kopyala", self.copy_share_description, "secondary", "#475569"),
+                    ("Hazır Metni Kopyala", self.copy_share_upload_ready_text, "secondary", "#475569"),
+                ],
             )
-            upload_note_button = Button(
-                template_row,
-                text="Yükleme Notu",
-                command=self.copy_share_upload_note,
-                bg="#7c3aed",
-                fg="white",
+            build_share_action_row(
+                15,
+                "Notlar",
+                "Yükleme sırasında lazım olan rehber, özet ve sıra dosyalarını yönetir.",
+                [
+                    ("Yükleme Notu", self.copy_share_upload_note, "primary", "#7c3aed"),
+                    ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
+                    ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
+                    ("Özeti Yaz", self.write_share_meta_summary, "secondary", "#475569"),
+                    ("Özeti Aç", self.open_share_meta_summary_in_finder, "primary", "#1f6feb"),
+                    ("Sırayı Kopyala", self.copy_share_upload_checklist, "secondary", "#475569"),
+                    ("Sırayı Aç", self.open_share_upload_checklist_in_finder, "primary", "#1f6feb"),
+                    ("Rehberi Kopyala", self.copy_share_guide_text, "secondary", "#475569"),
+                    ("Rehberi Yaz", self.write_share_guide_file, "success", "#0f766e"),
+                    ("Rehberi Aç", self.open_share_guide_in_finder, "primary", "#1f6feb"),
+                ],
             )
-            write_upload_note_button = Button(
-                template_row,
-                text="Notu Yaz",
-                command=self.write_share_upload_note,
-                bg="#6d28d9",
-                fg="white",
+            build_share_action_row(
+                16,
+                "Dosyalar",
+                "Paket, kapak ve ses dosyalarının ad ve yollarını hızlıca verir.",
+                [
+                    ("Paket Yolunu Kopyala", self.copy_share_package_path, "secondary", "#475569"),
+                    ("Paket Adını Kopyala", self.copy_share_package_name, "secondary", "#64748b"),
+                    ("Kapak Yolunu Kopyala", self.copy_share_image_path, "secondary", "#64748b"),
+                    ("Kapak Adını Kopyala", self.copy_share_image_name, "secondary", "#64748b"),
+                    ("Ses Adını Kopyala", self.copy_share_audio_name, "secondary", "#64748b"),
+                    ("Ses Yolunu Kopyala", self.copy_share_audio_path, "secondary", "#64748b"),
+                ],
             )
-            copy_share_summary_button = Button(
-                template_row,
-                text="Özeti Kopyala",
-                command=self.copy_share_meta_summary,
-                bg="#334155",
-                fg="white",
-            )
-            write_share_summary_button = Button(
-                template_row,
-                text="Özeti Yaz",
-                command=self.write_share_meta_summary,
-                bg="#475569",
-                fg="white",
-            )
-            open_share_summary_button = Button(
-                template_row,
-                text="Özeti Aç",
-                command=self.open_share_meta_summary_in_finder,
-                bg="#1f6feb",
-                fg="white",
-            )
-            copy_package_path_button = Button(
-                template_row,
-                text="Paket Yolunu Kopyala",
-                command=self.copy_share_package_path,
-                bg="#475569",
-                fg="white",
-            )
-            copy_package_name_button = Button(
-                template_row,
-                text="Paket Adını Kopyala",
-                command=self.copy_share_package_name,
-                bg="#64748b",
-                fg="white",
-            )
-            copy_image_path_button = Button(
-                template_row,
-                text="Kapak Yolunu Kopyala",
-                command=self.copy_share_image_path,
-                bg="#64748b",
-                fg="white",
-            )
-            copy_image_name_button = Button(
-                template_row,
-                text="Kapak Adını Kopyala",
-                command=self.copy_share_image_name,
-                bg="#64748b",
-                fg="white",
-            )
-            copy_audio_name_button = Button(
-                template_row,
-                text="Ses Adını Kopyala",
-                command=self.copy_share_audio_name,
-                bg="#64748b",
-                fg="white",
-            )
-            copy_audio_path_button = Button(
-                template_row,
-                text="Ses Yolunu Kopyala",
-                command=self.copy_share_audio_path,
-                bg="#64748b",
-                fg="white",
-            )
-            write_share_guide_button = Button(
-                template_row,
-                text="Rehberi Yaz",
-                command=self.write_share_guide_file,
-                bg="#0f766e",
-                fg="white",
-            )
-            open_share_guide_button = Button(
-                template_row,
-                text="Rehberi Aç",
-                command=self.open_share_guide_in_finder,
-                bg="#1f6feb",
-                fg="white",
-            )
-            for button, role in (
-                (live_template_button, "success"),
-                (clean_template_button, "success"),
-                (speech_template_button, "secondary"),
-                (intro_template_button, "primary"),
-                (hashtag_button, "warning"),
-                (clear_text_button, "secondary"),
-                (footer_button, "success"),
-                (normalize_title_button, "primary"),
-                (concise_description_button, "primary"),
-                (upload_note_button, "primary"),
-                (write_upload_note_button, "primary"),
-                (copy_share_summary_button, "secondary"),
-                (write_share_summary_button, "secondary"),
-                (open_share_summary_button, "primary"),
-                (copy_package_path_button, "secondary"),
-                (copy_package_name_button, "secondary"),
-                (copy_image_path_button, "secondary"),
-                (copy_image_name_button, "secondary"),
-                (copy_audio_name_button, "secondary"),
-                (copy_audio_path_button, "secondary"),
-                (write_share_guide_button, "success"),
-                (open_share_guide_button, "primary"),
-            ):
-                self.apply_button_style(button, role=role)
-            live_template_button.pack(side="left", padx=(8, 0))
-            clean_template_button.pack(side="left", padx=(8, 0))
-            speech_template_button.pack(side="left", padx=(8, 0))
-            intro_template_button.pack(side="left", padx=(8, 0))
-            hashtag_button.pack(side="left", padx=(8, 0))
-            clear_text_button.pack(side="left", padx=(8, 0))
-            footer_button.pack(side="left", padx=(8, 0))
-            normalize_title_button.pack(side="left", padx=(8, 0))
-            concise_description_button.pack(side="left", padx=(8, 0))
-            upload_note_button.pack(side="left", padx=(8, 0))
-            write_upload_note_button.pack(side="left", padx=(8, 0))
-            copy_share_summary_button.pack(side="left", padx=(8, 0))
-            write_share_summary_button.pack(side="left", padx=(8, 0))
-            open_share_summary_button.pack(side="left", padx=(8, 0))
-            copy_package_path_button.pack(side="left", padx=(8, 0))
-            copy_package_name_button.pack(side="left", padx=(8, 0))
-            copy_image_path_button.pack(side="left", padx=(8, 0))
-            copy_image_name_button.pack(side="left", padx=(8, 0))
-            copy_audio_name_button.pack(side="left", padx=(8, 0))
-            copy_audio_path_button.pack(side="left", padx=(8, 0))
-            write_share_guide_button.pack(side="left", padx=(8, 0))
-            open_share_guide_button.pack(side="left", padx=(8, 0))
-            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=10, column=0, sticky="w")
-            Entry(container, textvariable=self.share_image_path, width=48).grid(row=11, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, text="Kapak Görseli", bg="#101418", fg="#dce6ef").grid(row=17, column=0, sticky="w")
+            Entry(container, textvariable=self.share_image_path, width=48).grid(row=18, column=0, columnspan=4, sticky="ew", pady=(2, 8))
+            Label(container, text="Paket İşlemleri", bg="#101418", fg="#dce6ef").grid(row=19, column=0, sticky="w", pady=(4, 0))
             button_row = Frame(container, bg="#101418")
-            button_row.grid(row=12, column=0, columnspan=4, sticky="w", pady=(4, 0))
+            button_row.grid(row=20, column=0, columnspan=4, sticky="w", pady=(4, 0))
             select_button = Button(button_row, text="Görsel Seç", command=self.select_share_image, bg="#34495e", fg="white")
             use_audio_button = Button(button_row, text="Son Kaydı Kullan", command=self.use_last_audio_for_share, bg="#16a085", fg="white")
+            prepare_button = Button(button_row, text="Tam Hazırla", command=self.prepare_share_package_complete, bg="#1f8f55", fg="white")
+            prepare_open_button = Button(button_row, text="Hazırla + Aç", command=self.prepare_share_package_complete_and_open, bg="#1f6feb", fg="white")
             export_button = Button(button_row, text="YouTube Paketi Yaz", command=self.export_share_package, bg="#2d7d46", fg="white")
             zip_button = Button(button_row, text="Paketi ZIP Yap", command=self.export_share_package_zip, bg="#2563eb", fg="white")
             zip_open_button = Button(button_row, text="ZIP Göster", command=self.open_share_package_zip_in_finder, bg="#475569", fg="white")
@@ -5904,6 +6104,8 @@ class GuitarAmpRecorderApp:
             for button, role in (
                 (select_button, "secondary"),
                 (use_audio_button, "success"),
+                (prepare_button, "success"),
+                (prepare_open_button, "primary"),
                 (export_button, "success"),
                 (zip_button, "primary"),
                 (zip_open_button, "secondary"),
@@ -5915,6 +6117,8 @@ class GuitarAmpRecorderApp:
                 self.apply_button_style(button, role=role)
             select_button.pack(side="left")
             use_audio_button.pack(side="left", padx=(8, 0))
+            prepare_button.pack(side="left", padx=(8, 0))
+            prepare_open_button.pack(side="left", padx=(8, 0))
             export_button.pack(side="left", padx=(8, 0))
             zip_button.pack(side="left", padx=(8, 0))
             zip_open_button.pack(side="left", padx=(8, 0))
@@ -5922,6 +6126,7 @@ class GuitarAmpRecorderApp:
             zip_name_button.pack(side="left", padx=(8, 0))
             open_button.pack(side="left", padx=(8, 0))
             upload_button.pack(side="left", padx=(8, 0))
+            self.update_share_meta_text()
             self.set_status("Paylaşım penceresi açıldı. Kapak görseli seçip YouTube paketini hazırlayabilirsiniz.")
         except Exception as exc:
             self.share_window = None

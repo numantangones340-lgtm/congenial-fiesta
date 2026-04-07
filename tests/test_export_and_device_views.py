@@ -71,6 +71,13 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.share_meta_text = FakeVar("")
         recorder.share_status_text = FakeVar("")
         recorder.share_detail_text = FakeVar("")
+        recorder.share_quickstart_text = FakeVar("")
+        recorder.share_quick_audio_text = FakeVar("")
+        recorder.share_quick_cover_text = FakeVar("")
+        recorder.share_quick_package_text = FakeVar("")
+        recorder.share_quick_zip_text = FakeVar("")
+        recorder.share_ready_text = FakeVar("")
+        recorder.share_next_step_text = FakeVar("")
         recorder.session_mode = FakeVar("Tek Klasör")
         recorder.session_name = FakeVar("session_20260404")
         recorder.input_device_choice = FakeVar("Varsayılan macOS girişi")
@@ -97,6 +104,11 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.prep_status_label = mock.Mock()
         recorder.setup_status_label = mock.Mock()
         recorder.setup_next_label = mock.Mock()
+        recorder.share_quick_audio_label = mock.Mock()
+        recorder.share_quick_cover_label = mock.Mock()
+        recorder.share_quick_package_label = mock.Mock()
+        recorder.share_quick_zip_label = mock.Mock()
+        recorder.share_ready_label = mock.Mock()
         recorder.mp3_quality_menu = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
@@ -1149,6 +1161,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual((package_dir / "youtube_aciklama.txt").read_text(encoding="utf-8"), "Kisa aciklama")
             self.assertIn("# YouTube Paylaşım Paketi", (package_dir / "paylasim_paketi.md").read_text(encoding="utf-8"))
             self.assertIn("MP3 Kapak: Kapak görseli mp3 içine eklendi.", (package_dir / "paylasim_paketi.md").read_text(encoding="utf-8"))
+            self.assertIn("Kategori: Music", (package_dir / "youtube_yukleme_notu.txt").read_text(encoding="utf-8"))
+            self.assertIn("Başlık: Benim Basligim", (package_dir / "paylasim_rehberi.txt").read_text(encoding="utf-8"))
+            self.assertEqual(
+                (package_dir / "paylasim_ozeti.txt").read_text(encoding="utf-8"),
+                "Ses: take_001.mp3 | Kapak: cover.jpg | Paket: take_001_youtube_paketi",
+            )
+            self.assertIn(
+                "1. youtube_baslik.txt dosyasındaki başlığı kontrol edin ve kopyalayın.",
+                (package_dir / "youtube_yukleme_sirasi.txt").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "3. Ses dosyasını yükleyin: take_001.mp3",
+                (package_dir / "youtube_yukleme_sirasi.txt").read_text(encoding="utf-8"),
+            )
             recorder.embed_cover_art_in_mp3.assert_called_once_with(package_dir / "take_001.mp3", package_dir / "kapak.jpg")
             self.assertEqual(recorder.last_share_package_dir, package_dir)
 
@@ -1169,6 +1195,58 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.export_share_package()
 
         self.assertEqual(recorder.status_messages[-1], "Paylaşım için kapak görseli seçin.")
+
+    def test_prepare_share_package_complete_creates_package_and_zip(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "take_001.mp3"
+            image_path = output_dir / "cover.jpg"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.share_title.set("Benim Basligim")
+            recorder.share_description.set("Kisa aciklama")
+            recorder.share_image_path.set(str(image_path))
+            recorder.embed_cover_art_in_mp3 = mock.Mock(return_value=(True, "Kapak görseli mp3 içine eklendi."))
+
+            recorder.prepare_share_package_complete()
+
+            package_dir = output_dir / "_paylasim" / "take_001_youtube_paketi"
+            zip_path = output_dir / "_paylasim" / "take_001_youtube_paketi.zip"
+            self.assertTrue((package_dir / "take_001.mp3").exists())
+            self.assertTrue((package_dir / "youtube_yukleme_sirasi.txt").exists())
+            self.assertTrue(zip_path.exists())
+            self.assertEqual(recorder.status_messages[-1], f"Tam paylaşım hazırlığı hazır: {zip_path}")
+
+    def test_prepare_share_package_complete_and_open_reveals_checklist_file(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "take_001.mp3"
+            image_path = output_dir / "cover.jpg"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+            recorder.share_title.set("Benim Basligim")
+            recorder.share_description.set("Kisa aciklama")
+            recorder.share_image_path.set(str(image_path))
+            recorder.embed_cover_art_in_mp3 = mock.Mock(return_value=(True, "Kapak görseli mp3 içine eklendi."))
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.prepare_share_package_complete_and_open()
+
+            package_dir = output_dir / "_paylasim" / "take_001_youtube_paketi"
+            checklist_path = package_dir / "youtube_yukleme_sirasi.txt"
+            run_mock.assert_called_once_with(["open", "-R", str(checklist_path)], check=False)
+            self.assertTrue((package_dir / "take_001.mp3").exists())
+            self.assertEqual(recorder.status_messages[-1], f"Tam paylaşım hazırlığı açıldı: {checklist_path.name}")
 
     def test_open_youtube_upload_page_opens_browser_and_updates_status(self) -> None:
         recorder = self.make_app()
@@ -1291,6 +1369,54 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertIn("Kategori: Music", copied)
             self.assertIn("Görünürlük: Herkese Açık", copied)
             self.assertEqual(recorder.status_messages[-1], "YouTube yükleme notu panoya alındı")
+
+    def test_copy_share_title_copies_visible_title(self) -> None:
+        recorder = self.make_app()
+        recorder.share_title.set("Benim Basligim")
+
+        recorder.copy_share_title()
+
+        recorder.root.clipboard_clear.assert_called_once()
+        recorder.root.clipboard_append.assert_called_once_with("Benim Basligim")
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım başlığı panoya alındı")
+
+    def test_copy_share_description_copies_visible_description(self) -> None:
+        recorder = self.make_app()
+        recorder.share_description.set("Benim aciklamam")
+
+        recorder.copy_share_description()
+
+        recorder.root.clipboard_clear.assert_called_once()
+        recorder.root.clipboard_append.assert_called_once_with("Benim aciklamam")
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım açıklaması panoya alındı")
+
+    def test_copy_share_upload_ready_text_copies_title_description_and_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.preset_name.set("Temiz Gitar")
+            recorder.share_title.set("Benim Basligim")
+            recorder.share_description.set("Benim aciklamam")
+
+            recorder.copy_share_upload_ready_text()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once()
+            copied = recorder.root.clipboard_append.call_args[0][0]
+            self.assertIn("YouTube hazır yükleme metni", copied)
+            self.assertIn("Başlık: Benim Basligim", copied)
+            self.assertIn("Açıklama:\nBenim aciklamam", copied)
+            self.assertIn("Kategori: Music", copied)
+            self.assertEqual(recorder.status_messages[-1], "Hazır yükleme metni panoya alındı")
+
+    def test_copy_share_upload_ready_text_requires_audio(self) -> None:
+        recorder = self.make_app()
+
+        recorder.copy_share_upload_ready_text()
+
+        self.assertEqual(recorder.status_messages[-1], "Hazır yükleme metni için ses dosyası yok.")
 
     def test_write_share_upload_note_writes_text_file_into_share_package(self) -> None:
         recorder = self.make_app()
@@ -1479,6 +1605,36 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", "-R", str(summary_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], f"Paylaşım özeti açıldı: {summary_path.name}")
 
+    def test_copy_share_upload_checklist_copies_existing_checklist(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            checklist_path = package_dir / "youtube_yukleme_sirasi.txt"
+            checklist_path.write_text("1. Baslik\n2. Aciklama", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            recorder.copy_share_upload_checklist()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with("1. Baslik\n2. Aciklama")
+            self.assertEqual(recorder.status_messages[-1], "Yükleme sırası panoya alındı")
+
+    def test_open_share_upload_checklist_in_finder_reveals_existing_checklist(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            checklist_path = package_dir / "youtube_yukleme_sirasi.txt"
+            checklist_path.write_text("1. Baslik", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_upload_checklist_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(checklist_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"Yükleme sırası açıldı: {checklist_path.name}")
+
     def test_export_share_package_zip_creates_zip_next_to_package(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1531,6 +1687,34 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertIn("YouTube yükleme notu", content)
             self.assertEqual(recorder.last_share_package_dir, guide_path.parent)
             self.assertEqual(recorder.status_messages[-1], f"Paylaşım rehberi yazıldı: {guide_path}")
+
+    def test_copy_share_guide_text_copies_combined_share_notes(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.share_title.set("Benim Basligim")
+            recorder.share_description.set("Benim Aciklamam")
+
+            recorder.copy_share_guide_text()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once()
+            copied = recorder.root.clipboard_append.call_args[0][0]
+            self.assertIn("YouTube paylaşım rehberi", copied)
+            self.assertIn("Ses dosyası: gitar_take.mp3", copied)
+            self.assertIn("Başlık: Benim Basligim", copied)
+            self.assertIn("Benim Aciklamam", copied)
+            self.assertIn("YouTube yükleme notu", copied)
+            self.assertEqual(recorder.status_messages[-1], "Paylaşım rehberi panoya alındı")
+
+    def test_copy_share_guide_text_requires_audio(self) -> None:
+        recorder = self.make_app()
+
+        recorder.copy_share_guide_text()
+
+        self.assertEqual(recorder.status_messages[-1], "Paylaşım rehberi için ses dosyası yok.")
 
     def test_open_share_guide_in_finder_reveals_existing_guide(self) -> None:
         recorder = self.make_app()
@@ -1593,6 +1777,124 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             zip_path.write_text("zip", encoding="utf-8")
             recorder.update_share_meta_text()
             self.assertEqual(recorder.share_status_text.get(), "Durum: paket ve ZIP hazır")
+
+    def test_share_quickstart_badge_reports_audio_cover_package_and_zip_state(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            image_path = Path(tmpdir) / "kapak.jpg"
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses bekliyor | Kapak bekliyor | Paket yok | ZIP yok",
+            )
+
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses hazır | Kapak bekliyor | Paket yok | ZIP yok",
+            )
+
+            image_path.write_text("image", encoding="utf-8")
+            recorder.share_image_path.set(str(image_path))
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses hazır | Kapak seçildi | Paket yok | ZIP yok",
+            )
+
+            package_dir.mkdir(parents=True, exist_ok=True)
+            recorder.last_share_package_dir = package_dir
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses hazır | Kapak seçildi | Paket hazır | ZIP yok",
+            )
+
+            zip_path.write_text("zip", encoding="utf-8")
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_quickstart_text.get(),
+                "Hızlı durum: Ses hazır | Kapak seçildi | Paket hazır | ZIP hazır",
+            )
+            recorder.share_quick_audio_label.configure.assert_called()
+            recorder.share_quick_cover_label.configure.assert_called()
+            recorder.share_quick_package_label.configure.assert_called()
+            recorder.share_quick_zip_label.configure.assert_called()
+
+    def test_share_next_step_hint_guides_the_next_action(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            image_path = Path(tmpdir) / "kapak.jpg"
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
+                "Öneri: Önce Son Kaydı Kullan ile paylaşılacak sesi seçin.",
+            )
+
+            audio_path.write_text("audio", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
+                "Öneri: Görsel Seç ile kapak görselini ekleyin.",
+            )
+
+            image_path.write_text("image", encoding="utf-8")
+            recorder.share_image_path.set(str(image_path))
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
+                "Öneri: YouTube Paketi Yaz ile paylaşım klasörünü oluşturun.",
+            )
+
+            package_dir.mkdir(parents=True, exist_ok=True)
+            recorder.last_share_package_dir = package_dir
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
+                "Öneri: Paketi ZIP Yap ile gönderime hazır arşivi çıkarın.",
+            )
+
+            zip_path.write_text("zip", encoding="utf-8")
+            recorder.update_share_meta_text()
+            self.assertEqual(
+                recorder.share_next_step_text.get(),
+                "Öneri: YouTube Yükle ile yükleme sayfasını açıp hazır dosyaları kullanın.",
+            )
+
+    def test_share_ready_badge_reports_when_youtube_upload_is_ready(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            image_path = Path(tmpdir) / "kapak.jpg"
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+
+            recorder.update_share_meta_text()
+            self.assertEqual(recorder.share_ready_text.get(), "Hazırlık sürüyor")
+
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            package_dir.mkdir(parents=True, exist_ok=True)
+            zip_path.write_text("zip", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.share_image_path.set(str(image_path))
+            recorder.last_share_package_dir = package_dir
+
+            recorder.update_share_meta_text()
+
+            self.assertEqual(recorder.share_ready_text.get(), "YouTube'a Hazır")
+            recorder.share_ready_label.configure.assert_called()
 
     def test_share_detail_summary_reports_cover_name_and_package_time(self) -> None:
         recorder = self.make_app()
