@@ -122,6 +122,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
         recorder.last_share_package_dir = None
+        recorder.copy_last_output_dir_path_button = mock.Mock()
         recorder.copy_last_take_notes_button = mock.Mock()
         recorder.copy_last_take_notes_path_button = mock.Mock()
         recorder.copy_last_preparation_button = mock.Mock()
@@ -1275,6 +1276,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         run_mock.assert_called_once_with(["open", str(output_dir)], check=False)
         recorder.resolve_output_dir.assert_not_called()
         self.assertEqual(recorder.status_messages[-1], f"Klasör açıldı: {output_dir.name}")
+
+    def test_copy_output_dir_path_to_clipboard_uses_last_output_dir(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            recorder.last_output_dir = output_dir
+            recorder.resolve_output_dir = mock.Mock(return_value=Path("/tmp/unused-output"))
+
+            recorder.copy_output_dir_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(output_dir))
+        recorder.root.update.assert_called_once_with()
+        recorder.resolve_output_dir.assert_not_called()
+        self.assertEqual(recorder.status_messages[-1], f"Klasör yolu panoya alındı: {output_dir.name}")
 
     def test_export_share_package_writes_audio_image_and_metadata_files(self) -> None:
         recorder = self.make_app()

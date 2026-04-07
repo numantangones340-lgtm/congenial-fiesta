@@ -2086,6 +2086,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_output_dir_path_button = Button(
+            recent_copy_buttons,
+            text="Klasör Yolunu Kopyala",
+            command=self.copy_output_dir_path_to_clipboard,
+            bg="#34495e",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_summary_button = Button(
             recent_copy_buttons,
             text="Özet İçeriğini Kopyala",
@@ -2202,6 +2210,7 @@ class GuitarAmpRecorderApp:
             recent_copy_buttons,
             [
                 self.copy_last_export_path_button,
+                self.copy_last_output_dir_path_button,
                 self.copy_last_summary_button,
                 self.copy_last_summary_path_button,
                 self.copy_last_take_notes_button,
@@ -2221,6 +2230,7 @@ class GuitarAmpRecorderApp:
         )
         for button, role in (
             (self.copy_last_export_path_button, "primary"),
+            (self.copy_last_output_dir_path_button, "secondary"),
             (self.copy_last_summary_button, "accent"),
             (self.copy_last_summary_path_button, "accent"),
             (self.copy_last_take_notes_button, "accent"),
@@ -5053,6 +5063,17 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Klasör açılamadı: {exc}")
 
+    def copy_output_dir_path_to_clipboard(self) -> None:
+        output_dir = self.current_recent_exports_dir()
+        if not output_dir.exists():
+            self.set_status(f"Klasör bulunamadı: {output_dir}")
+            return
+        self.copy_text_to_clipboard(
+            str(output_dir),
+            self.copied_item_status("Klasör yolu", output_dir.name),
+            "Klasör yolu kopyalanamadı",
+        )
+
     def current_share_audio_path(self) -> Optional[Path]:
         if self.last_export_path is not None and self.last_export_path.exists():
             return self.last_export_path
@@ -7254,6 +7275,7 @@ class GuitarAmpRecorderApp:
             "open_visible_recent_output_button",
             "copy_visible_recent_output_path_button",
             "copy_last_export_path_button",
+            "copy_last_output_dir_path_button",
             "open_last_summary_button",
             "copy_last_summary_button",
             "copy_last_summary_path_button",
@@ -7356,8 +7378,10 @@ class GuitarAmpRecorderApp:
                 self.open_last_recovery_note_button.configure(state="disabled")
             if self.current_recent_exports_dir().exists():
                 self.open_last_output_dir_button.configure(state="normal")
+                self.copy_last_output_dir_path_button.configure(state="normal")
             else:
                 self.open_last_output_dir_button.configure(state="disabled")
+                self.copy_last_output_dir_path_button.configure(state="disabled")
             if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
                 self.open_last_preparation_button.configure(state="normal")
                 self.copy_last_preparation_button.configure(state="normal")
