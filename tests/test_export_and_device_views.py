@@ -1470,6 +1470,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.last_share_package_dir, note_path.parent)
             self.assertEqual(recorder.status_messages[-1], f"YouTube yükleme notu yazıldı: {note_path}")
 
+    def test_open_share_upload_note_in_finder_reveals_existing_note(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            note_path = package_dir / "youtube_yukleme_notu.txt"
+            note_path.write_text("Kategori: Music", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_upload_note_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(note_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"YouTube yükleme notu açıldı: {note_path.name}")
+
     def test_copy_share_package_path_copies_existing_package_dir(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:

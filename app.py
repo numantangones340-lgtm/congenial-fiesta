@@ -5216,6 +5216,21 @@ class GuitarAmpRecorderApp:
         self.update_share_meta_text()
         self.set_status(f"YouTube yükleme notu yazıldı: {note_path}")
 
+    def open_share_upload_note_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("YouTube yükleme notu yok.")
+            return
+        note_path = package_dir / "youtube_yukleme_notu.txt"
+        if not note_path.exists():
+            self.set_status("YouTube yükleme notu yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(note_path)], check=False)
+            self.set_status(f"YouTube yükleme notu açıldı: {note_path.name}")
+        except Exception as exc:
+            self.set_status(f"YouTube yükleme notu açılamadı: {exc}")
+
     def copy_share_package_path(self) -> None:
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
@@ -6312,6 +6327,7 @@ class GuitarAmpRecorderApp:
                 [
                     ("Yükleme Notu", self.copy_share_upload_note, "primary", "#7c3aed"),
                     ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
+                    ("Notu Aç", self.open_share_upload_note_in_finder, "primary", "#1f6feb"),
                     ("Paketi Kopyala", self.copy_share_package_markdown, "secondary", "#334155"),
                     ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
                     ("Detayı Kopyala", self.copy_share_detail_summary, "secondary", "#334155"),
