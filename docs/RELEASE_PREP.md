@@ -55,6 +55,9 @@ Not:
 9. macOS artefact dogrulamasi yap:
    - `dist/GuitarAmpRecorder-macOS.zip`
    - `dist/GuitarAmpRecorder-macOS.zip.sha256`
+10. Windows artefact adlarini dogrula:
+   - `GuitarAmpRecorder-Windows.zip`
+   - `GuitarAmpRecorder-Windows.zip.sha256`
 
 ## Tek Akis Kurali
 

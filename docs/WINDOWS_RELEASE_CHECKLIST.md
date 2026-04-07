@@ -7,6 +7,9 @@ Bu kontrol listesi, uygulamayi Windows kullanicilarina dagitmadan once indirme, 
 1. `VERSION` ve `CHANGELOG.md` ayni surumu gostermeli.
 2. Release sayfasinda `GuitarAmpRecorder-Windows.zip` ve `GuitarAmpRecorder-Windows.zip.sha256` dosyalari gorunmeli.
 3. Indirme sayfasi Windows zip dosyasina dogru link vermeli.
+4. Beklenen release artefact adlari:
+   - `GuitarAmpRecorder-Windows.zip`
+   - `GuitarAmpRecorder-Windows.zip.sha256`
 
 ## Ilk Acilis
 

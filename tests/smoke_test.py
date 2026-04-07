@@ -236,6 +236,7 @@ def test_release_metadata_is_version_aligned() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     release_prep = (ROOT / "docs" / "RELEASE_PREP.md").read_text(encoding="utf-8")
     macos_checklist = (ROOT / "docs" / "MACOS_RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    windows_checklist = (ROOT / "docs" / "WINDOWS_RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
 
     assert f"## [{version}]" in changelog, "CHANGELOG.md en ust surum bolumu VERSION ile uyusmuyor"
     assert f"`VERSION`: `{version}`" in release_prep, "RELEASE_PREP.md hedef surumu VERSION ile uyusmuyor"
@@ -245,11 +246,17 @@ def test_release_metadata_is_version_aligned() -> None:
     assert f"git push origin {tag}" in readme, "README.md release push ornegi VERSION ile uyusmuyor"
     assert "dist/GuitarAmpRecorder-macOS.zip.sha256" in readme, "README.md macOS checksum ciktisini icermeli"
     assert "~/Desktop/GuitarAmpRecorder-macOS.zip.sha256" in readme, "README.md masaustu checksum ciktisini icermeli"
+    assert "GuitarAmpRecorder-Windows.zip" in readme, "README.md Windows release zip bilgisini icermeli"
+    assert "GuitarAmpRecorder-Windows.zip.sha256" in readme, "README.md Windows release checksum bilgisini icermeli"
     assert "dist/GuitarAmpRecorder-macOS.zip.sha256" in release_prep, "RELEASE_PREP.md macOS checksum ciktisini icermeli"
+    assert "GuitarAmpRecorder-Windows.zip" in release_prep, "RELEASE_PREP.md Windows artefact bilgisini icermeli"
+    assert "GuitarAmpRecorder-Windows.zip.sha256" in release_prep, "RELEASE_PREP.md Windows checksum bilgisini icermeli"
     assert "bash -n install_macos_professional.sh" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md install syntax adimini icermeli"
     assert "./install_macos_professional.sh" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md profesyonel kurulum adimini icermeli"
     assert "~/Desktop/GuitarAmpRecorder-macOS-latest.zip" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md latest zip cikti bilgisini icermeli"
     assert "~/Desktop/GuitarAmpRecorder-macOS-latest.zip.sha256" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md latest checksum cikti bilgisini icermeli"
+    assert "GuitarAmpRecorder-Windows.zip" in windows_checklist, "WINDOWS_RELEASE_CHECKLIST.md Windows zip bilgisini icermeli"
+    assert "GuitarAmpRecorder-Windows.zip.sha256" in windows_checklist, "WINDOWS_RELEASE_CHECKLIST.md Windows checksum bilgisini icermeli"
 
 
 def test_app_helpers() -> None:

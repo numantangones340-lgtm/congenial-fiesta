@@ -37,12 +37,19 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn("~/Desktop/GuitarAmpRecorder-macOS-latest.zip", content)
         self.assertIn("~/Desktop/GuitarAmpRecorder-macOS-latest.zip.sha256", content)
 
-    def test_readme_and_release_prep_mention_macos_checksum_outputs(self) -> None:
+    def test_readme_and_release_prep_mention_release_checksum_outputs(self) -> None:
         readme = (ROOT_DIR / "README.md").read_text(encoding="utf-8")
         release_prep = (ROOT_DIR / "docs" / "RELEASE_PREP.md").read_text(encoding="utf-8")
+        windows_checklist = (ROOT_DIR / "docs" / "WINDOWS_RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
         self.assertIn("dist/GuitarAmpRecorder-macOS.zip.sha256", readme)
         self.assertIn("~/Desktop/GuitarAmpRecorder-macOS.zip.sha256", readme)
+        self.assertIn("GuitarAmpRecorder-Windows.zip", readme)
+        self.assertIn("GuitarAmpRecorder-Windows.zip.sha256", readme)
         self.assertIn("dist/GuitarAmpRecorder-macOS.zip.sha256", release_prep)
+        self.assertIn("GuitarAmpRecorder-Windows.zip", release_prep)
+        self.assertIn("GuitarAmpRecorder-Windows.zip.sha256", release_prep)
+        self.assertIn("GuitarAmpRecorder-Windows.zip", windows_checklist)
+        self.assertIn("GuitarAmpRecorder-Windows.zip.sha256", windows_checklist)
 
     def test_release_scripts_have_valid_bash_syntax(self) -> None:
         for name in (

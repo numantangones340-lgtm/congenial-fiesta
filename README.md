@@ -66,7 +66,10 @@ Bakim turlarinda eklenen kucuk ama faydali kolayliklar:
 
 1. Python 3.9+ kurulu olsun (önerilen: 3.10+).
 2. `ffmpeg` kurun ve PATH'e ekleyin (MP3 için).
-3. Proje klasöründe çalıştırın:
+3. Hazir release kullanacaksaniz GitHub Releases'ten su iki dosyayi indirin:
+   - `GuitarAmpRecorder-Windows.zip`
+   - `GuitarAmpRecorder-Windows.zip.sha256`
+4. Proje klasöründe çalıştırın:
    ```bat
    cd C:\Users\%USERNAME%\Documents\GuitarAmpRecorder
    CALISTIR.bat
@@ -100,6 +103,7 @@ Repo icinde dogrudan kullanilabilen macOS release paketleme komutu:
 
 Bu komut mevcut `.app` paketini zip'ler; paket yoksa once `./build_macos_app.sh` calisir.
 Sonuc olarak hem `dist/GuitarAmpRecorder-macOS.zip` hem de `dist/GuitarAmpRecorder-macOS.zip.sha256` hazir olur.
+Windows release workflow'u da `GuitarAmpRecorder-Windows.zip` ve `GuitarAmpRecorder-Windows.zip.sha256` artefact'lerini uretir.
 
 Detayli kontrol listesi:
 
