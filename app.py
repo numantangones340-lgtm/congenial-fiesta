@@ -2118,6 +2118,22 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_brief_path_button = Button(
+            recent_copy_buttons,
+            text="Rapor Yolunu Kopyala",
+            command=self.copy_last_session_brief_path_to_clipboard,
+            bg="#6c5ce7",
+            fg="white",
+            state="disabled",
+        )
+        self.open_last_brief_button = Button(
+            recent_copy_buttons,
+            text="Raporu Aç",
+            command=self.open_last_session_brief_in_finder,
+            bg="#1f6feb",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_recovery_note_button = Button(
             recent_copy_buttons,
             text="Kurtarma Notunu Kopyala",
@@ -2142,6 +2158,8 @@ class GuitarAmpRecorderApp:
                 self.copy_last_summary_path_button,
                 self.copy_last_brief_button,
                 self.export_last_brief_button,
+                self.copy_last_brief_path_button,
+                self.open_last_brief_button,
                 self.copy_last_recovery_note_button,
                 self.copy_recent_outputs_button,
             ],
@@ -2153,6 +2171,8 @@ class GuitarAmpRecorderApp:
             (self.copy_last_summary_path_button, "accent"),
             (self.copy_last_brief_button, "success"),
             (self.export_last_brief_button, "success"),
+            (self.copy_last_brief_path_button, "accent"),
+            (self.open_last_brief_button, "primary"),
             (self.copy_last_recovery_note_button, "danger"),
             (self.copy_recent_outputs_button, "secondary"),
         ):
@@ -6612,6 +6632,11 @@ class GuitarAmpRecorderApp:
             lines.extend([f"- {Path(path).name}" for path in generated_files])
         return "\n".join(lines)
 
+    def last_session_brief_path(self) -> Optional[Path]:
+        if self.last_summary_path is None or not self.last_summary_path.exists():
+            return None
+        return self.last_summary_path.parent / "session_brief.txt"
+
     def copy_last_session_brief_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
             self.set_status(self.missing_item_status("Özet"))
@@ -6637,12 +6662,38 @@ class GuitarAmpRecorderApp:
             summary = json.loads(self.last_summary_path.read_text(encoding="utf-8"))
             if not isinstance(summary, dict):
                 raise ValueError("Özet biçimi geçersiz")
-            summary_dir = self.last_summary_path.parent
-            brief_path = summary_dir / "session_brief.txt"
+            brief_path = self.last_session_brief_path()
+            assert brief_path is not None
             brief_path.write_text(self.build_session_brief_text(summary), encoding="utf-8")
+            for button_name in ("copy_last_brief_path_button", "open_last_brief_button"):
+                button = getattr(self, button_name, None)
+                if button is not None:
+                    button.configure(state="normal")
             self.set_status(f"Kısa rapor yazıldı: {brief_path}")
         except Exception as exc:
             self.set_status(f"Kısa rapor yazılamadı: {exc}")
+
+    def copy_last_session_brief_path_to_clipboard(self) -> None:
+        brief_path = self.last_session_brief_path()
+        if brief_path is None or not brief_path.exists():
+            self.set_status(self.missing_item_status("Kısa rapor"))
+            return
+        self.copy_text_to_clipboard(
+            str(brief_path),
+            self.copied_item_status("Kısa rapor yolu", brief_path.name),
+            "Kısa rapor yolu kopyalanamadı",
+        )
+
+    def open_last_session_brief_in_finder(self) -> None:
+        brief_path = self.last_session_brief_path()
+        if brief_path is None or not brief_path.exists():
+            self.set_status(self.missing_item_status("Kısa rapor"))
+            return
+        try:
+            subprocess.run(["open", "-R", str(brief_path)], check=False)
+            self.set_status(self.finder_selected_status("Kısa rapor", brief_path.name))
+        except Exception as exc:
+            self.set_status(f"Kısa rapor açılamadı: {exc}")
 
     def copy_last_recovery_note_to_clipboard(self) -> None:
         if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
@@ -7089,6 +7140,8 @@ class GuitarAmpRecorderApp:
             "copy_last_summary_path_button",
             "copy_last_brief_button",
             "export_last_brief_button",
+            "copy_last_brief_path_button",
+            "open_last_brief_button",
             "open_last_take_notes_button",
             "copy_last_recovery_note_button",
             "open_last_output_dir_button",
@@ -7153,6 +7206,13 @@ class GuitarAmpRecorderApp:
                 self.copy_last_summary_path_button.configure(state="disabled")
                 self.copy_last_brief_button.configure(state="disabled")
                 self.export_last_brief_button.configure(state="disabled")
+            brief_path = self.last_session_brief_path()
+            if brief_path is not None and brief_path.exists():
+                self.copy_last_brief_path_button.configure(state="normal")
+                self.open_last_brief_button.configure(state="normal")
+            else:
+                self.copy_last_brief_path_button.configure(state="disabled")
+                self.open_last_brief_button.configure(state="disabled")
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
                 self.open_last_take_notes_button.configure(state="normal")
             else:

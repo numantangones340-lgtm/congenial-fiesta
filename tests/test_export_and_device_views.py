@@ -797,6 +797,37 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertIn("Kısa rapor yazıldı:", recorder.status_messages[-1])
 
+    def test_copy_last_session_brief_path_to_clipboard_copies_existing_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            brief_path = Path(tmpdir) / "session_brief.txt"
+            brief_path.write_text("Kısa rapor", encoding="utf-8")
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.copy_last_session_brief_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(brief_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Kısa rapor yolu panoya alındı: session_brief.txt")
+
+    def test_open_last_session_brief_in_finder_reveals_existing_brief(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            brief_path = Path(tmpdir) / "session_brief.txt"
+            brief_path.write_text("Kısa rapor", encoding="utf-8")
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_last_session_brief_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(brief_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], "Kısa rapor Finder'da seçildi: session_brief.txt")
+
     def test_copy_last_recovery_note_to_clipboard_reads_and_copies_content(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
