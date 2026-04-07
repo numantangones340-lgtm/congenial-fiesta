@@ -199,8 +199,11 @@ def test_professional_install_script_handles_desktop_checksum() -> None:
     script = (ROOT / "install_macos_professional.sh").read_text(encoding="utf-8")
     expected_snippets = [
         'ZIP_SHA_DIST="${ZIP_DIST}.sha256"',
+        'if [ ! -f "${ZIP_DIST}" ]; then',
+        'echo "HATA: Build sonrasi zip bulunamadi: ${ZIP_DIST}"',
         'python3 "${SCRIPT_DIR}/scripts/write_sha256.py" "${ZIP_DIST}"',
         'DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"',
+        'cp -f "${ZIP_DIST}" "${DESKTOP_ZIP}"',
         'if [ -f "${ZIP_SHA_DIST}" ]; then',
         'cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"',
         'if [ -f "${DESKTOP_ZIP_SHA}" ]; then',
