@@ -28,6 +28,11 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         ):
             self.assertTrue((ROOT_DIR / "docs" / name).exists(), name)
 
+    def test_macos_release_checklist_mentions_checksum_assets(self) -> None:
+        content = (ROOT_DIR / "docs" / "MACOS_RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+        self.assertIn("dist/GuitarAmpRecorder-macOS.zip.sha256", content)
+        self.assertIn("~/Desktop/GuitarAmpRecorder-macOS.zip.sha256", content)
+
     def test_release_scripts_have_valid_bash_syntax(self) -> None:
         for name in (
             "build_macos_app.sh",

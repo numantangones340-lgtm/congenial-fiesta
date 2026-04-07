@@ -33,7 +33,9 @@ Bu kontrol listesi, uygulamayi baska kullanicilara dagitmadan once macOS yayin a
    `./release_macos_desktop.sh "Developer ID Application: YOUR NAME (TEAMID)" AC_PROFILE TEAMID`
 4. Son zip dosyasi:
    - `dist/GuitarAmpRecorder-macOS.zip`
+   - `dist/GuitarAmpRecorder-macOS.zip.sha256`
    - `~/Desktop/GuitarAmpRecorder-macOS.zip`
+   - `~/Desktop/GuitarAmpRecorder-macOS.zip.sha256`
 
 ## Yayin Sonrasi Kontrol
 
