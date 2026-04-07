@@ -90,6 +90,8 @@ class ReleasePipelineAssetTests(unittest.TestCase):
     def test_package_script_copies_checksum_to_desktop_when_zip_copy_succeeds(self) -> None:
         content = (ROOT_DIR / "package_macos_release.sh").read_text(encoding="utf-8")
         self.assertIn('ZIP_SHA_PATH="${ZIP_PATH}.sha256"', content)
+        self.assertIn('if [ ! -f "$ZIP_SHA_PATH" ]; then', content)
+        self.assertIn('echo "HATA: Checksum olusturulamadi: $ZIP_SHA_PATH" >&2', content)
         self.assertIn('DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"', content)
         self.assertIn('cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"', content)
         self.assertIn("SHA256 de masaustune kopyalandi", content)

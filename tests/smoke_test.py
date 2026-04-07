@@ -160,6 +160,8 @@ def test_package_script_rebuilds_when_bundle_version_mismatches() -> None:
         'Path("dist/GuitarAmpRecorder.app/Contents/Info.plist")',
         '[ "$CURRENT_APP_VERSION" != "$EXPECTED_VERSION" ]',
         'ZIP_SHA_PATH="${ZIP_PATH}.sha256"',
+        'if [ ! -f "$ZIP_SHA_PATH" ]; then',
+        'echo "HATA: Checksum olusturulamadi: $ZIP_SHA_PATH" >&2',
         'DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"',
         'cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"',
     ]
