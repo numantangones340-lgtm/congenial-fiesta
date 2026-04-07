@@ -1183,6 +1183,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertIn("MP3 Kapak: Kapak görseli mp3 içine eklendi.", (package_dir / "paylasim_paketi.md").read_text(encoding="utf-8"))
             self.assertIn("Kategori: Music", (package_dir / "youtube_yukleme_notu.txt").read_text(encoding="utf-8"))
             self.assertIn("Başlık: Benim Basligim", (package_dir / "paylasim_rehberi.txt").read_text(encoding="utf-8"))
+            self.assertIn("Durum özeti: paylasim_detayi.txt", (package_dir / "paylasim_rehberi.txt").read_text(encoding="utf-8"))
             self.assertEqual(
                 (package_dir / "paylasim_ozeti.txt").read_text(encoding="utf-8"),
                 "Ses: take_001.mp3 | Kapak: cover.jpg | Paket: take_001_youtube_paketi",
@@ -1197,6 +1198,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             )
             self.assertIn(
                 "3. Ses dosyasını yükleyin: take_001.mp3",
+                (package_dir / "youtube_yukleme_sirasi.txt").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
+                "8. paylasim_detayi.txt ile hazırlık durumunu ve sonraki adımı kontrol edin.",
                 (package_dir / "youtube_yukleme_sirasi.txt").read_text(encoding="utf-8"),
             )
             recorder.embed_cover_art_in_mp3.assert_called_once_with(package_dir / "take_001.mp3", package_dir / "kapak.jpg")

@@ -5860,6 +5860,7 @@ class GuitarAmpRecorderApp:
             "",
             f"Ses dosyası: {audio_path.name}",
             f"Başlık: {title}",
+            "Durum özeti: paylasim_detayi.txt",
             "",
             "Açıklama:",
             description or "-",
@@ -5879,6 +5880,7 @@ class GuitarAmpRecorderApp:
             "5. youtube_yukleme_notu.txt içindeki kategori ve görünürlük ayarlarını uygulayın.",
             "6. paylasim_rehberi.txt ile son kez metinleri gözden geçirin.",
             "7. paylasim_ozeti.txt üzerinden paket içeriğini hızlıca doğrulayın.",
+            "8. paylasim_detayi.txt ile hazırlık durumunu ve sonraki adımı kontrol edin.",
         ]
         return "\n".join(lines)
 
