@@ -1,15 +1,15 @@
 import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
 from unittest import mock
 
-sys.modules.setdefault("numpy", types.SimpleNamespace(ndarray=object))
-sys.modules.setdefault("sounddevice", types.SimpleNamespace())
-sys.modules.setdefault("soundfile", types.SimpleNamespace())
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import app
+from runtime_stubs import load_module, runtime_stubs
+
+with runtime_stubs():
+    app = load_module("app_test_recording_readiness", "app.py")
 
 
 class FakeVar:

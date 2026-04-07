@@ -32,7 +32,7 @@ def runtime_stubs():
         Button=object,
         Scale=object,
         HORIZONTAL=0,
-        filedialog=object,
+        filedialog=types.SimpleNamespace(askopenfilename=lambda **kwargs: ""),
         StringVar=object,
         Entry=object,
         OptionMenu=object,

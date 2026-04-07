@@ -6361,7 +6361,7 @@ class GuitarAmpRecorderApp:
             build_share_action_row(
                 15,
                 "Notlar",
-                "Yükleme sırasında lazım olan rehber, özet ve sıra dosyalarını yönetir.",
+                "Yükleme sırasında gereken not, rehber, özet, detay ve yol kopyalama araçlarını toplar.",
                 [
                     ("Notu Kopyala", self.copy_share_upload_note, "primary", "#7c3aed"),
                     ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
