@@ -5641,6 +5641,7 @@ class GuitarAmpRecorderApp:
             overall_part = "Hazırlık durumu: hazir"
         else:
             overall_part = "Hazırlık durumu: suruyor"
+        next_step_part = f"Sonraki adım: {self.share_next_step_action()[0]}"
         return " | ".join(
             [
                 audio_status_part,
@@ -5657,6 +5658,7 @@ class GuitarAmpRecorderApp:
                 count_part,
                 missing_part,
                 overall_part,
+                next_step_part,
             ]
         )
 
