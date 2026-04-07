@@ -22,6 +22,10 @@ if [ ! -d "${APP_DIST}" ]; then
   exit 1
 fi
 
+if [ -f "${ZIP_DIST}" ]; then
+  python3 "${SCRIPT_DIR}/scripts/write_sha256.py" "${ZIP_DIST}"
+fi
+
 echo "2) Uygulama kurulum klasoru hazirlaniyor..."
 mkdir -p "${APP_INSTALL_DIR}"
 rm -rf "${APP_INSTALL_PATH}"

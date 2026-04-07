@@ -101,6 +101,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
     def test_professional_install_script_copies_and_reports_desktop_checksum(self) -> None:
         content = (ROOT_DIR / "install_macos_professional.sh").read_text(encoding="utf-8")
         self.assertIn('ZIP_SHA_DIST="${ZIP_DIST}.sha256"', content)
+        self.assertIn('python3 "${SCRIPT_DIR}/scripts/write_sha256.py" "${ZIP_DIST}"', content)
         self.assertIn('DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"', content)
         self.assertIn('if [ -f "${ZIP_SHA_DIST}" ]; then', content)
         self.assertIn('cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"', content)
