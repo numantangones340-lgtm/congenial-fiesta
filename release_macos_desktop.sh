@@ -10,6 +10,7 @@ TEAM_ID="${3:-}"
 APP_PATH="$ROOT_DIR/dist/GuitarAmpRecorder.app"
 ZIP_PATH="$ROOT_DIR/dist/GuitarAmpRecorder-macOS.zip"
 ZIP_SHA_PATH="${ZIP_PATH}.sha256"
+DESKTOP_ZIP="$HOME/Desktop/GuitarAmpRecorder-macOS.zip"
 DESKTOP_ZIP_SHA="$HOME/Desktop/GuitarAmpRecorder-macOS.zip.sha256"
 
 ./build_macos_app.sh
@@ -38,5 +39,14 @@ echo "Release hazir:"
 echo "- App: $APP_PATH"
 echo "- Zip: $ZIP_PATH"
 echo "- Zip SHA256: $ZIP_SHA_PATH"
-echo "- Masaustu kopyasi: $HOME/Desktop/GuitarAmpRecorder-macOS.zip"
-echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"
+if [ -f "$DESKTOP_ZIP" ]; then
+  echo "- Masaustu kopyasi: $DESKTOP_ZIP"
+else
+  echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"
+fi
+
+if [ -f "$DESKTOP_ZIP_SHA" ]; then
+  echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"
+else
+  echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"
+fi

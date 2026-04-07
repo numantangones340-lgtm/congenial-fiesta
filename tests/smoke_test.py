@@ -168,10 +168,16 @@ def test_package_script_rebuilds_when_bundle_version_mismatches() -> None:
 def test_release_script_reports_checksum_locations() -> None:
     script = (ROOT / "release_macos_desktop.sh").read_text(encoding="utf-8")
     expected_snippets = [
+        'DESKTOP_ZIP="$HOME/Desktop/GuitarAmpRecorder-macOS.zip"',
         'ZIP_SHA_PATH="${ZIP_PATH}.sha256"',
         'DESKTOP_ZIP_SHA="$HOME/Desktop/GuitarAmpRecorder-macOS.zip.sha256"',
         'echo "- Zip SHA256: $ZIP_SHA_PATH"',
+        'if [ -f "$DESKTOP_ZIP" ]; then',
+        'echo "- Masaustu kopyasi: $DESKTOP_ZIP"',
+        'echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"',
+        'if [ -f "$DESKTOP_ZIP_SHA" ]; then',
         'echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"',
+        'echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"release_macos_desktop.sh checksum ciktilari eksik: {snippet}"

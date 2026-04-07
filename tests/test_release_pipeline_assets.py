@@ -87,6 +87,16 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('rm -f "$TMP_ZIP"', content)
         self.assertIn("trap cleanup EXIT", content)
 
+    def test_release_script_reports_desktop_assets_only_when_present(self) -> None:
+        content = (ROOT_DIR / "release_macos_desktop.sh").read_text(encoding="utf-8")
+        self.assertIn('DESKTOP_ZIP="$HOME/Desktop/GuitarAmpRecorder-macOS.zip"', content)
+        self.assertIn('if [ -f "$DESKTOP_ZIP" ]; then', content)
+        self.assertIn('echo "- Masaustu kopyasi: $DESKTOP_ZIP"', content)
+        self.assertIn('echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"', content)
+        self.assertIn('if [ -f "$DESKTOP_ZIP_SHA" ]; then', content)
+        self.assertIn('echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"', content)
+        self.assertIn('echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"', content)
+
     def test_spec_declares_microphone_usage_description(self) -> None:
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
         self.assertIn("NSMicrophoneUsageDescription", content)
