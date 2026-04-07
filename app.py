@@ -5361,6 +5361,25 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Yükleme sırası kopyalanamadı: {exc}")
 
+    def copy_share_package_markdown(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak paylaşım paketi markdown yok.")
+            return
+        package_markdown_path = package_dir / "paylasim_paketi.md"
+        if not package_markdown_path.exists():
+            self.set_status("Kopyalanacak paylaşım paketi markdown yok.")
+            return
+        try:
+            content = package_markdown_path.read_text(encoding="utf-8")
+            self.copy_text_to_clipboard(
+                content,
+                "Paylaşım paketi markdown panoya alındı",
+                "Paylaşım paketi markdown kopyalanamadı",
+            )
+        except Exception as exc:
+            self.set_status(f"Paylaşım paketi markdown kopyalanamadı: {exc}")
+
     def write_share_meta_summary(self) -> None:
         audio_path = self.current_share_audio_path()
         package_dir = self.last_share_package_dir
@@ -5453,6 +5472,21 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Yükleme sırası açıldı: {checklist_path.name}")
         except Exception as exc:
             self.set_status(f"Yükleme sırası açılamadı: {exc}")
+
+    def open_share_package_markdown_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Paylaşım paketi markdown yok.")
+            return
+        package_markdown_path = package_dir / "paylasim_paketi.md"
+        if not package_markdown_path.exists():
+            self.set_status("Paylaşım paketi markdown yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(package_markdown_path)], check=False)
+            self.set_status(f"Paylaşım paketi markdown açıldı: {package_markdown_path.name}")
+        except Exception as exc:
+            self.set_status(f"Paylaşım paketi markdown açılamadı: {exc}")
 
     def share_meta_summary(self) -> str:
         audio_path = self.current_share_audio_path()
@@ -6278,8 +6312,10 @@ class GuitarAmpRecorderApp:
                 [
                     ("Yükleme Notu", self.copy_share_upload_note, "primary", "#7c3aed"),
                     ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
+                    ("Paketi Kopyala", self.copy_share_package_markdown, "secondary", "#334155"),
                     ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
                     ("Detayı Kopyala", self.copy_share_detail_summary, "secondary", "#334155"),
+                    ("Paketi Aç", self.open_share_package_markdown_in_finder, "primary", "#1f6feb"),
                     ("Özeti Yaz", self.write_share_meta_summary, "secondary", "#475569"),
                     ("Detayı Yaz", self.write_share_detail_summary, "secondary", "#475569"),
                     ("Özeti Aç", self.open_share_meta_summary_in_finder, "primary", "#1f6feb"),

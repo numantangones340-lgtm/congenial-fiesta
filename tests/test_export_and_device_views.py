@@ -1715,6 +1715,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with("1. Baslik\n2. Aciklama")
             self.assertEqual(recorder.status_messages[-1], "Yükleme sırası panoya alındı")
 
+    def test_copy_share_package_markdown_copies_existing_markdown(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            package_markdown_path = package_dir / "paylasim_paketi.md"
+            package_markdown_path.write_text("# Paket", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            recorder.copy_share_package_markdown()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with("# Paket")
+            self.assertEqual(recorder.status_messages[-1], "Paylaşım paketi markdown panoya alındı")
+
     def test_open_share_upload_checklist_in_finder_reveals_existing_checklist(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1729,6 +1744,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", "-R", str(checklist_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], f"Yükleme sırası açıldı: {checklist_path.name}")
+
+    def test_open_share_package_markdown_in_finder_reveals_existing_markdown(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            package_markdown_path = package_dir / "paylasim_paketi.md"
+            package_markdown_path.write_text("# Paket", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_package_markdown_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(package_markdown_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"Paylaşım paketi markdown açıldı: {package_markdown_path.name}")
 
     def test_export_share_package_zip_creates_zip_next_to_package(self) -> None:
         recorder = self.make_app()
