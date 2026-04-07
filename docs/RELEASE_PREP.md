@@ -52,6 +52,9 @@ Not:
 6. `git tag v1.1.10`
 7. `git push origin <branch>`
 8. `git push origin v1.1.10`
+9. macOS artefact dogrulamasi yap:
+   - `dist/GuitarAmpRecorder-macOS.zip`
+   - `dist/GuitarAmpRecorder-macOS.zip.sha256`
 
 ## Tek Akis Kurali
 

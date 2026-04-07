@@ -99,6 +99,7 @@ Repo icinde dogrudan kullanilabilen macOS release paketleme komutu:
 ```
 
 Bu komut mevcut `.app` paketini zip'ler; paket yoksa once `./build_macos_app.sh` calisir.
+Sonuc olarak hem `dist/GuitarAmpRecorder-macOS.zip` hem de `dist/GuitarAmpRecorder-macOS.zip.sha256` hazir olur.
 
 Detayli kontrol listesi:
 
@@ -233,7 +234,9 @@ cd /Users/numantangones/Documents/GuitarAmpRecorder
 
 Bu komut:
 - `dist/GuitarAmpRecorder-macOS.zip` olusturur
+- `dist/GuitarAmpRecorder-macOS.zip.sha256` olusturur
 - ayni zip dosyasini `~/Desktop/GuitarAmpRecorder-macOS.zip` olarak kopyalar
+- checksum dosyasini `~/Desktop/GuitarAmpRecorder-macOS.zip.sha256` olarak kopyalar
 
 Build + zip islemini tek komutta almak icin:
 
