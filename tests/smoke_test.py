@@ -234,6 +234,8 @@ def test_release_metadata_is_version_aligned() -> None:
     assert f"git push origin {tag}" in readme, "README.md release push ornegi VERSION ile uyusmuyor"
     assert "bash -n install_macos_professional.sh" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md install syntax adimini icermeli"
     assert "./install_macos_professional.sh" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md profesyonel kurulum adimini icermeli"
+    assert "~/Desktop/GuitarAmpRecorder-macOS-latest.zip" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md latest zip cikti bilgisini icermeli"
+    assert "~/Desktop/GuitarAmpRecorder-macOS-latest.zip.sha256" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md latest checksum cikti bilgisini icermeli"
 
 
 def test_app_helpers() -> None:

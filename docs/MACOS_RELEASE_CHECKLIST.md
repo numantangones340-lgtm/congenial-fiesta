@@ -27,6 +27,9 @@ Bu kontrol listesi, uygulamayi baska kullanicilara dagitmadan once macOS yayin a
    `./release_macos_desktop.sh`
 5. Yerel profesyonel kurulum ve masaustu `latest` artefact kontrolu icin:
    `./install_macos_professional.sh`
+   Beklenen ciktilar:
+   - `~/Desktop/GuitarAmpRecorder-macOS-latest.zip`
+   - `~/Desktop/GuitarAmpRecorder-macOS-latest.zip.sha256`
 
 ## Gercek Dagitim
 

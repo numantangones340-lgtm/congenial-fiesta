@@ -34,6 +34,8 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn("~/Desktop/GuitarAmpRecorder-macOS.zip.sha256", content)
         self.assertIn("bash -n install_macos_professional.sh", content)
         self.assertIn("./install_macos_professional.sh", content)
+        self.assertIn("~/Desktop/GuitarAmpRecorder-macOS-latest.zip", content)
+        self.assertIn("~/Desktop/GuitarAmpRecorder-macOS-latest.zip.sha256", content)
 
     def test_release_scripts_have_valid_bash_syntax(self) -> None:
         for name in (
