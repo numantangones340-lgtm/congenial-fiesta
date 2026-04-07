@@ -5331,6 +5331,17 @@ class GuitarAmpRecorderApp:
             "Paylaşım özeti kopyalanamadı",
         )
 
+    def copy_share_detail_summary(self) -> None:
+        summary = self.share_detail_summary().strip()
+        if not summary:
+            self.set_status("Kopyalanacak paylaşım detayı yok.")
+            return
+        self.copy_text_to_clipboard(
+            summary,
+            "Paylaşım detayı panoya alındı",
+            "Paylaşım detayı kopyalanamadı",
+        )
+
     def copy_share_upload_checklist(self) -> None:
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
@@ -6204,6 +6215,7 @@ class GuitarAmpRecorderApp:
                     ("Yükleme Notu", self.copy_share_upload_note, "primary", "#7c3aed"),
                     ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
                     ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
+                    ("Detayı Kopyala", self.copy_share_detail_summary, "secondary", "#334155"),
                     ("Özeti Yaz", self.write_share_meta_summary, "secondary", "#475569"),
                     ("Özeti Aç", self.open_share_meta_summary_in_finder, "primary", "#1f6feb"),
                     ("Sırayı Kopyala", self.copy_share_upload_checklist, "secondary", "#475569"),

@@ -1584,6 +1584,31 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.root.clipboard_append.assert_called_once_with(expected_summary)
             self.assertEqual(recorder.status_messages[-1], "Paylaşım özeti panoya alındı")
 
+    def test_copy_share_detail_summary_copies_visible_detail_text(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "gitar_take.mp3"
+            image_path = Path(tmpdir) / "kapak.jpg"
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.share_image_path.set(str(image_path))
+            self.write_share_package_fixture(package_dir)
+            current_ts = 1760000600
+            self.set_tree_mtime(package_dir, current_ts - 60)
+            zip_path.write_text("zip", encoding="utf-8")
+            os.utime(zip_path, (current_ts, current_ts))
+            recorder.last_share_package_dir = package_dir
+
+            recorder.copy_share_detail_summary()
+
+            expected_summary = recorder.share_detail_summary()
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with(expected_summary)
+            self.assertEqual(recorder.status_messages[-1], "Paylaşım detayı panoya alındı")
+
     def test_write_share_meta_summary_writes_text_file_into_share_package(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
