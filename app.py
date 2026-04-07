@@ -2935,6 +2935,14 @@ class GuitarAmpRecorderApp:
             if not self.recording_active:
                 self.open_last_output_dir_button.configure(state="normal")
                 self.open_last_preparation_button.configure(state="normal")
+                for button_name in (
+                    "copy_last_preparation_button",
+                    "copy_last_preparation_path_button",
+                    "copy_last_preparation_name_button",
+                ):
+                    button = getattr(self, button_name, None)
+                    if button is not None:
+                        button.configure(state="normal")
             self.set_status(f"Hazırlık özeti yazıldı: {prep_path}")
         except Exception as exc:
             self.set_status(f"Hazırlık özeti yazılamadı: {exc}")
@@ -6907,7 +6915,11 @@ class GuitarAmpRecorderApp:
             brief_path = self.last_session_brief_path()
             assert brief_path is not None
             brief_path.write_text(self.build_session_brief_text(summary), encoding="utf-8")
-            for button_name in ("copy_last_brief_path_button", "open_last_brief_button"):
+            for button_name in (
+                "copy_last_brief_path_button",
+                "copy_last_brief_name_button",
+                "open_last_brief_button",
+            ):
                 button = getattr(self, button_name, None)
                 if button is not None:
                     button.configure(state="normal")

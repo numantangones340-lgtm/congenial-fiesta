@@ -132,7 +132,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.copy_last_preparation_button = mock.Mock()
         recorder.copy_last_preparation_path_button = mock.Mock()
         recorder.copy_last_preparation_name_button = mock.Mock()
+        recorder.copy_last_brief_path_button = mock.Mock()
         recorder.copy_last_brief_name_button = mock.Mock()
+        recorder.open_last_brief_button = mock.Mock()
         recorder.copy_last_recovery_note_button = mock.Mock()
         recorder.copy_last_recovery_note_path_button = mock.Mock()
         recorder.copy_last_recovery_note_name_button = mock.Mock()
@@ -847,6 +849,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertIn("Preset Notu: Canli deneme", brief_path.read_text(encoding="utf-8"))
 
         self.assertIn("Kısa rapor yazıldı:", recorder.status_messages[-1])
+        recorder.copy_last_brief_path_button.configure.assert_called_once_with(state="normal")
+        recorder.copy_last_brief_name_button.configure.assert_called_once_with(state="normal")
+        recorder.open_last_brief_button.configure.assert_called_once_with(state="normal")
 
     def test_copy_last_session_brief_path_to_clipboard_copies_existing_path(self) -> None:
         recorder = self.make_app()
@@ -983,6 +988,9 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.update_recent_output_summary.assert_called_once_with()
             recorder.open_last_output_dir_button.configure.assert_called_once_with(state="normal")
             recorder.open_last_preparation_button.configure.assert_called_once_with(state="normal")
+            recorder.copy_last_preparation_button.configure.assert_called_once_with(state="normal")
+            recorder.copy_last_preparation_path_button.configure.assert_called_once_with(state="normal")
+            recorder.copy_last_preparation_name_button.configure.assert_called_once_with(state="normal")
             self.assertEqual(recorder.status_messages[-1], f"Hazırlık özeti yazıldı: {prep_path}")
 
     def test_export_current_preparation_file_requires_output_dir(self) -> None:
