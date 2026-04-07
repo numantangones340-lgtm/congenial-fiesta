@@ -5602,6 +5602,12 @@ class GuitarAmpRecorderApp:
         )
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
+            package_status_part = "Paket durumu: henüz yok"
+        elif self.share_package_complete(package_dir):
+            package_status_part = "Paket durumu: hazir"
+        else:
+            package_status_part = "Paket durumu: eksik"
+        if package_dir is None or not package_dir.exists():
             package_part = "Son paket zamanı: henüz yok"
         else:
             package_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(self.share_package_latest_mtime(package_dir)))
@@ -5634,6 +5640,7 @@ class GuitarAmpRecorderApp:
                 audio_suffix_part,
                 image_part,
                 image_suffix_part,
+                package_status_part,
                 package_part,
                 size_part,
                 zip_part,

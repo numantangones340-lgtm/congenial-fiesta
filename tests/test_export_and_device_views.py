@@ -2091,7 +2091,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             recorder.update_share_meta_text()
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                "Ses türü: mp3 | Kapak dosyası: yok | Kapak türü: yok | Son paket zamanı: henüz yok | Paket boyutu: henüz yok | ZIP boyutu: henüz yok | ZIP durumu: henüz yok | Son ZIP zamanı: henüz yok | Paket içeriği: henüz yok | Eksik paket öğeleri: yok",
+                "Ses türü: mp3 | Kapak dosyası: yok | Kapak türü: yok | Paket durumu: henüz yok | Son paket zamanı: henüz yok | Paket boyutu: henüz yok | ZIP boyutu: henüz yok | ZIP durumu: henüz yok | Son ZIP zamanı: henüz yok | Paket içeriği: henüz yok | Eksik paket öğeleri: yok",
             )
 
             image_path.write_text("image", encoding="utf-8")
@@ -2112,7 +2112,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected_zip_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(zip_ts))
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                f"Ses türü: mp3 | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Son paket zamanı: {expected_time} | Paket boyutu: 5 B | ZIP boyutu: {expected_zip_size} B | ZIP durumu: eski | Son ZIP zamanı: {expected_zip_time} | Paket içeriği: 1 dosya | Eksik paket öğeleri: youtube_baslik.txt, youtube_aciklama.txt, paylasim_paketi.md +6",
+                f"Ses türü: mp3 | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Paket durumu: eksik | Son paket zamanı: {expected_time} | Paket boyutu: 5 B | ZIP boyutu: {expected_zip_size} B | ZIP durumu: eski | Son ZIP zamanı: {expected_zip_time} | Paket içeriği: 1 dosya | Eksik paket öğeleri: youtube_baslik.txt, youtube_aciklama.txt, paylasim_paketi.md +6",
             )
 
             current_ts = zip_ts + 120
@@ -2127,7 +2127,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected_file_count = recorder.share_package_file_count_text(package_dir)
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                f"Ses türü: mp3 | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Son paket zamanı: {expected_current_package_time} | Paket boyutu: {expected_package_size} | ZIP boyutu: {expected_zip_size} B | ZIP durumu: guncel | Son ZIP zamanı: {expected_current_zip_time} | Paket içeriği: {expected_file_count} | Eksik paket öğeleri: yok",
+                f"Ses türü: mp3 | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Paket durumu: hazir | Son paket zamanı: {expected_current_package_time} | Paket boyutu: {expected_package_size} | ZIP boyutu: {expected_zip_size} B | ZIP durumu: guncel | Son ZIP zamanı: {expected_current_zip_time} | Paket içeriği: {expected_file_count} | Eksik paket öğeleri: yok",
             )
 
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
