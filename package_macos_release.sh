@@ -46,8 +46,8 @@ if cp "$ZIP_PATH" "$DESKTOP_ZIP" 2>/dev/null; then
   if cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA" 2>/dev/null; then
     echo "SHA256 de masaustune kopyalandi: $DESKTOP_ZIP_SHA"
   else
-    echo "Not: SHA256 masaustu kopyasi olusturulamadi. Checksum dist klasorunde hazir."
+    echo "Not: SHA256 masaustu kopyasi olusturulamadi. Dist checksum hazir: $ZIP_SHA_PATH"
   fi
 else
-  echo "Not: Masaustu kopyasi olusturulamadi. Zip dosyasi dist klasorunde hazir."
+  echo "Not: Masaustu kopyasi olusturulamadi. Dist zip hazir: $ZIP_PATH"
 fi

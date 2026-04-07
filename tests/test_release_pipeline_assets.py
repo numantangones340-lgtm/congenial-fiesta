@@ -96,6 +96,8 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"', content)
         self.assertIn('cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"', content)
         self.assertIn("SHA256 de masaustune kopyalandi", content)
+        self.assertIn('echo "Not: SHA256 masaustu kopyasi olusturulamadi. Dist checksum hazir: $ZIP_SHA_PATH"', content)
+        self.assertIn('echo "Not: Masaustu kopyasi olusturulamadi. Dist zip hazir: $ZIP_PATH"', content)
 
     def test_notarize_script_cleans_temporary_zip_on_exit(self) -> None:
         content = (ROOT_DIR / "notarize_macos_app.sh").read_text(encoding="utf-8")

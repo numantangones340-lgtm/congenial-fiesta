@@ -165,6 +165,8 @@ def test_package_script_rebuilds_when_bundle_version_mismatches() -> None:
         'echo "Hazir checksum: $ZIP_SHA_PATH"',
         'DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"',
         'cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"',
+        'echo "Not: SHA256 masaustu kopyasi olusturulamadi. Dist checksum hazir: $ZIP_SHA_PATH"',
+        'echo "Not: Masaustu kopyasi olusturulamadi. Dist zip hazir: $ZIP_PATH"',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"package_macos_release.sh surum uyum kontrolu eksik: {snippet}"
