@@ -5604,7 +5604,7 @@ class GuitarAmpRecorderApp:
         if package_dir is None or not package_dir.exists():
             package_part = "Son paket zamanı: henüz yok"
         else:
-            package_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(package_dir.stat().st_mtime))
+            package_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(self.share_package_latest_mtime(package_dir)))
             package_part = f"Son paket zamanı: {package_time}"
         size_part = f"Paket boyutu: {self.share_package_size_text(package_dir)}"
         zip_path = self.share_package_zip_path(package_dir) if package_dir is not None and package_dir.exists() else None

@@ -2101,7 +2101,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             zip_path = package_dir.parent / "gitar_take_youtube_paketi.zip"
             zip_path.write_text("zip!", encoding="utf-8")
             ts = 1760000000
-            os.utime(package_dir, (ts, ts))
+            self.set_tree_mtime(package_dir, ts)
             zip_ts = 1760000300
             os.utime(zip_path, (zip_ts, zip_ts))
             recorder.last_share_package_dir = package_dir
@@ -2117,15 +2117,17 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
             current_ts = zip_ts + 120
             self.write_share_package_fixture(package_dir)
-            self.set_tree_mtime(package_dir, ts)
+            package_current_ts = ts + 60
+            self.set_tree_mtime(package_dir, package_current_ts)
             os.utime(zip_path, (current_ts, current_ts))
             recorder.update_share_meta_text()
             expected_current_zip_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(current_ts))
+            expected_current_package_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(package_current_ts))
             expected_package_size = recorder.share_package_size_text(package_dir)
             expected_file_count = recorder.share_package_file_count_text(package_dir)
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                f"Ses türü: mp3 | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Son paket zamanı: {expected_time} | Paket boyutu: {expected_package_size} | ZIP boyutu: {expected_zip_size} B | ZIP durumu: guncel | Son ZIP zamanı: {expected_current_zip_time} | Paket içeriği: {expected_file_count} | Eksik paket öğeleri: yok",
+                f"Ses türü: mp3 | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Son paket zamanı: {expected_current_package_time} | Paket boyutu: {expected_package_size} | ZIP boyutu: {expected_zip_size} B | ZIP durumu: guncel | Son ZIP zamanı: {expected_current_zip_time} | Paket içeriği: {expected_file_count} | Eksik paket öğeleri: yok",
             )
 
     def test_embed_cover_art_in_mp3_uses_mutagen_apic_tag(self) -> None:
