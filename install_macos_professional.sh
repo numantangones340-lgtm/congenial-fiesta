@@ -46,7 +46,8 @@ mkdir -p "${ARCHIVE_DIR}"
 for path in \
   "${HOME}/Downloads/${APP_NAME}.app" \
   "${HOME}/Downloads/${APP_NAME}-2.app" \
-  "${HOME}/Downloads/${APP_NAME}-macOS.zip"; do
+  "${HOME}/Downloads/${APP_NAME}-macOS.zip" \
+  "${HOME}/Downloads/${APP_NAME}-macOS.zip.sha256"; do
   if [ -e "${path}" ]; then
     mv "${path}" "${ARCHIVE_DIR}/"
   fi

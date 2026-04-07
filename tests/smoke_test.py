@@ -205,6 +205,7 @@ def test_professional_install_script_handles_desktop_checksum() -> None:
         'cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"',
         'if [ -f "${DESKTOP_ZIP_SHA}" ]; then',
         'echo "Masaustu SHA256: ${DESKTOP_ZIP_SHA}"',
+        '"${HOME}/Downloads/${APP_NAME}-macOS.zip.sha256"',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"install_macos_professional.sh masaustu checksum akisi eksik: {snippet}"

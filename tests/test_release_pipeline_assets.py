@@ -107,6 +107,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"', content)
         self.assertIn('if [ -f "${DESKTOP_ZIP_SHA}" ]; then', content)
         self.assertIn('echo "Masaustu SHA256: ${DESKTOP_ZIP_SHA}"', content)
+        self.assertIn('"${HOME}/Downloads/${APP_NAME}-macOS.zip.sha256"', content)
 
     def test_spec_declares_microphone_usage_description(self) -> None:
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
