@@ -13,6 +13,13 @@ APP_INSTALL_PATH="${APP_INSTALL_DIR}/${APP_NAME}.app"
 DESKTOP_ZIP="${HOME}/Desktop/${APP_NAME}-macOS-latest.zip"
 DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"
 ARCHIVE_DIR="${SCRIPT_DIR}/cleanup_$(date +%Y%m%d-%H%M%S)"
+ARCHIVE_PATHS=(
+  "${HOME}/Downloads/${APP_NAME}.app"
+  "${HOME}/Downloads/${APP_NAME}-2.app"
+  "${HOME}/Downloads/${APP_NAME}-macOS.zip"
+  "${HOME}/Downloads/${APP_NAME}-macOS.zip.sha256"
+)
+ARCHIVED_ANY=0
 
 echo "1) Build basliyor..."
 ./build_macos_app.sh
@@ -42,13 +49,12 @@ if [ -f "${ZIP_DIST}" ]; then
 fi
 
 echo "4) Eski indirilen kopyalar arsivleniyor..."
-mkdir -p "${ARCHIVE_DIR}"
-for path in \
-  "${HOME}/Downloads/${APP_NAME}.app" \
-  "${HOME}/Downloads/${APP_NAME}-2.app" \
-  "${HOME}/Downloads/${APP_NAME}-macOS.zip" \
-  "${HOME}/Downloads/${APP_NAME}-macOS.zip.sha256"; do
+for path in "${ARCHIVE_PATHS[@]}"; do
   if [ -e "${path}" ]; then
+    if [ "${ARCHIVED_ANY}" -eq 0 ]; then
+      mkdir -p "${ARCHIVE_DIR}"
+      ARCHIVED_ANY=1
+    fi
     mv "${path}" "${ARCHIVE_DIR}/"
   fi
 done
@@ -66,4 +72,8 @@ fi
 if [ -f "${DESKTOP_ZIP_SHA}" ]; then
   echo "Masaustu SHA256: ${DESKTOP_ZIP_SHA}"
 fi
-echo "Arsivlenen eski dosyalar: ${ARCHIVE_DIR}"
+if [ "${ARCHIVED_ANY}" -eq 1 ]; then
+  echo "Arsivlenen eski dosyalar: ${ARCHIVE_DIR}"
+else
+  echo "Arsivlenen eski dosyalar: yok"
+fi

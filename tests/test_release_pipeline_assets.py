@@ -107,7 +107,11 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"', content)
         self.assertIn('if [ -f "${DESKTOP_ZIP_SHA}" ]; then', content)
         self.assertIn('echo "Masaustu SHA256: ${DESKTOP_ZIP_SHA}"', content)
+        self.assertIn('ARCHIVE_PATHS=(', content)
         self.assertIn('"${HOME}/Downloads/${APP_NAME}-macOS.zip.sha256"', content)
+        self.assertIn('if [ "${ARCHIVED_ANY}" -eq 0 ]; then', content)
+        self.assertIn('mkdir -p "${ARCHIVE_DIR}"', content)
+        self.assertIn('echo "Arsivlenen eski dosyalar: yok"', content)
 
     def test_spec_declares_microphone_usage_description(self) -> None:
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
