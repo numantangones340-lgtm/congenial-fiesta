@@ -36,6 +36,11 @@ fi
 
 python3 "${SCRIPT_DIR}/scripts/write_sha256.py" "${ZIP_DIST}"
 
+if [ ! -f "${ZIP_SHA_DIST}" ]; then
+  echo "HATA: Build sonrasi checksum bulunamadi: ${ZIP_SHA_DIST}"
+  exit 1
+fi
+
 echo "2) Uygulama kurulum klasoru hazirlaniyor..."
 mkdir -p "${APP_INSTALL_DIR}"
 rm -rf "${APP_INSTALL_PATH}"
@@ -45,9 +50,7 @@ xattr -dr com.apple.quarantine "${APP_INSTALL_PATH}" >/dev/null 2>&1 || true
 echo "3) Masaustune son zip kopyalaniyor..."
 cp -f "${ZIP_DIST}" "${DESKTOP_ZIP}"
 xattr -d com.apple.quarantine "${DESKTOP_ZIP}" >/dev/null 2>&1 || true
-if [ -f "${ZIP_SHA_DIST}" ]; then
-  cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"
-fi
+cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"
 
 echo "4) Eski indirilen kopyalar arsivleniyor..."
 for path in "${ARCHIVE_PATHS[@]}"; do
