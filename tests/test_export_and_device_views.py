@@ -122,6 +122,8 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_recovery_note_path = None
         recorder.last_preparation_summary_path = None
         recorder.last_share_package_dir = None
+        recorder.copy_last_take_notes_button = mock.Mock()
+        recorder.copy_last_take_notes_path_button = mock.Mock()
         recorder.copy_last_recovery_note_button = mock.Mock()
         recorder.copy_last_recovery_note_path_button = mock.Mock()
         recorder.open_last_recovery_note_button = mock.Mock()
@@ -665,6 +667,14 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         self.assertEqual(recorder.status_messages[-1], "Take notu yok.")
 
+    def test_copy_last_take_notes_to_clipboard_handles_missing_file(self) -> None:
+        recorder = self.make_app()
+        recorder.last_take_notes_path = None
+
+        recorder.copy_last_take_notes_to_clipboard()
+
+        self.assertEqual(recorder.status_messages[-1], "Take notu yok.")
+
     def test_clear_backing_selection_returns_to_microphone_mode(self) -> None:
         recorder = self.make_app()
         recorder.backing_file = Path("/tmp/backing.wav")
@@ -1186,6 +1196,34 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", "-R", str(note_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], "Take notu Finder'da seçildi: take_notes.txt")
+
+    def test_copy_last_take_notes_to_clipboard_reads_and_copies_content(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            note_path = Path(tmpdir) / "take_notes.txt"
+            note_path.write_text("take note", encoding="utf-8")
+            recorder.last_take_notes_path = note_path
+
+            recorder.copy_last_take_notes_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("take note")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Take notu panoya alındı: take_notes.txt")
+
+    def test_copy_last_take_notes_path_to_clipboard_copies_existing_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            note_path = Path(tmpdir) / "take_notes.txt"
+            note_path.write_text("note", encoding="utf-8")
+            recorder.last_take_notes_path = note_path
+
+            recorder.copy_last_take_notes_path_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with(str(note_path))
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Take notu yolu panoya alındı: take_notes.txt")
 
     def test_open_last_session_summary_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()

@@ -2102,6 +2102,22 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_take_notes_button = Button(
+            recent_copy_buttons,
+            text="Take Notunu Kopyala",
+            command=self.copy_last_take_notes_to_clipboard,
+            bg="#9b59b6",
+            fg="white",
+            state="disabled",
+        )
+        self.copy_last_take_notes_path_button = Button(
+            recent_copy_buttons,
+            text="Take Yolu Kopyala",
+            command=self.copy_last_take_notes_path_to_clipboard,
+            bg="#6c5ce7",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_brief_button = Button(
             recent_copy_buttons,
             text="Kısa Rapor Kopyala",
@@ -2172,6 +2188,8 @@ class GuitarAmpRecorderApp:
                 self.copy_last_export_path_button,
                 self.copy_last_summary_button,
                 self.copy_last_summary_path_button,
+                self.copy_last_take_notes_button,
+                self.copy_last_take_notes_path_button,
                 self.copy_last_brief_button,
                 self.export_last_brief_button,
                 self.copy_last_brief_path_button,
@@ -2187,6 +2205,8 @@ class GuitarAmpRecorderApp:
             (self.copy_last_export_path_button, "primary"),
             (self.copy_last_summary_button, "accent"),
             (self.copy_last_summary_path_button, "accent"),
+            (self.copy_last_take_notes_button, "accent"),
+            (self.copy_last_take_notes_path_button, "accent"),
             (self.copy_last_brief_button, "success"),
             (self.export_last_brief_button, "success"),
             (self.copy_last_brief_path_button, "accent"),
@@ -6573,6 +6593,30 @@ class GuitarAmpRecorderApp:
         except Exception as exc:
             self.set_status(f"Take notu açılamadı: {exc}")
 
+    def copy_last_take_notes_to_clipboard(self) -> None:
+        if self.last_take_notes_path is None or not self.last_take_notes_path.exists():
+            self.set_status(self.missing_item_status("Take notu"))
+            return
+        try:
+            content = self.last_take_notes_path.read_text(encoding="utf-8")
+            self.copy_text_to_clipboard(
+                content,
+                self.copied_item_status("Take notu", self.last_take_notes_path.name),
+                "Take notu kopyalanamadı",
+            )
+        except Exception as exc:
+            self.set_status(f"Take notu kopyalanamadı: {exc}")
+
+    def copy_last_take_notes_path_to_clipboard(self) -> None:
+        if self.last_take_notes_path is None or not self.last_take_notes_path.exists():
+            self.set_status(self.missing_item_status("Take notu"))
+            return
+        self.copy_text_to_clipboard(
+            str(self.last_take_notes_path),
+            self.copied_item_status("Take notu yolu", self.last_take_notes_path.name),
+            "Take notu yolu kopyalanamadı",
+        )
+
     def copy_last_session_summary_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
             self.set_status(self.missing_item_status("Özet"))
@@ -7178,6 +7222,8 @@ class GuitarAmpRecorderApp:
             "open_last_summary_button",
             "copy_last_summary_button",
             "copy_last_summary_path_button",
+            "copy_last_take_notes_button",
+            "copy_last_take_notes_path_button",
             "copy_last_brief_button",
             "export_last_brief_button",
             "copy_last_brief_path_button",
@@ -7257,8 +7303,12 @@ class GuitarAmpRecorderApp:
                 self.open_last_brief_button.configure(state="disabled")
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
                 self.open_last_take_notes_button.configure(state="normal")
+                self.copy_last_take_notes_button.configure(state="normal")
+                self.copy_last_take_notes_path_button.configure(state="normal")
             else:
                 self.open_last_take_notes_button.configure(state="disabled")
+                self.copy_last_take_notes_button.configure(state="disabled")
+                self.copy_last_take_notes_path_button.configure(state="disabled")
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.copy_last_recovery_note_button.configure(state="normal")
                 self.copy_last_recovery_note_path_button.configure(state="normal")
