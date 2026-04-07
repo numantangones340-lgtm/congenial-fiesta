@@ -223,6 +223,7 @@ def test_release_metadata_is_version_aligned() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     release_prep = (ROOT / "docs" / "RELEASE_PREP.md").read_text(encoding="utf-8")
+    macos_checklist = (ROOT / "docs" / "MACOS_RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
 
     assert f"## [{version}]" in changelog, "CHANGELOG.md en ust surum bolumu VERSION ile uyusmuyor"
     assert f"`VERSION`: `{version}`" in release_prep, "RELEASE_PREP.md hedef surumu VERSION ile uyusmuyor"
@@ -230,6 +231,8 @@ def test_release_metadata_is_version_aligned() -> None:
     assert f"`git push origin {tag}`" in release_prep, "RELEASE_PREP.md push ornegi VERSION ile uyusmuyor"
     assert f"git tag {tag}" in readme, "README.md release tag ornegi VERSION ile uyusmuyor"
     assert f"git push origin {tag}" in readme, "README.md release push ornegi VERSION ile uyusmuyor"
+    assert "bash -n install_macos_professional.sh" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md install syntax adimini icermeli"
+    assert "./install_macos_professional.sh" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md profesyonel kurulum adimini icermeli"
 
 
 def test_app_helpers() -> None:

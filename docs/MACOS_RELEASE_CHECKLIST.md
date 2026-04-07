@@ -13,6 +13,7 @@ Bu kontrol listesi, uygulamayi baska kullanicilara dagitmadan once macOS yayin a
    - `bash -n notarize_macos_app.sh`
    - `bash -n package_macos_release.sh`
    - `bash -n release_macos_desktop.sh`
+   - `bash -n install_macos_professional.sh`
 
 ## Build ve Paketleme
 
@@ -24,6 +25,8 @@ Bu kontrol listesi, uygulamayi baska kullanicilara dagitmadan once macOS yayin a
    `./package_macos_release.sh`
 4. Tek komutta tum akis:
    `./release_macos_desktop.sh`
+5. Yerel profesyonel kurulum ve masaustu `latest` artefact kontrolu icin:
+   `./install_macos_professional.sh`
 
 ## Gercek Dagitim
 
