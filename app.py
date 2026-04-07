@@ -2118,6 +2118,22 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_preparation_button = Button(
+            recent_copy_buttons,
+            text="Hazırlığı Kopyala",
+            command=self.copy_last_preparation_summary_to_clipboard,
+            bg="#34495e",
+            fg="white",
+            state="disabled",
+        )
+        self.copy_last_preparation_path_button = Button(
+            recent_copy_buttons,
+            text="Hazırlık Yolunu Kopyala",
+            command=self.copy_preparation_summary_path_to_clipboard,
+            bg="#1f6feb",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_brief_button = Button(
             recent_copy_buttons,
             text="Kısa Rapor Kopyala",
@@ -2190,6 +2206,8 @@ class GuitarAmpRecorderApp:
                 self.copy_last_summary_path_button,
                 self.copy_last_take_notes_button,
                 self.copy_last_take_notes_path_button,
+                self.copy_last_preparation_button,
+                self.copy_last_preparation_path_button,
                 self.copy_last_brief_button,
                 self.export_last_brief_button,
                 self.copy_last_brief_path_button,
@@ -2207,6 +2225,8 @@ class GuitarAmpRecorderApp:
             (self.copy_last_summary_path_button, "accent"),
             (self.copy_last_take_notes_button, "accent"),
             (self.copy_last_take_notes_path_button, "accent"),
+            (self.copy_last_preparation_button, "secondary"),
+            (self.copy_last_preparation_path_button, "primary"),
             (self.copy_last_brief_button, "success"),
             (self.export_last_brief_button, "success"),
             (self.copy_last_brief_path_button, "accent"),
@@ -2859,6 +2879,21 @@ class GuitarAmpRecorderApp:
         if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
             return self.last_preparation_summary_path
         return self.resolve_output_dir() / "preparation_summary.txt"
+
+    def copy_last_preparation_summary_to_clipboard(self) -> None:
+        prep_path = self.current_preparation_summary_path()
+        if not prep_path.exists():
+            self.set_status(self.missing_item_status("Hazırlık dosyası"))
+            return
+        try:
+            content = prep_path.read_text(encoding="utf-8")
+            self.copy_text_to_clipboard(
+                content,
+                self.copied_item_status("Hazırlık özeti", prep_path.name),
+                "Hazırlık özeti kopyalanamadı",
+            )
+        except Exception as exc:
+            self.set_status(f"Hazırlık özeti kopyalanamadı: {exc}")
 
     def copy_preparation_summary_path_to_clipboard(self) -> None:
         prep_path = self.current_preparation_summary_path()
@@ -7224,6 +7259,8 @@ class GuitarAmpRecorderApp:
             "copy_last_summary_path_button",
             "copy_last_take_notes_button",
             "copy_last_take_notes_path_button",
+            "copy_last_preparation_button",
+            "copy_last_preparation_path_button",
             "copy_last_brief_button",
             "export_last_brief_button",
             "copy_last_brief_path_button",
@@ -7323,8 +7360,12 @@ class GuitarAmpRecorderApp:
                 self.open_last_output_dir_button.configure(state="disabled")
             if self.last_preparation_summary_path is not None and self.last_preparation_summary_path.exists():
                 self.open_last_preparation_button.configure(state="normal")
+                self.copy_last_preparation_button.configure(state="normal")
+                self.copy_last_preparation_path_button.configure(state="normal")
             else:
                 self.open_last_preparation_button.configure(state="disabled")
+                self.copy_last_preparation_button.configure(state="disabled")
+                self.copy_last_preparation_path_button.configure(state="disabled")
             self.update_reset_session_state_button_state()
             self.update_archive_last_session_button_state()
             self.update_cleanup_old_trials_button_state()
