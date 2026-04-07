@@ -87,6 +87,8 @@ pip install pyinstaller
 Üretilen uygulama:
 
 - `dist/GuitarAmpRecorder.app`
+- `dist/GuitarAmpRecorder-macOS.zip`
+- `dist/GuitarAmpRecorder-macOS.zip.sha256`
 
 ## Release Hazirligi
 

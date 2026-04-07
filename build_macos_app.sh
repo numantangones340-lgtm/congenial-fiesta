@@ -163,6 +163,8 @@ with info_path.open("wb") as fh:
 PY
 
 ditto -c -k --sequesterRsrc --keepParent "dist/${APP_NAME}.app" "dist/${APP_NAME}-macOS.zip"
+python3 scripts/write_sha256.py "dist/${APP_NAME}-macOS.zip"
 
 echo "Build tamam: dist/${APP_NAME}.app"
 echo "Arsiv: dist/${APP_NAME}-macOS.zip"
+echo "Arsiv SHA256: dist/${APP_NAME}-macOS.zip.sha256"

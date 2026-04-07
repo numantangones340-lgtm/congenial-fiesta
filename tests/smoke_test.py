@@ -144,6 +144,8 @@ def test_build_script_stamps_bundle_metadata() -> None:
         'info["CFBundleShortVersionString"] = os.environ["APP_VERSION"]',
         'info["CFBundleVersion"] = os.environ["APP_VERSION"]',
         'info["NSMicrophoneUsageDescription"] = os.environ["MIC_USAGE_TEXT"]',
+        'python3 scripts/write_sha256.py "dist/${APP_NAME}-macOS.zip"',
+        'echo "Arsiv SHA256: dist/${APP_NAME}-macOS.zip.sha256"',
     ]
     for snippet in expected_snippets:
         assert snippet in script, f"build_macos_app.sh metadata adimi eksik: {snippet}"

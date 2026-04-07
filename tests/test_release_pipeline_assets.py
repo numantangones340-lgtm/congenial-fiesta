@@ -76,6 +76,8 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('cp "${SPEC_TEMPLATE}" "${SPEC_PATH}"', content)
         self.assertIn('.venv/bin/pyinstaller --noconfirm --clean', content)
         self.assertIn('"${SPEC_PATH}"', content)
+        self.assertIn('python3 scripts/write_sha256.py "dist/${APP_NAME}-macOS.zip"', content)
+        self.assertIn('echo "Arsiv SHA256: dist/${APP_NAME}-macOS.zip.sha256"', content)
         self.assertNotIn('rm -rf build dist "${APP_NAME}.spec"', content)
 
     def test_package_script_copies_checksum_to_desktop_when_zip_copy_succeeds(self) -> None:
