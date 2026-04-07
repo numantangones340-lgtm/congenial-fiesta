@@ -7,9 +7,11 @@ cd "${SCRIPT_DIR}"
 APP_NAME="GuitarAmpRecorder"
 APP_DIST="dist/${APP_NAME}.app"
 ZIP_DIST="dist/${APP_NAME}-macOS.zip"
+ZIP_SHA_DIST="${ZIP_DIST}.sha256"
 APP_INSTALL_DIR="${HOME}/Applications"
 APP_INSTALL_PATH="${APP_INSTALL_DIR}/${APP_NAME}.app"
 DESKTOP_ZIP="${HOME}/Desktop/${APP_NAME}-macOS-latest.zip"
+DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"
 ARCHIVE_DIR="${SCRIPT_DIR}/cleanup_$(date +%Y%m%d-%H%M%S)"
 
 echo "1) Build basliyor..."
@@ -30,6 +32,9 @@ echo "3) Masaustune son zip kopyalaniyor..."
 if [ -f "${ZIP_DIST}" ]; then
   cp -f "${ZIP_DIST}" "${DESKTOP_ZIP}"
   xattr -d com.apple.quarantine "${DESKTOP_ZIP}" >/dev/null 2>&1 || true
+  if [ -f "${ZIP_SHA_DIST}" ]; then
+    cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"
+  fi
 fi
 
 echo "4) Eski indirilen kopyalar arsivleniyor..."
@@ -52,5 +57,8 @@ echo "Uygulama: ${APP_INSTALL_PATH}"
 echo "Masaustu baslatici: ${HOME}/Desktop/${APP_NAME}.command"
 if [ -f "${DESKTOP_ZIP}" ]; then
   echo "Masaustu zip: ${DESKTOP_ZIP}"
+fi
+if [ -f "${DESKTOP_ZIP_SHA}" ]; then
+  echo "Masaustu SHA256: ${DESKTOP_ZIP_SHA}"
 fi
 echo "Arsivlenen eski dosyalar: ${ARCHIVE_DIR}"

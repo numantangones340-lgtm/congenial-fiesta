@@ -40,6 +40,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
             "notarize_macos_app.sh",
             "package_macos_release.sh",
             "release_macos_desktop.sh",
+            "install_macos_professional.sh",
         ):
             result = subprocess.run(
                 ["bash", "-n", str(ROOT_DIR / name)],
@@ -96,6 +97,15 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('if [ -f "$DESKTOP_ZIP_SHA" ]; then', content)
         self.assertIn('echo "- Masaustu SHA256: $DESKTOP_ZIP_SHA"', content)
         self.assertIn('echo "- Masaustu SHA256: olusturulamadi, dist checksum hazir"', content)
+
+    def test_professional_install_script_copies_and_reports_desktop_checksum(self) -> None:
+        content = (ROOT_DIR / "install_macos_professional.sh").read_text(encoding="utf-8")
+        self.assertIn('ZIP_SHA_DIST="${ZIP_DIST}.sha256"', content)
+        self.assertIn('DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"', content)
+        self.assertIn('if [ -f "${ZIP_SHA_DIST}" ]; then', content)
+        self.assertIn('cp -f "${ZIP_SHA_DIST}" "${DESKTOP_ZIP_SHA}"', content)
+        self.assertIn('if [ -f "${DESKTOP_ZIP_SHA}" ]; then', content)
+        self.assertIn('echo "Masaustu SHA256: ${DESKTOP_ZIP_SHA}"', content)
 
     def test_spec_declares_microphone_usage_description(self) -> None:
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
