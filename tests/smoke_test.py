@@ -177,6 +177,18 @@ def test_release_script_reports_checksum_locations() -> None:
         assert snippet in script, f"release_macos_desktop.sh checksum ciktilari eksik: {snippet}"
 
 
+def test_notarize_script_cleans_temporary_zip() -> None:
+    script = (ROOT / "notarize_macos_app.sh").read_text(encoding="utf-8")
+    expected_snippets = [
+        'TMP_ZIP="$ROOT_DIR/dist/$(basename "$APP_PATH" .app)-notarize.zip"',
+        "cleanup() {",
+        'rm -f "$TMP_ZIP"',
+        "trap cleanup EXIT",
+    ]
+    for snippet in expected_snippets:
+        assert snippet in script, f"notarize_macos_app.sh gecici zip temizligi eksik: {snippet}"
+
+
 def test_release_metadata_is_version_aligned() -> None:
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     tag = f"v{version}"

@@ -80,6 +80,13 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"', content)
         self.assertIn("SHA256 de masaustune kopyalandi", content)
 
+    def test_notarize_script_cleans_temporary_zip_on_exit(self) -> None:
+        content = (ROOT_DIR / "notarize_macos_app.sh").read_text(encoding="utf-8")
+        self.assertIn('TMP_ZIP="$ROOT_DIR/dist/$(basename "$APP_PATH" .app)-notarize.zip"', content)
+        self.assertIn("cleanup() {", content)
+        self.assertIn('rm -f "$TMP_ZIP"', content)
+        self.assertIn("trap cleanup EXIT", content)
+
     def test_spec_declares_microphone_usage_description(self) -> None:
         content = (ROOT_DIR / "GuitarAmpRecorder.spec").read_text(encoding="utf-8")
         self.assertIn("NSMicrophoneUsageDescription", content)

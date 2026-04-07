@@ -7,6 +7,12 @@ PROFILE_NAME="${2:-}"
 TEAM_ID="${3:-}"
 TMP_ZIP="$ROOT_DIR/dist/$(basename "$APP_PATH" .app)-notarize.zip"
 
+cleanup() {
+  rm -f "$TMP_ZIP"
+}
+
+trap cleanup EXIT
+
 if [ ! -d "$APP_PATH" ]; then
   echo "HATA: Uygulama paketi bulunamadi: $APP_PATH" >&2
   exit 1
