@@ -1058,6 +1058,7 @@ class GuitarAmpRecorderApp:
         self.share_quick_zip_text = StringVar(value="ZIP yok")
         self.share_ready_text = StringVar(value="Hazırlık sürüyor")
         self.share_next_step_text = StringVar(value="Öneri: Son kaydı seçip paylaşım akışını başlatın.")
+        self.share_next_step_button_text = StringVar(value="Sonraki Adımı Uygula")
         self.limiter_enabled = StringVar(value="Açık")
         self.record_progress_text = StringVar(value="Kayıt durumu: beklemede")
         self.progress_subtitle_text = StringVar(value="Kayıt durumu hazırlanıyor...")
@@ -5466,6 +5467,26 @@ class GuitarAmpRecorderApp:
             return "Öneri: Paketi ZIP Yap ile gönderime hazır arşivi çıkarın."
         return "Öneri: YouTube Yükle ile yükleme sayfasını açıp hazır dosyaları kullanın."
 
+    def share_next_step_action(self) -> tuple[str, object]:
+        audio_path = self.current_share_audio_path()
+        if audio_path is None or not audio_path.exists():
+            return ("Son Kaydı Kullan", self.use_last_audio_for_share)
+        image_value = str(self.share_image_path.get()).strip()
+        image_path = Path(image_value) if image_value else None
+        if image_path is None or not image_path.exists():
+            return ("Görsel Seç", self.select_share_image)
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            return ("YouTube Paketi Yaz", self.export_share_package)
+        zip_path = self.share_package_zip_path(package_dir)
+        if not zip_path.exists():
+            return ("Paketi ZIP Yap", self.export_share_package_zip)
+        return ("YouTube Yükle", self.open_youtube_upload_page)
+
+    def apply_share_next_step_action(self) -> None:
+        _, action = self.share_next_step_action()
+        action()
+
     def share_ready_badge_config(self) -> tuple[str, str, str]:
         audio_path = self.current_share_audio_path()
         image_value = str(self.share_image_path.get()).strip()
@@ -5565,6 +5586,8 @@ class GuitarAmpRecorderApp:
                     pass
         if hasattr(self, "share_next_step_text"):
             self.share_next_step_text.set(self.share_next_step_hint())
+        if hasattr(self, "share_next_step_button_text"):
+            self.share_next_step_button_text.set(self.share_next_step_action()[0])
         ready_text, ready_bg, ready_fg = self.share_ready_badge_config()
         if hasattr(self, "share_ready_text"):
             self.share_ready_text.set(ready_text)
@@ -6026,9 +6049,20 @@ class GuitarAmpRecorderApp:
                 pady=5,
             )
             self.share_ready_label.grid(row=11, column=0, columnspan=4, sticky="w", pady=(0, 8))
-            Label(container, textvariable=self.share_next_step_text, bg="#101418", fg="#fbbf24", justify="left", wraplength=700).grid(
-                row=12, column=0, columnspan=4, sticky="w", pady=(0, 8)
+            next_step_row = Frame(container, bg="#101418")
+            next_step_row.grid(row=12, column=0, columnspan=4, sticky="w", pady=(0, 8))
+            Label(next_step_row, textvariable=self.share_next_step_text, bg="#101418", fg="#fbbf24", justify="left", wraplength=560).pack(
+                side="left"
             )
+            self.share_next_step_button = Button(
+                next_step_row,
+                textvariable=self.share_next_step_button_text,
+                command=self.apply_share_next_step_action,
+                bg="#f59e0b",
+                fg="white",
+            )
+            self.apply_button_style(self.share_next_step_button, role="warning")
+            self.share_next_step_button.pack(side="left", padx=(12, 0))
             build_share_action_row(
                 13,
                 "Şablonlar",
