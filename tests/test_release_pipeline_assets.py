@@ -106,6 +106,10 @@ class ReleasePipelineAssetTests(unittest.TestCase):
     def test_release_script_reports_desktop_assets_only_when_present(self) -> None:
         content = (ROOT_DIR / "release_macos_desktop.sh").read_text(encoding="utf-8")
         self.assertIn('DESKTOP_ZIP="$HOME/Desktop/GuitarAmpRecorder-macOS.zip"', content)
+        self.assertIn('if [ ! -f "$ZIP_PATH" ]; then', content)
+        self.assertIn('echo "HATA: Release zip bulunamadi: $ZIP_PATH" >&2', content)
+        self.assertIn('if [ ! -f "$ZIP_SHA_PATH" ]; then', content)
+        self.assertIn('echo "HATA: Release checksum bulunamadi: $ZIP_SHA_PATH" >&2', content)
         self.assertIn('if [ -f "$DESKTOP_ZIP" ]; then', content)
         self.assertIn('echo "- Masaustu kopyasi: $DESKTOP_ZIP"', content)
         self.assertIn('echo "- Masaustu kopyasi: olusturulamadi, dist zip hazir"', content)

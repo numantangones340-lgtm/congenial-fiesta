@@ -35,6 +35,16 @@ fi
 
 ./package_macos_release.sh
 
+if [ ! -f "$ZIP_PATH" ]; then
+  echo "HATA: Release zip bulunamadi: $ZIP_PATH" >&2
+  exit 1
+fi
+
+if [ ! -f "$ZIP_SHA_PATH" ]; then
+  echo "HATA: Release checksum bulunamadi: $ZIP_SHA_PATH" >&2
+  exit 1
+fi
+
 echo "Release hazir:"
 echo "- App: $APP_PATH"
 echo "- Zip: $ZIP_PATH"
