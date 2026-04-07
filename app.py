@@ -2152,6 +2152,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_take_notes_name_button = Button(
+            recent_copy_buttons,
+            text="Take Adını Kopyala",
+            command=self.copy_last_take_notes_name_to_clipboard,
+            bg="#475569",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_preparation_button = Button(
             recent_copy_buttons,
             text="Hazırlığı Kopyala",
@@ -2243,6 +2251,7 @@ class GuitarAmpRecorderApp:
                 self.copy_last_summary_name_button,
                 self.copy_last_take_notes_button,
                 self.copy_last_take_notes_path_button,
+                self.copy_last_take_notes_name_button,
                 self.copy_last_preparation_button,
                 self.copy_last_preparation_path_button,
                 self.copy_last_brief_button,
@@ -2265,6 +2274,7 @@ class GuitarAmpRecorderApp:
             (self.copy_last_summary_name_button, "secondary"),
             (self.copy_last_take_notes_button, "accent"),
             (self.copy_last_take_notes_path_button, "accent"),
+            (self.copy_last_take_notes_name_button, "secondary"),
             (self.copy_last_preparation_button, "secondary"),
             (self.copy_last_preparation_path_button, "primary"),
             (self.copy_last_brief_button, "success"),
@@ -6714,6 +6724,16 @@ class GuitarAmpRecorderApp:
             "Take notu yolu kopyalanamadı",
         )
 
+    def copy_last_take_notes_name_to_clipboard(self) -> None:
+        if self.last_take_notes_path is None or not self.last_take_notes_path.exists():
+            self.set_status(self.missing_item_status("Take notu"))
+            return
+        self.copy_text_to_clipboard(
+            self.last_take_notes_path.name,
+            self.copied_item_status("Take notu adı", self.last_take_notes_path.name),
+            "Take notu adı kopyalanamadı",
+        )
+
     def copy_last_session_summary_to_clipboard(self) -> None:
         if self.last_summary_path is None or not self.last_summary_path.exists():
             self.set_status(self.missing_item_status("Özet"))
@@ -7345,6 +7365,7 @@ class GuitarAmpRecorderApp:
             "copy_last_summary_name_button",
             "copy_last_take_notes_button",
             "copy_last_take_notes_path_button",
+            "copy_last_take_notes_name_button",
             "copy_last_preparation_button",
             "copy_last_preparation_path_button",
             "copy_last_brief_button",
@@ -7432,10 +7453,12 @@ class GuitarAmpRecorderApp:
                 self.open_last_take_notes_button.configure(state="normal")
                 self.copy_last_take_notes_button.configure(state="normal")
                 self.copy_last_take_notes_path_button.configure(state="normal")
+                self.copy_last_take_notes_name_button.configure(state="normal")
             else:
                 self.open_last_take_notes_button.configure(state="disabled")
                 self.copy_last_take_notes_button.configure(state="disabled")
                 self.copy_last_take_notes_path_button.configure(state="disabled")
+                self.copy_last_take_notes_name_button.configure(state="disabled")
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.copy_last_recovery_note_button.configure(state="normal")
                 self.copy_last_recovery_note_path_button.configure(state="normal")
