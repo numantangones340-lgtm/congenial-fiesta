@@ -5380,6 +5380,35 @@ class GuitarAmpRecorderApp:
         self.update_share_meta_text()
         self.set_status(f"Paylaşım özeti yazıldı: {summary_path}")
 
+    def write_share_detail_summary_file(self, package_dir: Path) -> Path:
+        detail_path = package_dir / "paylasim_detayi.txt"
+        previous_content = None
+        for _ in range(3):
+            current_content = self.share_detail_summary().strip()
+            detail_path.write_text(current_content, encoding="utf-8")
+            if current_content == previous_content:
+                break
+            previous_content = current_content
+        return detail_path
+
+    def write_share_detail_summary(self) -> None:
+        audio_path = self.current_share_audio_path()
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            if audio_path is None or not audio_path.exists():
+                self.set_status("Yazılacak paylaşım detayı için ses dosyası yok.")
+                return
+            package_dir = self.share_package_dir(audio_path)
+            package_dir.mkdir(parents=True, exist_ok=True)
+        self.last_share_package_dir = package_dir
+        summary = self.share_detail_summary().strip()
+        if not summary:
+            self.set_status("Yazılacak paylaşım detayı yok.")
+            return
+        detail_path = self.write_share_detail_summary_file(package_dir)
+        self.update_share_meta_text()
+        self.set_status(f"Paylaşım detayı yazıldı: {detail_path}")
+
     def open_share_meta_summary_in_finder(self) -> None:
         package_dir = self.last_share_package_dir
         if package_dir is None or not package_dir.exists():
@@ -5394,6 +5423,21 @@ class GuitarAmpRecorderApp:
             self.set_status(f"Paylaşım özeti açıldı: {summary_path.name}")
         except Exception as exc:
             self.set_status(f"Paylaşım özeti açılamadı: {exc}")
+
+    def open_share_detail_summary_in_finder(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Paylaşım detayı yok.")
+            return
+        detail_path = package_dir / "paylasim_detayi.txt"
+        if not detail_path.exists():
+            self.set_status("Paylaşım detayı yok.")
+            return
+        try:
+            subprocess.run(["open", "-R", str(detail_path)], check=False)
+            self.set_status(f"Paylaşım detayı açıldı: {detail_path.name}")
+        except Exception as exc:
+            self.set_status(f"Paylaşım detayı açılamadı: {exc}")
 
     def open_share_upload_checklist_in_finder(self) -> None:
         package_dir = self.last_share_package_dir
@@ -5926,6 +5970,7 @@ class GuitarAmpRecorderApp:
                 self.build_share_upload_checklist_text(audio_target.name, image_target.name),
                 encoding="utf-8",
             )
+            self.write_share_detail_summary_file(package_dir)
             self.update_share_meta_text()
             return package_dir
         except Exception as exc:
@@ -6217,7 +6262,9 @@ class GuitarAmpRecorderApp:
                     ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
                     ("Detayı Kopyala", self.copy_share_detail_summary, "secondary", "#334155"),
                     ("Özeti Yaz", self.write_share_meta_summary, "secondary", "#475569"),
+                    ("Detayı Yaz", self.write_share_detail_summary, "secondary", "#475569"),
                     ("Özeti Aç", self.open_share_meta_summary_in_finder, "primary", "#1f6feb"),
+                    ("Detayı Aç", self.open_share_detail_summary_in_finder, "primary", "#1f6feb"),
                     ("Sırayı Kopyala", self.copy_share_upload_checklist, "secondary", "#475569"),
                     ("Sırayı Aç", self.open_share_upload_checklist_in_finder, "primary", "#1f6feb"),
                     ("Rehberi Kopyala", self.copy_share_guide_text, "secondary", "#475569"),

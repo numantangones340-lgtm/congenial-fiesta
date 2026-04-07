@@ -153,6 +153,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         (package_dir / "youtube_yukleme_notu.txt").write_text("Not", encoding="utf-8")
         (package_dir / "paylasim_rehberi.txt").write_text("Rehber", encoding="utf-8")
         (package_dir / "paylasim_ozeti.txt").write_text("Ozet", encoding="utf-8")
+        (package_dir / "paylasim_detayi.txt").write_text("Detay", encoding="utf-8")
         (package_dir / "youtube_yukleme_sirasi.txt").write_text("Sira", encoding="utf-8")
 
     def set_tree_mtime(self, root: Path, timestamp: int) -> None:
@@ -1187,6 +1188,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
                 "Ses: take_001.mp3 | Kapak: cover.jpg | Paket: take_001_youtube_paketi",
             )
             self.assertIn(
+                "Sonraki adım: Paketi ZIP Yap",
+                (package_dir / "paylasim_detayi.txt").read_text(encoding="utf-8"),
+            )
+            self.assertIn(
                 "1. youtube_baslik.txt dosyasındaki başlığı kontrol edin ve kopyalayın.",
                 (package_dir / "youtube_yukleme_sirasi.txt").read_text(encoding="utf-8"),
             )
@@ -1634,6 +1639,28 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertEqual(recorder.last_share_package_dir, summary_path.parent)
             self.assertEqual(recorder.status_messages[-1], f"Paylaşım özeti yazıldı: {summary_path}")
 
+    def test_write_share_detail_summary_writes_text_file_into_share_package(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir) / "out"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            audio_path = output_dir / "gitar_take.mp3"
+            image_path = output_dir / "kapak.jpg"
+            audio_path.write_text("audio", encoding="utf-8")
+            image_path.write_text("image", encoding="utf-8")
+            recorder.last_export_path = audio_path
+            recorder.share_image_path.set(str(image_path))
+            recorder.output_dir.set(str(output_dir))
+            recorder.resolve_output_dir = mock.Mock(return_value=output_dir)
+
+            recorder.write_share_detail_summary()
+
+            detail_path = output_dir / "_paylasim" / "gitar_take_youtube_paketi" / "paylasim_detayi.txt"
+            self.assertTrue(detail_path.exists())
+            self.assertEqual(detail_path.read_text(encoding="utf-8"), recorder.share_detail_summary())
+            self.assertEqual(recorder.last_share_package_dir, detail_path.parent)
+            self.assertEqual(recorder.status_messages[-1], f"Paylaşım detayı yazıldı: {detail_path}")
+
     def test_open_share_meta_summary_in_finder_reveals_existing_summary(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1648,6 +1675,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
 
         run_mock.assert_called_once_with(["open", "-R", str(summary_path)], check=False)
         self.assertEqual(recorder.status_messages[-1], f"Paylaşım özeti açıldı: {summary_path.name}")
+
+    def test_open_share_detail_summary_in_finder_reveals_existing_summary(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            detail_path = package_dir / "paylasim_detayi.txt"
+            detail_path.write_text("detail", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            with mock.patch.object(app.subprocess, "run") as run_mock:
+                recorder.open_share_detail_summary_in_finder()
+
+        run_mock.assert_called_once_with(["open", "-R", str(detail_path)], check=False)
+        self.assertEqual(recorder.status_messages[-1], f"Paylaşım detayı açıldı: {detail_path.name}")
 
     def test_copy_share_upload_checklist_copies_existing_checklist(self) -> None:
         recorder = self.make_app()
