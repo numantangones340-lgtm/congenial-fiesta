@@ -40,6 +40,7 @@ if [ ! -f "$ZIP_SHA_PATH" ]; then
 fi
 
 echo "Hazir zip: $ZIP_PATH"
+echo "Hazir checksum: $ZIP_SHA_PATH"
 if cp "$ZIP_PATH" "$DESKTOP_ZIP" 2>/dev/null; then
   echo "Masaustune kopyalandi: $DESKTOP_ZIP"
   if cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA" 2>/dev/null; then

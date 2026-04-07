@@ -92,6 +92,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn('ZIP_SHA_PATH="${ZIP_PATH}.sha256"', content)
         self.assertIn('if [ ! -f "$ZIP_SHA_PATH" ]; then', content)
         self.assertIn('echo "HATA: Checksum olusturulamadi: $ZIP_SHA_PATH" >&2', content)
+        self.assertIn('echo "Hazir checksum: $ZIP_SHA_PATH"', content)
         self.assertIn('DESKTOP_ZIP_SHA="${DESKTOP_ZIP}.sha256"', content)
         self.assertIn('cp "$ZIP_SHA_PATH" "$DESKTOP_ZIP_SHA"', content)
         self.assertIn("SHA256 de masaustune kopyalandi", content)
