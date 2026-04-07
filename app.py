@@ -2176,6 +2176,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_preparation_name_button = Button(
+            recent_copy_buttons,
+            text="Hazırlık Adını Kopyala",
+            command=self.copy_last_preparation_summary_name_to_clipboard,
+            bg="#475569",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_brief_button = Button(
             recent_copy_buttons,
             text="Kısa Rapor Kopyala",
@@ -2254,6 +2262,7 @@ class GuitarAmpRecorderApp:
                 self.copy_last_take_notes_name_button,
                 self.copy_last_preparation_button,
                 self.copy_last_preparation_path_button,
+                self.copy_last_preparation_name_button,
                 self.copy_last_brief_button,
                 self.export_last_brief_button,
                 self.copy_last_brief_path_button,
@@ -2277,6 +2286,7 @@ class GuitarAmpRecorderApp:
             (self.copy_last_take_notes_name_button, "secondary"),
             (self.copy_last_preparation_button, "secondary"),
             (self.copy_last_preparation_path_button, "primary"),
+            (self.copy_last_preparation_name_button, "secondary"),
             (self.copy_last_brief_button, "success"),
             (self.export_last_brief_button, "success"),
             (self.copy_last_brief_path_button, "accent"),
@@ -2954,6 +2964,17 @@ class GuitarAmpRecorderApp:
             str(prep_path),
             self.copied_item_status("Hazırlık yolu", prep_path.name),
             "Hazırlık yolu kopyalanamadı",
+        )
+
+    def copy_last_preparation_summary_name_to_clipboard(self) -> None:
+        prep_path = self.current_preparation_summary_path()
+        if not prep_path.exists():
+            self.set_status(self.missing_item_status("Hazırlık dosyası"))
+            return
+        self.copy_text_to_clipboard(
+            prep_path.name,
+            self.copied_item_status("Hazırlık adı", prep_path.name),
+            "Hazırlık adı kopyalanamadı",
         )
 
     def open_preparation_summary_in_finder(self) -> None:
@@ -7368,6 +7389,7 @@ class GuitarAmpRecorderApp:
             "copy_last_take_notes_name_button",
             "copy_last_preparation_button",
             "copy_last_preparation_path_button",
+            "copy_last_preparation_name_button",
             "copy_last_brief_button",
             "export_last_brief_button",
             "copy_last_brief_path_button",
@@ -7477,10 +7499,12 @@ class GuitarAmpRecorderApp:
                 self.open_last_preparation_button.configure(state="normal")
                 self.copy_last_preparation_button.configure(state="normal")
                 self.copy_last_preparation_path_button.configure(state="normal")
+                self.copy_last_preparation_name_button.configure(state="normal")
             else:
                 self.open_last_preparation_button.configure(state="disabled")
                 self.copy_last_preparation_button.configure(state="disabled")
                 self.copy_last_preparation_path_button.configure(state="disabled")
+                self.copy_last_preparation_name_button.configure(state="disabled")
             self.update_reset_session_state_button_state()
             self.update_archive_last_session_button_state()
             self.update_cleanup_old_trials_button_state()
