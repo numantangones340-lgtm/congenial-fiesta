@@ -14,12 +14,13 @@ Bu kontrol listesi, uygulamayi Windows kullanicilarina dagitmadan once indirme, 
 ## Ilk Acilis
 
 1. `GuitarAmpRecorder-Windows.zip` dosyasini indirin.
-2. ZIP dosyasini acin.
-3. Uygulamayi calistirin.
-4. Windows guvenlik uyarisi cikarsa:
+2. Isterseniz `GuitarAmpRecorder-Windows.zip.sha256` ile indirilen ZIP dosyasini dogrulayin.
+3. ZIP dosyasini acin.
+4. Uygulamayi calistirin.
+5. Windows guvenlik uyarisi cikarsa:
    - `Daha fazla bilgi`
    - `Yine de calistir`
-5. `Mikrofon/Ses Karti Testi (5 sn)` ile kisa test yapin.
+6. `Mikrofon/Ses Karti Testi (5 sn)` ile kisa test yapin.
 
 ## Kayit Kontrolu
 

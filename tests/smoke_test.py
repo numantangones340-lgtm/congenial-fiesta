@@ -257,6 +257,7 @@ def test_release_metadata_is_version_aligned() -> None:
     assert "~/Desktop/GuitarAmpRecorder-macOS-latest.zip.sha256" in macos_checklist, "MACOS_RELEASE_CHECKLIST.md latest checksum cikti bilgisini icermeli"
     assert "GuitarAmpRecorder-Windows.zip" in windows_checklist, "WINDOWS_RELEASE_CHECKLIST.md Windows zip bilgisini icermeli"
     assert "GuitarAmpRecorder-Windows.zip.sha256" in windows_checklist, "WINDOWS_RELEASE_CHECKLIST.md Windows checksum bilgisini icermeli"
+    assert "indirilen ZIP dosyasini dogrulayin" in windows_checklist, "WINDOWS_RELEASE_CHECKLIST.md checksum dogrulama adimini icermeli"
 
 
 def test_app_helpers() -> None:

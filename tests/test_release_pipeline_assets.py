@@ -50,6 +50,7 @@ class ReleasePipelineAssetTests(unittest.TestCase):
         self.assertIn("GuitarAmpRecorder-Windows.zip.sha256", release_prep)
         self.assertIn("GuitarAmpRecorder-Windows.zip", windows_checklist)
         self.assertIn("GuitarAmpRecorder-Windows.zip.sha256", windows_checklist)
+        self.assertIn("indirilen ZIP dosyasini dogrulayin", windows_checklist)
 
     def test_release_scripts_have_valid_bash_syntax(self) -> None:
         for name in (
