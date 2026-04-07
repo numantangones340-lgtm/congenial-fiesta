@@ -114,6 +114,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.mp3_quality_menu = mock.Mock()
         recorder.input_device_menu = FakeOptionMenu()
         recorder.output_device_menu = FakeOptionMenu()
+        recorder.copy_visible_recent_output_name_button = mock.Mock()
         recorder.backing_file = None
         recorder.last_output_dir = None
         recorder.last_export_path = None
@@ -1210,6 +1211,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_append.assert_called_once_with(str(output_path))
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Görünen çıktı yolu panoya alındı: take_new.mp3")
+
+    def test_copy_visible_recent_output_name_to_clipboard_copies_filtered_output_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "take_new.mp3"
+            output_path.write_text("audio", encoding="utf-8")
+            recorder.current_filtered_recent_output_file = mock.Mock(return_value=output_path)
+
+            recorder.copy_visible_recent_output_name_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("take_new.mp3")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Görünen çıktı adı panoya alındı: take_new.mp3")
 
     def test_open_last_export_in_finder_selects_file_and_updates_status(self) -> None:
         recorder = self.make_app()
