@@ -125,6 +125,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.last_share_package_dir = None
         recorder.copy_last_export_name_button = mock.Mock()
         recorder.copy_last_output_dir_path_button = mock.Mock()
+        recorder.copy_last_summary_name_button = mock.Mock()
         recorder.copy_last_take_notes_button = mock.Mock()
         recorder.copy_last_take_notes_path_button = mock.Mock()
         recorder.copy_last_preparation_button = mock.Mock()
@@ -783,6 +784,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_append.assert_called_once_with(str(summary_path))
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Özet yolu panoya alındı: session_summary.json")
+
+    def test_copy_last_session_summary_name_to_clipboard_copies_file_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.copy_last_session_summary_name_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("session_summary.json")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Özet adı panoya alındı: session_summary.json")
 
     def test_copy_last_session_brief_to_clipboard_formats_human_readable_report(self) -> None:
         recorder = self.make_app()

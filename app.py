@@ -2128,6 +2128,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_summary_name_button = Button(
+            recent_copy_buttons,
+            text="Özet Adını Kopyala",
+            command=self.copy_last_session_summary_name_to_clipboard,
+            bg="#475569",
+            fg="white",
+            state="disabled",
+        )
         self.copy_last_take_notes_button = Button(
             recent_copy_buttons,
             text="Take Notunu Kopyala",
@@ -2232,6 +2240,7 @@ class GuitarAmpRecorderApp:
                 self.copy_last_output_dir_path_button,
                 self.copy_last_summary_button,
                 self.copy_last_summary_path_button,
+                self.copy_last_summary_name_button,
                 self.copy_last_take_notes_button,
                 self.copy_last_take_notes_path_button,
                 self.copy_last_preparation_button,
@@ -2253,6 +2262,7 @@ class GuitarAmpRecorderApp:
             (self.copy_last_output_dir_path_button, "secondary"),
             (self.copy_last_summary_button, "accent"),
             (self.copy_last_summary_path_button, "accent"),
+            (self.copy_last_summary_name_button, "secondary"),
             (self.copy_last_take_notes_button, "accent"),
             (self.copy_last_take_notes_path_button, "accent"),
             (self.copy_last_preparation_button, "secondary"),
@@ -6748,6 +6758,16 @@ class GuitarAmpRecorderApp:
             "Özet yolu kopyalanamadı",
         )
 
+    def copy_last_session_summary_name_to_clipboard(self) -> None:
+        if self.last_summary_path is None or not self.last_summary_path.exists():
+            self.set_status(self.missing_item_status("Özet"))
+            return
+        self.copy_text_to_clipboard(
+            self.last_summary_path.name,
+            self.copied_item_status("Özet adı", self.last_summary_path.name),
+            "Özet adı kopyalanamadı",
+        )
+
     def build_session_brief_text(self, summary: dict) -> str:
         generated_files = summary.get("generated_files", [])
         recording = summary.get("recording", {})
@@ -7322,6 +7342,7 @@ class GuitarAmpRecorderApp:
             "open_last_summary_button",
             "copy_last_summary_button",
             "copy_last_summary_path_button",
+            "copy_last_summary_name_button",
             "copy_last_take_notes_button",
             "copy_last_take_notes_path_button",
             "copy_last_preparation_button",
@@ -7390,12 +7411,14 @@ class GuitarAmpRecorderApp:
                 self.open_last_summary_button.configure(state="normal")
                 self.copy_last_summary_button.configure(state="normal")
                 self.copy_last_summary_path_button.configure(state="normal")
+                self.copy_last_summary_name_button.configure(state="normal")
                 self.copy_last_brief_button.configure(state="normal")
                 self.export_last_brief_button.configure(state="normal")
             else:
                 self.open_last_summary_button.configure(state="disabled")
                 self.copy_last_summary_button.configure(state="disabled")
                 self.copy_last_summary_path_button.configure(state="disabled")
+                self.copy_last_summary_name_button.configure(state="disabled")
                 self.copy_last_brief_button.configure(state="disabled")
                 self.export_last_brief_button.configure(state="disabled")
             brief_path = self.last_session_brief_path()
