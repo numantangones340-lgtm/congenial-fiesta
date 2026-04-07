@@ -1403,6 +1403,21 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             self.assertIn("Görünürlük: Herkese Açık", copied)
             self.assertEqual(recorder.status_messages[-1], "YouTube yükleme notu panoya alındı")
 
+    def test_copy_share_upload_note_path_copies_existing_note_path(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            package_dir = Path(tmpdir) / "_paylasim" / "gitar_take_youtube_paketi"
+            package_dir.mkdir(parents=True, exist_ok=True)
+            note_path = package_dir / "youtube_yukleme_notu.txt"
+            note_path.write_text("Kategori: Music", encoding="utf-8")
+            recorder.last_share_package_dir = package_dir
+
+            recorder.copy_share_upload_note_path()
+
+            recorder.root.clipboard_clear.assert_called_once()
+            recorder.root.clipboard_append.assert_called_once_with(str(note_path))
+            self.assertEqual(recorder.status_messages[-1], "YouTube yükleme notu yolu panoya alındı")
+
     def test_copy_share_title_copies_visible_title(self) -> None:
         recorder = self.make_app()
         recorder.share_title.set("Benim Basligim")

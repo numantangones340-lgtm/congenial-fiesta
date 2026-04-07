@@ -5152,6 +5152,21 @@ class GuitarAmpRecorderApp:
             "YouTube yükleme notu kopyalanamadı",
         )
 
+    def copy_share_upload_note_path(self) -> None:
+        package_dir = self.last_share_package_dir
+        if package_dir is None or not package_dir.exists():
+            self.set_status("Kopyalanacak YouTube yükleme notu yolu yok.")
+            return
+        note_path = package_dir / "youtube_yukleme_notu.txt"
+        if not note_path.exists():
+            self.set_status("Kopyalanacak YouTube yükleme notu yolu yok.")
+            return
+        self.copy_text_to_clipboard(
+            str(note_path),
+            "YouTube yükleme notu yolu panoya alındı",
+            "YouTube yükleme notu yolu kopyalanamadı",
+        )
+
     def copy_share_title(self) -> None:
         title = str(self.share_title.get()).strip()
         if not title:
@@ -6328,6 +6343,7 @@ class GuitarAmpRecorderApp:
                     ("Yükleme Notu", self.copy_share_upload_note, "primary", "#7c3aed"),
                     ("Notu Yaz", self.write_share_upload_note, "primary", "#6d28d9"),
                     ("Notu Aç", self.open_share_upload_note_in_finder, "primary", "#1f6feb"),
+                    ("Not Yolunu Kopyala", self.copy_share_upload_note_path, "secondary", "#475569"),
                     ("Paketi Kopyala", self.copy_share_package_markdown, "secondary", "#334155"),
                     ("Özeti Kopyala", self.copy_share_meta_summary, "secondary", "#334155"),
                     ("Detayı Kopyala", self.copy_share_detail_summary, "secondary", "#334155"),
