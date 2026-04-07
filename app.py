@@ -5452,6 +5452,11 @@ class GuitarAmpRecorderApp:
         expected_paths = self.share_package_expected_paths(package_dir)
         return bool(expected_paths) and all(path.exists() for path in expected_paths)
 
+    def share_missing_package_items(self, package_dir: Optional[Path]) -> list[str]:
+        if package_dir is None or not package_dir.exists():
+            return []
+        return [path.name for path in self.share_package_expected_paths(package_dir) if not path.exists()]
+
     def share_quickstart_badges(self) -> list[str]:
         audio_path = self.current_share_audio_path()
         image_value = str(self.share_image_path.get()).strip()
@@ -5594,7 +5599,17 @@ class GuitarAmpRecorderApp:
         else:
             zip_time_part = "Son ZIP zamanı: henüz yok"
         count_part = f"Paket içeriği: {self.share_package_file_count_text(package_dir)}"
-        return " | ".join([audio_suffix_part, image_part, image_suffix_part, package_part, size_part, zip_part, zip_time_part, count_part])
+        missing_items = self.share_missing_package_items(package_dir)
+        if missing_items:
+            preview = ", ".join(missing_items[:3])
+            if len(missing_items) > 3:
+                preview = f"{preview} +{len(missing_items) - 3}"
+            missing_part = f"Eksik paket öğeleri: {preview}"
+        else:
+            missing_part = "Eksik paket öğeleri: yok"
+        return " | ".join(
+            [audio_suffix_part, image_part, image_suffix_part, package_part, size_part, zip_part, zip_time_part, count_part, missing_part]
+        )
 
     def update_share_meta_text(self) -> None:
         if hasattr(self, "share_meta_text"):
