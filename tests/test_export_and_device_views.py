@@ -2179,7 +2179,7 @@ class ExportAndDeviceViewTests(unittest.TestCase):
             expected_zip_time = time.strftime("%Y-%m-%d %H:%M", time.localtime(zip_ts))
             self.assertEqual(
                 recorder.share_detail_text.get(),
-                f"Ses durumu: hazir | Ses türü: mp3 | Kapak durumu: hazir | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Ilerleme: 2/4 | Paket durumu: eksik | Son paket zamanı: {expected_time} | Paket boyutu: 5 B | ZIP boyutu: {expected_zip_size} B | ZIP durumu: eski | Son ZIP zamanı: {expected_zip_time} | Paket içeriği: 1 dosya | Eksik paket öğeleri: youtube_baslik.txt, youtube_aciklama.txt, paylasim_paketi.md +6 | Hazırlık durumu: suruyor | Sonraki adım: YouTube Paketi Yaz",
+                f"Ses durumu: hazir | Ses türü: mp3 | Kapak durumu: hazir | Kapak dosyası: kapak.jpg | Kapak türü: jpg | Ilerleme: 2/4 | Paket durumu: eksik | Son paket zamanı: {expected_time} | Paket boyutu: 5 B | ZIP boyutu: {expected_zip_size} B | ZIP durumu: eski | Son ZIP zamanı: {expected_zip_time} | Paket içeriği: 1 dosya | Eksik paket öğeleri: youtube_baslik.txt, youtube_aciklama.txt, paylasim_paketi.md +7 | Hazırlık durumu: suruyor | Sonraki adım: YouTube Paketi Yaz",
             )
 
             current_ts = zip_ts + 120

@@ -5492,6 +5492,7 @@ class GuitarAmpRecorderApp:
             package_dir / "youtube_yukleme_notu.txt",
             package_dir / "paylasim_rehberi.txt",
             package_dir / "paylasim_ozeti.txt",
+            package_dir / "paylasim_detayi.txt",
             self.share_upload_checklist_path(package_dir),
         ]
         audio_path = self.current_share_audio_path()
