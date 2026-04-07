@@ -2208,6 +2208,14 @@ class GuitarAmpRecorderApp:
             fg="white",
             state="disabled",
         )
+        self.copy_last_brief_name_button = Button(
+            recent_copy_buttons,
+            text="Rapor Adını Kopyala",
+            command=self.copy_last_session_brief_name_to_clipboard,
+            bg="#475569",
+            fg="white",
+            state="disabled",
+        )
         self.open_last_brief_button = Button(
             recent_copy_buttons,
             text="Raporu Aç",
@@ -2229,6 +2237,14 @@ class GuitarAmpRecorderApp:
             text="Kurtarma Yolu Kopyala",
             command=self.copy_last_recovery_note_path_to_clipboard,
             bg="#8e44ad",
+            fg="white",
+            state="disabled",
+        )
+        self.copy_last_recovery_note_name_button = Button(
+            recent_copy_buttons,
+            text="Kurtarma Adını Kopyala",
+            command=self.copy_last_recovery_note_name_to_clipboard,
+            bg="#7f8c8d",
             fg="white",
             state="disabled",
         )
@@ -2266,9 +2282,11 @@ class GuitarAmpRecorderApp:
                 self.copy_last_brief_button,
                 self.export_last_brief_button,
                 self.copy_last_brief_path_button,
+                self.copy_last_brief_name_button,
                 self.open_last_brief_button,
                 self.copy_last_recovery_note_button,
                 self.copy_last_recovery_note_path_button,
+                self.copy_last_recovery_note_name_button,
                 self.open_last_recovery_note_button,
                 self.copy_recent_outputs_button,
             ],
@@ -2290,9 +2308,11 @@ class GuitarAmpRecorderApp:
             (self.copy_last_brief_button, "success"),
             (self.export_last_brief_button, "success"),
             (self.copy_last_brief_path_button, "accent"),
+            (self.copy_last_brief_name_button, "secondary"),
             (self.open_last_brief_button, "primary"),
             (self.copy_last_recovery_note_button, "danger"),
             (self.copy_last_recovery_note_path_button, "accent"),
+            (self.copy_last_recovery_note_name_button, "secondary"),
             (self.open_last_recovery_note_button, "danger"),
             (self.copy_recent_outputs_button, "secondary"),
         ):
@@ -6906,6 +6926,17 @@ class GuitarAmpRecorderApp:
             "Kısa rapor yolu kopyalanamadı",
         )
 
+    def copy_last_session_brief_name_to_clipboard(self) -> None:
+        brief_path = self.last_session_brief_path()
+        if brief_path is None or not brief_path.exists():
+            self.set_status(self.missing_item_status("Kısa rapor"))
+            return
+        self.copy_text_to_clipboard(
+            brief_path.name,
+            self.copied_item_status("Kısa rapor adı", brief_path.name),
+            "Kısa rapor adı kopyalanamadı",
+        )
+
     def open_last_session_brief_in_finder(self) -> None:
         brief_path = self.last_session_brief_path()
         if brief_path is None or not brief_path.exists():
@@ -6939,6 +6970,16 @@ class GuitarAmpRecorderApp:
             str(self.last_recovery_note_path),
             self.copied_item_status("Kurtarma notu yolu", self.last_recovery_note_path.name),
             "Kurtarma notu yolu kopyalanamadı",
+        )
+
+    def copy_last_recovery_note_name_to_clipboard(self) -> None:
+        if self.last_recovery_note_path is None or not self.last_recovery_note_path.exists():
+            self.set_status(self.missing_item_status("Kurtarma notu"))
+            return
+        self.copy_text_to_clipboard(
+            self.last_recovery_note_path.name,
+            self.copied_item_status("Kurtarma notu adı", self.last_recovery_note_path.name),
+            "Kurtarma notu adı kopyalanamadı",
         )
 
     def open_last_recovery_note_in_finder(self) -> None:
@@ -7393,10 +7434,12 @@ class GuitarAmpRecorderApp:
             "copy_last_brief_button",
             "export_last_brief_button",
             "copy_last_brief_path_button",
+            "copy_last_brief_name_button",
             "open_last_brief_button",
             "open_last_take_notes_button",
             "copy_last_recovery_note_button",
             "copy_last_recovery_note_path_button",
+            "copy_last_recovery_note_name_button",
             "open_last_recovery_note_button",
             "open_last_output_dir_button",
             "open_last_preparation_button",
@@ -7467,9 +7510,11 @@ class GuitarAmpRecorderApp:
             brief_path = self.last_session_brief_path()
             if brief_path is not None and brief_path.exists():
                 self.copy_last_brief_path_button.configure(state="normal")
+                self.copy_last_brief_name_button.configure(state="normal")
                 self.open_last_brief_button.configure(state="normal")
             else:
                 self.copy_last_brief_path_button.configure(state="disabled")
+                self.copy_last_brief_name_button.configure(state="disabled")
                 self.open_last_brief_button.configure(state="disabled")
             if self.last_take_notes_path is not None and self.last_take_notes_path.exists():
                 self.open_last_take_notes_button.configure(state="normal")
@@ -7484,10 +7529,12 @@ class GuitarAmpRecorderApp:
             if self.last_recovery_note_path is not None and self.last_recovery_note_path.exists():
                 self.copy_last_recovery_note_button.configure(state="normal")
                 self.copy_last_recovery_note_path_button.configure(state="normal")
+                self.copy_last_recovery_note_name_button.configure(state="normal")
                 self.open_last_recovery_note_button.configure(state="normal")
             else:
                 self.copy_last_recovery_note_button.configure(state="disabled")
                 self.copy_last_recovery_note_path_button.configure(state="disabled")
+                self.copy_last_recovery_note_name_button.configure(state="disabled")
                 self.open_last_recovery_note_button.configure(state="disabled")
             if self.current_recent_exports_dir().exists():
                 self.open_last_output_dir_button.configure(state="normal")

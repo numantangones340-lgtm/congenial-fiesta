@@ -132,8 +132,10 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.copy_last_preparation_button = mock.Mock()
         recorder.copy_last_preparation_path_button = mock.Mock()
         recorder.copy_last_preparation_name_button = mock.Mock()
+        recorder.copy_last_brief_name_button = mock.Mock()
         recorder.copy_last_recovery_note_button = mock.Mock()
         recorder.copy_last_recovery_note_path_button = mock.Mock()
+        recorder.copy_last_recovery_note_name_button = mock.Mock()
         recorder.open_last_recovery_note_button = mock.Mock()
         recorder.open_preparation_button = mock.Mock()
         recorder.open_last_preparation_button = mock.Mock()
@@ -862,6 +864,22 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Kısa rapor yolu panoya alındı: session_brief.txt")
 
+    def test_copy_last_session_brief_name_to_clipboard_copies_existing_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            brief_path = Path(tmpdir) / "session_brief.txt"
+            brief_path.write_text("Kısa rapor", encoding="utf-8")
+            summary_path = Path(tmpdir) / "session_summary.json"
+            summary_path.write_text("{}", encoding="utf-8")
+            recorder.last_summary_path = summary_path
+
+            recorder.copy_last_session_brief_name_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("session_brief.txt")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Kısa rapor adı panoya alındı: session_brief.txt")
+
     def test_open_last_session_brief_in_finder_reveals_existing_brief(self) -> None:
         recorder = self.make_app()
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -904,6 +922,20 @@ class ExportAndDeviceViewTests(unittest.TestCase):
         recorder.root.clipboard_append.assert_called_once_with(str(recovery_path))
         recorder.root.update.assert_called_once_with()
         self.assertEqual(recorder.status_messages[-1], "Kurtarma notu yolu panoya alındı: export_recovery_note.txt")
+
+    def test_copy_last_recovery_note_name_to_clipboard_copies_existing_name(self) -> None:
+        recorder = self.make_app()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            recovery_path = Path(tmpdir) / "export_recovery_note.txt"
+            recovery_path.write_text("Kurtarma Notu", encoding="utf-8")
+            recorder.last_recovery_note_path = recovery_path
+
+            recorder.copy_last_recovery_note_name_to_clipboard()
+
+        recorder.root.clipboard_clear.assert_called_once_with()
+        recorder.root.clipboard_append.assert_called_once_with("export_recovery_note.txt")
+        recorder.root.update.assert_called_once_with()
+        self.assertEqual(recorder.status_messages[-1], "Kurtarma notu adı panoya alındı: export_recovery_note.txt")
 
     def test_open_last_recovery_note_in_finder_reveals_existing_note(self) -> None:
         recorder = self.make_app()
