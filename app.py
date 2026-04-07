@@ -5635,6 +5635,10 @@ class GuitarAmpRecorderApp:
             missing_part = f"Eksik paket öğeleri: {preview}"
         else:
             missing_part = "Eksik paket öğeleri: yok"
+        if self.share_ready_badge_config()[0] == "YouTube'a Hazır":
+            overall_part = "Hazırlık durumu: hazir"
+        else:
+            overall_part = "Hazırlık durumu: suruyor"
         return " | ".join(
             [
                 audio_suffix_part,
@@ -5648,6 +5652,7 @@ class GuitarAmpRecorderApp:
                 zip_time_part,
                 count_part,
                 missing_part,
+                overall_part,
             ]
         )
 
